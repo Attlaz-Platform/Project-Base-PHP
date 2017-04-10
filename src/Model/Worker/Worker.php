@@ -42,11 +42,11 @@ class Worker
     public function listen(): void
     {
 
-        $this->logger->debug('Start listening');
+
         $connection = new AMQPStreamConnection($this->settings->queue_host, $this->settings->queue_port, $this->settings->queue_user, $this->settings->queue_password);
         $this->channel = $connection->channel();
 
-        $this->channel->queue_declare($this->settings->queue_queue, false, false, false, false);
+        $this->channel->queue_declare($this->settings->queue_queue, false, true, false, false);
 
         $this->channel->basic_qos(null, 1, null);
 
@@ -54,11 +54,18 @@ class Worker
             $this,
             'onMessageReceive',
         ]);
+        $this->logger->debug('Start listening', [
+            'queue'        => $this->settings->queue_queue,
+            'consumer_tag' => $this->consumer_tag,
+        ]);
 
         while (count($this->channel->callbacks)) {
             $this->channel->wait();
         }
-        $this->logger->debug('Stop listening');
+        $this->logger->debug('Stop listening', [
+            'queue'        => $this->settings->queue_queue,
+            'consumer_tag' => $this->consumer_tag,
+        ]);
         $this->channel->close();
         $connection->close();
     }
@@ -72,7 +79,10 @@ class Worker
     {
 
 
-        $this->logger->debug('Incoming message');
+        $this->logger->debug('Incoming message', [
+            'queue'        => $this->settings->queue_queue,
+            'consumer_tag' => $this->consumer_tag,
+        ]);
 
         $messageBody = $message->getBody();
 
@@ -152,7 +162,10 @@ class Worker
 
             $taskResult = $this->executeTask($task);
         } catch (\Throwable $ex) {
-            $this->logger->error('Unable to process message: ' . $ex->getMessage());
+            $this->logger->error('Unable to process message: ' . $ex->getMessage(), [
+                'queue'        => $this->settings->queue_queue,
+                'consumer_tag' => $this->consumer_tag,
+            ]);
             $taskResult = $this->getErrorTaskResult($ex);
         }
         $responded = DateTimeHelper::getNow();

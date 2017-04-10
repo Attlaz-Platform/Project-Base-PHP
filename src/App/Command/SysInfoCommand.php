@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace Attlaz\Core\App\Command;
 
 use Attlaz\Core\App\Command\BaseCommand;
+use Attlaz\Core\Model\Settings;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use PhpAmqpLib\Channel\AMQPChannel;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,7 +32,19 @@ class SysInfoCommand extends BaseCommand
     private function getInfo(): array
     {
         $info = [];
-        $this->initChannel();
+
+        $settings = new Settings();
+        $settings->queue_host = 'rabbit';
+        $settings->queue_port = 5672;
+        $settings->queue_user = 'guest';
+        $settings->queue_password = 'guest';
+        $settings->queue_queue = 'task';
+
+        $logger = new Logger('Attlaz');
+        $logger->pushHandler(new StreamHandler(STDOUT));
+
+        $this->initChannel($settings);
+
         $serverProperties = $this->connection->getServerProperties();
 
         /** @var AMQPChannel[] $channels */
@@ -43,12 +58,8 @@ class SysInfoCommand extends BaseCommand
         $info['queues'] = [];
         //TODO: get queue names from server
         $queues = [
-            $this->getQueueName() => $this->getChannel()
-                                          ->queue_declare($this->getQueueName(), false, true, false, false),
-            'rpc_queue'           => $this->getChannel()
-                                          ->queue_declare('rpc_queue', false, false, false, false),
-            'task'                => $this->getChannel()
-                                          ->queue_declare('task', false, false, false, false),
+            'task' => $this->getChannel()
+                           ->queue_declare('task', false, true, false, false),
 
         ];
         foreach ($queues as $queueName => $queue) {
