@@ -35,11 +35,11 @@ docker-compose exec app /var/www/app/vendor/bin/phpunit -c /var/www/app/phpunit.
 ```
 
 ```
-docker-compose exec app php /var/www/app/run.php worker:start
+docker-compose exec app php /var/www/app/src/run.php worker:start
 ```
 
 ```
-docker-compose exec app php /var/www/app/run.php manager:start
+docker-compose exec app php /var/www/app/src/run.php manager:start <message>
 ```
 
 ### Break down into end to end tests

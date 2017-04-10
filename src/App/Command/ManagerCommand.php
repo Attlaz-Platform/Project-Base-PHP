@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Attlaz\Core\App\Command;
 
-use Attlaz\Core\App\Command\BaseCommand;
 use Attlaz\Core\Helper\DateTimeHelper;
-use Attlaz\Core\Model\Manager;
+use Attlaz\Core\Model\Manager\NoReplyManager;
+use Attlaz\Core\Model\Manager\ReplyManager;
 use Attlaz\Core\Model\Settings;
 use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
@@ -48,8 +48,8 @@ class ManagerCommand extends BaseCommand
         $logger = new Logger('Attlaz');
         $logger->pushHandler(new StreamHandler(STDOUT));
 
-        $manager = new Manager($settings, $logger);
-
+        //Send task and expect result
+        $manager = new ReplyManager($settings, $logger);
         $task = new Task('dummy', ['input' => $messageText]);
 
         $send = DateTimeHelper::getNow();
@@ -57,32 +57,27 @@ class ManagerCommand extends BaseCommand
 
         $received = DateTimeHelper::getNow();
         $debug = $this->debug($result, $send, $received);
+        $this->output->writeln(json_encode($debug, JSON_PRETTY_PRINT));
 
-        $encodedDebug = json_encode($debug, JSON_PRETTY_PRINT);
-        $this->output->writeln($encodedDebug);
-        $this->log($debug);
+        //Send task without result
+        $manager = new NoReplyManager($settings, $logger);
+        $task = new Task('dummy', ['input' => $messageText]);
 
-    }
-
-    private function log($message)
-    {
-
-
-        $settings = new Settings();
-        $settings->queue_host = 'rabbit';
-        $settings->queue_port = 5672;
-        $settings->queue_user = 'guest';
-        $settings->queue_password = 'guest';
-        $settings->queue_queue = 'task';
-
-        $logger = new Logger('Attlaz');
-        $logger->pushHandler(new StreamHandler(STDOUT));
-
-        $manager = new Manager($settings, $logger);
-
-        $task = new Task('log', ['input' => $message]);
-
+        $send = DateTimeHelper::getNow();
         $manager->execute($task);
+
+        $this->output->writeln('Done');
+
+        //Send multiple tasks and combine results
+        //TODO: implement
+
+        $manager = new NoReplyManager($settings, $logger);
+        $task = new Task('quit', ['input' => $messageText]);
+
+        $send = DateTimeHelper::getNow();
+        $manager->execute($task);
+
+        $this->output->writeln('Done');
 
     }
 
