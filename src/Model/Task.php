@@ -6,7 +6,6 @@ namespace Attlaz\Core\Model;
 class Task implements \JsonSerializable
 {
     private $method;
-
     private $arguments;
 
     public function __construct(string $method, array $arguments = [])

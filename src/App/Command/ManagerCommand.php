@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace Attlaz\Core\App\Command;
 
 use Attlaz\Core\App\Command\BaseCommand;
+use Attlaz\Core\Helper\DateTimeHelper;
 use Attlaz\Core\Model\Manager;
 use Attlaz\Core\Model\Settings;
 use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -40,14 +43,68 @@ class ManagerCommand extends BaseCommand
         $settings->queue_port = 5672;
         $settings->queue_user = 'guest';
         $settings->queue_password = 'guest';
-        $settings->queue_channel = 'task';
+        $settings->queue_queue = 'task';
 
-        $manager = new Manager($settings);
+        $logger = new Logger('Attlaz');
+        $logger->pushHandler(new StreamHandler(STDOUT));
+
+        $manager = new Manager($settings, $logger);
 
         $task = new Task('dummy', ['input' => $messageText]);
+
+        $send = DateTimeHelper::getNow();
         $result = $manager->execute($task);
 
-        $output->writeln((string)$result->getData());
+        $received = DateTimeHelper::getNow();
+        $debug = $this->debug($result, $send, $received);
+
+        $encodedDebug = json_encode($debug, JSON_PRETTY_PRINT);
+        $this->output->writeln($encodedDebug);
+        $this->log($debug);
+
+    }
+
+    private function log($message)
+    {
+
+
+        $settings = new Settings();
+        $settings->queue_host = 'rabbit';
+        $settings->queue_port = 5672;
+        $settings->queue_user = 'guest';
+        $settings->queue_password = 'guest';
+        $settings->queue_queue = 'task';
+
+        $logger = new Logger('Attlaz');
+        $logger->pushHandler(new StreamHandler(STDOUT));
+
+        $manager = new Manager($settings, $logger);
+
+        $task = new Task('log', ['input' => $message]);
+
+        $manager->execute($task);
+
+    }
+
+    private function debug(TaskResult $taskResult, \DateTime $send, \DateTime $received): array
+    {
+        $workerProcessTime = $taskResult->getReceived()
+                                        ->diff($taskResult->getResponded());
+        $totalProcessTime = $send->diff($received);
+        $response[] = [
+            'output             ' => (string)$taskResult->getData(),
+            'worker received    ' => $taskResult->getReceived()
+                                                ->format('Y-m-d H:i:s u'),
+            'worker responded   ' => $taskResult->getResponded()
+                                                ->format('Y-m-d H:i:s u'),
+
+            'worker time        ' => $workerProcessTime->format('%h:%i %ss %F'),
+            'manager send       ' => $send->format('Y-m-d H:i:s u'),
+            'manager responded  ' => $received->format('Y-m-d H:i:s u'),
+            'manager time       ' => $totalProcessTime->format('%h:%i %ss %F'),
+        ];
+
+        return $response;
     }
 
 }

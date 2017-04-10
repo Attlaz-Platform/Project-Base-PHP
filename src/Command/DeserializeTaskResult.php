@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Core\Command;
 
+use Attlaz\Core\Helper\DateTimeHelper;
 use Attlaz\Core\Model\TaskResult;
 
 class DeserializeTaskResult
@@ -16,20 +17,35 @@ class DeserializeTaskResult
 
         $taskArray = $taskObject['task'];
         if (!is_array($taskArray)) {
-            throw new \InvalidArgumentException('Unable to deserialize task result, properties task must be serialized as array');
+            throw new \InvalidArgumentException('Unable to deserialize task result, property task must be serialized as array');
         }
 
         $cmd = new DeserializeTaskFromArray();
         $task = $cmd->__invoke($taskArray);
 
         $data = $taskObject['data'];
+
         $success = $taskObject['success'];
-
         if (!is_bool($success)) {
-            throw new \InvalidArgumentException('Unable to deserialize task result, properties success must be serialized as bool');
+            throw new \InvalidArgumentException('Unable to deserialize task result, property success must be serialized as bool');
         }
-
         $task = new TaskResult($task, $data, $success);
+
+        $received = $taskObject['received'];
+
+        if (!is_array($received)) {
+            throw new \InvalidArgumentException('Unable to deserialize task result, property received must be serialized as array');
+        }
+        $received = DateTimeHelper::deserialize($received);
+        $task->setReceived($received);
+
+//
+        $responded = $taskObject['responded'];
+        if (!is_array($responded)) {
+            throw new \InvalidArgumentException('Unable to deserialize task result, property responded must be serialized as array');
+        }
+        $responded = DateTimeHelper::deserialize($responded);
+        $task->setResponded($responded);
 
         return $task;
 

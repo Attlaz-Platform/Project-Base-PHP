@@ -9,6 +9,6 @@ class Settings
     public $queue_port;
     public $queue_user;
     public $queue_password;
-    public $queue_channel;
+    public $queue_queue;
 
 }
