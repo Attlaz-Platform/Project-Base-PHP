@@ -5,6 +5,7 @@ namespace Attlaz\Core\App\Command;
 
 use Attlaz\Core\App\Command\BaseCommand;
 use Attlaz\Core\Model\Manager;
+use Attlaz\Core\Model\Settings;
 use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
 use Symfony\Component\Console\Input\InputArgument;
@@ -34,7 +35,14 @@ class ManagerCommand extends BaseCommand
 
         $messageText = (string)$input->getArgument('message');
 
-        $manager = new Manager();
+        $settings = new Settings();
+        $settings->queue_host = 'rabbit';
+        $settings->queue_port = 5672;
+        $settings->queue_user = 'guest';
+        $settings->queue_password = 'guest';
+        $settings->queue_channel = 'task';
+
+        $manager = new Manager($settings);
 
         $task = new Task('dummy', ['input' => $messageText]);
         $result = $manager->execute($task);

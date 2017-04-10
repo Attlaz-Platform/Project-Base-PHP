@@ -10,6 +10,13 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class Manager
 {
+    private $settings;
+
+    public function __construct(Settings $settings)
+    {
+        $this->settings = $settings;
+    }
+
     private $response;
 
     /**
@@ -23,7 +30,7 @@ class Manager
      */
     public function execute(Task $task): TaskResult
     {
-        $connection = new AMQPStreamConnection('rabbit', 5672, 'guest', 'guest');
+        $connection = new AMQPStreamConnection($this->settings->queue_host, $this->settings->queue_port, $this->settings->queue_user, $this->settings->queue_password);
         $channel = $connection->channel();
 
         /*
@@ -60,7 +67,7 @@ class Manager
         /*
          * The request is sent to an rpc_queue queue.
          */
-        $channel->basic_publish($msg, '', 'rpc_queue');
+        $channel->basic_publish($msg, '', $this->settings->queue_channel);
 
         while (!$this->response) {
             $channel->wait();
