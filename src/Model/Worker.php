@@ -6,25 +6,32 @@ namespace Attlaz\Core\Model;
 use Attlaz\Core\Command\DeserializeTaskFromString;
 use Attlaz\Core\Command\ExecuteTask;
 use Attlaz\Core\Command\SerializeTaskResult;
+use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class Worker
 {
+    private $settings;
+
+    public function __construct(Settings $settings)
+    {
+        $this->settings = $settings;
+    }
 
     /**
      * Listens for incoming messages
      */
     public function listen(): void
     {
-        $connection = new AMQPStreamConnection('rabbit', 5672, 'guest', 'guest');
+        $connection = new AMQPStreamConnection($this->settings->queue_host, $this->settings->queue_port, $this->settings->queue_user, $this->settings->queue_password);
         $channel = $connection->channel();
 
-        $channel->queue_declare('rpc_queue', false, false, false, false);
+        $channel->queue_declare($this->settings->queue_channel, false, false, false, false);
 
         $channel->basic_qos(null, 1, null);
 
-        $channel->basic_consume('rpc_queue', '', false, false, false, false, [
+        $channel->basic_consume($this->settings->queue_channel, '', false, false, false, false, [
             $this,
             'callback',
         ]);
@@ -59,15 +66,17 @@ class Worker
          */
         $msg = new AMQPMessage($serializedTaskResult, ['correlation_id' => $req->get('correlation_id')]);
 
+        /** @var AMQPChannel $channel */
+        $channel = $req->delivery_info['channel'];
         /*
          * Publishing to the same channel from the incoming message
          */
-        $req->delivery_info['channel']->basic_publish($msg, '', $req->get('reply_to'));
+        $channel->basic_publish($msg, '', $req->get('reply_to'));
 
         /*
          * Acknowledging the message
          */
-        $req->delivery_info['channel']->basic_ack($req->delivery_info['delivery_tag']);
+        $channel->basic_ack($req->delivery_info['delivery_tag']);
     }
 
     private function getErrorTaskResult(\Throwable $error): TaskResult
