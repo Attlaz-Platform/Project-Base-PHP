@@ -23,11 +23,17 @@ class Worker
     private $channel;
 
     private $consumer_tag;
+    private $name = '';
 
     public function __construct(Settings $settings, LoggerInterface $logger)
     {
         $this->settings = $settings;
         $this->logger = $logger;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 
     /**
@@ -44,7 +50,7 @@ class Worker
 
         $this->channel->basic_qos(null, 1, null);
 
-        $this->consumer_tag = $this->channel->basic_consume($this->settings->queue_queue, '', false, false, false, false, [
+        $this->consumer_tag = $this->channel->basic_consume($this->settings->queue_queue, $this->name, false, false, false, false, [
             $this,
             'onMessageReceive',
         ]);
