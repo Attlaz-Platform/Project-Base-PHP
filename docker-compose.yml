@@ -1,0 +1,42 @@
+version: '2'
+
+services:
+  app:
+    container_name: attlaz_app
+    restart: unless-stopped
+    build: .
+#    ports:
+#      - "8000:8888"
+    volumes:
+      - ./src:/var/www/app
+    links:
+      - rabbit
+#  db:
+#        container_name: magento2devbox_db_c28709db73f8348f74c51759d5c7ae59
+#        restart: always
+#        image: mysql:5.6
+#        ports:
+#          - "3306"
+#        environment:
+#          - MYSQL_ROOT_PASSWORD=root
+#          - MYSQL_DATABASE=magento2
+#        volumes:
+#          - "./shared/db:/var/lib/mysql"
+#          - "./shared/var/logs/mysql:/var/log/mysql"
+  rabbit:
+    container_name: attlaz_queue
+#      container_name: magento2devbox_rabbit_c28709db73f8348f74c51759d5c7ae59
+    restart: unless-stopped
+    image: rabbitmq:3-management
+    ports:
+      - "32769:15672"
+      - "5672"
+
+#  elasticsearch:
+#        container_name: magento2devbox_elastic_c28709db73f8348f74c51759d5c7ae59
+#        restart: always
+#        image: elasticsearch:2
+#        ports:
+#          - "9200"
+
+
