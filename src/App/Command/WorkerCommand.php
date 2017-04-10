@@ -1,21 +1,22 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Command;
+namespace Attlaz\Core\App\Command;
 
+use Attlaz\Core\App\Command\BaseCommand;
 use Attlaz\Core\Model\Manager;
+use Attlaz\Core\Model\Worker;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ManagerCommand extends BaseCommand
+class WorkerCommand extends BaseCommand
 {
 
     protected function configure()
     {
         parent::configure();
-        $this->setName('manager:start')
-             ->addArgument('message', InputArgument::REQUIRED)
+        $this->setName('worker:start')
              ->setDescription('Send message to queue')
              ->setHelp('This command allows you send a message to queue');
     }
@@ -29,12 +30,9 @@ class ManagerCommand extends BaseCommand
 
         $this->output = $output;
 
-        $messageText = $input->getArgument('message');
+        $worker = new Worker();
+        $worker->listen();
 
-        $manager = new Manager();
-        $result = $manager->execute($messageText);
-
-        $output->writeln($result);
     }
 
 }

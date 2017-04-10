@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Command;
+namespace Attlaz\Core\App\Command;
 
+use Attlaz\Core\App\Command\BaseCommand;
 use PhpAmqpLib\Channel\AMQPChannel;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -37,15 +38,26 @@ class SysInfoCommand extends BaseCommand
 //        {
 //            var_dump($channel->queue_bind());
 //        }
-        $queue = $this->getChannel()
-                      ->queue_declare($this->getQueueName(), false, true, false, false);
 
         $info['server'] = $serverProperties['product'][1] . ' ' . $serverProperties['version'][1];
-        $info['queue'] = [
-            'consumers' => $queue[2],
-            'messages'  => $queue[1],
+        $info['queues'] = [];
+        //TODO: get queue names from server
+        $queues = [
+            $this->getQueueName() => $this->getChannel()
+                                          ->queue_declare($this->getQueueName(), false, true, false, false),
+            'rpc_queue'           => $this->getChannel()
+                                          ->queue_declare('rpc_queue', false, false, false, false),
 
         ];
+        foreach ($queues as $queueName => $queue) {
+
+
+            $info['queues'][$queueName] = [
+                'consumers' => $queue[2],
+                'messages'  => $queue[1],
+
+            ];
+        }
 
         return $info;
 

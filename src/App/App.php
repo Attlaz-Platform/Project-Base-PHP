@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core;
+namespace Attlaz\Core\App;
 
-use Attlaz\Core\Command\ManagerCommand;
-use Attlaz\Core\Command\SysInfoCommand;
-use Attlaz\Core\Command\TestConsumerCommand;
-use Attlaz\Core\Command\TestPublisherCommand;
-use Attlaz\Core\Command\WorkerCommand;
+use Attlaz\Core\App\Command\ManagerCommand;
+use Attlaz\Core\App\Command\SysInfoCommand;
+use Attlaz\Core\App\Command\TestConsumerCommand;
+use Attlaz\Core\App\Command\TestPublisherCommand;
+use Attlaz\Core\App\Command\WorkerCommand;
 use Symfony\Component\Console\Application;
 
 class App
