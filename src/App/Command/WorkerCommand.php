@@ -15,13 +15,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class WorkerCommand extends BaseCommand
 {
-
+protected const ARG_WORKER_NAME = 'name';
     protected function configure()
     {
         parent::configure();
         $this->setName('worker:start')
-             ->setDescription('Send message to queue')
-             ->setHelp('This command allows you send a message to queue');
+             ->addArgument(self::ARG_WORKER_NAME, InputArgument::OPTIONAL)
+             ->setDescription('Start worker')
+             ->setHelp('This command starts a worker process');
     }
 
     /** @var  OutputInterface */
@@ -43,7 +44,22 @@ class WorkerCommand extends BaseCommand
         $logger = new Logger('Attlaz');
         $logger->pushHandler(new StreamHandler(STDOUT));
 
+        $workerName = null;
+        if($input->hasArgument(self::ARG_WORKER_NAME))
+        {
+            $workerName = (string)$input->getArgument(self::ARG_WORKER_NAME);
+        }
+
+
+
+
         $worker = new Worker($settings, $logger);
+        if($workerName !== null)
+        {
+            $worker->setName($workerName);
+        }
+
+
         $worker->listen();
 
     }
