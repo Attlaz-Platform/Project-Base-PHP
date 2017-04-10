@@ -7,6 +7,8 @@ use Attlaz\Core\App\Command\BaseCommand;
 use Attlaz\Core\Model\Manager;
 use Attlaz\Core\Model\Settings;
 use Attlaz\Core\Model\Worker;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,9 +38,12 @@ class WorkerCommand extends BaseCommand
         $settings->queue_port = 5672;
         $settings->queue_user = 'guest';
         $settings->queue_password = 'guest';
-        $settings->queue_channel = 'task';
+        $settings->queue_queue = 'task';
 
-        $worker = new Worker($settings);
+        $logger = new Logger('Attlaz');
+        $logger->pushHandler(new StreamHandler(STDOUT));
+
+        $worker = new Worker($settings, $logger);
         $worker->listen();
 
     }

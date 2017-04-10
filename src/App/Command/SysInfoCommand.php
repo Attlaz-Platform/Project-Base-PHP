@@ -47,6 +47,8 @@ class SysInfoCommand extends BaseCommand
                                           ->queue_declare($this->getQueueName(), false, true, false, false),
             'rpc_queue'           => $this->getChannel()
                                           ->queue_declare('rpc_queue', false, false, false, false),
+            'task'                => $this->getChannel()
+                                          ->queue_declare('task', false, false, false, false),
 
         ];
         foreach ($queues as $queueName => $queue) {

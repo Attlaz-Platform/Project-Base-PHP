@@ -6,17 +6,21 @@ namespace Attlaz\Core\Model;
 use Attlaz\Core\Command\DeserializeTaskFromString;
 use Attlaz\Core\Command\ExecuteTask;
 use Attlaz\Core\Command\SerializeTaskResult;
+use Attlaz\Core\Helper\DateTimeHelper;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 
 class Worker
 {
     private $settings;
+    private $logger;
 
-    public function __construct(Settings $settings)
+    public function __construct(Settings $settings, LoggerInterface $logger)
     {
         $this->settings = $settings;
+        $this->logger = $logger;
     }
 
     /**
@@ -24,14 +28,16 @@ class Worker
      */
     public function listen(): void
     {
+
+        $this->logger->debug('Start listening');
         $connection = new AMQPStreamConnection($this->settings->queue_host, $this->settings->queue_port, $this->settings->queue_user, $this->settings->queue_password);
         $channel = $connection->channel();
 
-        $channel->queue_declare($this->settings->queue_channel, false, false, false, false);
+        $channel->queue_declare($this->settings->queue_queue, false, false, false, false);
 
         $channel->basic_qos(null, 1, null);
 
-        $channel->basic_consume($this->settings->queue_channel, '', false, false, false, false, [
+        $channel->basic_consume($this->settings->queue_queue, '', false, false, false, false, [
             $this,
             'callback',
         ]);
@@ -51,13 +57,20 @@ class Worker
      */
     public function callback(AMQPMessage $req): void
     {
+        $received = DateTimeHelper::getNow();
 
+        $this->logger->debug('Incoming message');
         try {
             $task = $this->decodeBodyToTask($req->body);
             $taskResult = $this->executeTask($task);
         } catch (\Throwable $ex) {
+            $this->logger->error('Unable to process message: ' . $ex->getMessage());
             $taskResult = $this->getErrorTaskResult($ex);
         }
+        $responded = DateTimeHelper::getNow();
+        $taskResult->setReceived($received);
+        $taskResult->setResponded($responded);
+
         $cmd = new SerializeTaskResult();
         $serializedTaskResult = $cmd->__invoke($taskResult);
 
@@ -91,9 +104,13 @@ class Worker
 
     private function executeTask(Task $task): TaskResult
     {
+
         $cmd = new ExecuteTask();
 
-        return $cmd->__invoke($task);
+        $taskResult = $cmd->__invoke($task, $this->logger);
+
+        return $taskResult;
 
     }
+
 }

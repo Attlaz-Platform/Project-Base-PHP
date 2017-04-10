@@ -28,7 +28,19 @@ End with an example of getting some data out of the system or using it for a lit
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
+Run unit tests inside docker container:
+
+```
+docker-compose exec app /var/www/app/vendor/bin/phpunit -c /var/www/app/phpunit.xml
+```
+
+```
+docker-compose exec app php /var/www/app/run.php worker:start
+```
+
+```
+docker-compose exec app php /var/www/app/run.php manager:start
+```
 
 ### Break down into end to end tests
 

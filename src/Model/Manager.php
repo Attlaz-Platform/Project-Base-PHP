@@ -5,16 +5,20 @@ namespace Attlaz\Core\Model;
 
 use Attlaz\Core\Command\DeserializeTaskResult;
 use Attlaz\Core\Command\SerializeTask;
+
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 
 class Manager
 {
     private $settings;
+    private $logger;
 
-    public function __construct(Settings $settings)
+    public function __construct(Settings $settings, LoggerInterface $logger)
     {
         $this->settings = $settings;
+        $this->logger = $logger;
     }
 
     private $response;
@@ -67,7 +71,10 @@ class Manager
         /*
          * The request is sent to an rpc_queue queue.
          */
-        $channel->basic_publish($msg, '', $this->settings->queue_channel);
+        $this->logger->debug('Send message [queue: ' . $this->settings->queue_queue . ']');
+
+        $channel->queue_declare($this->settings->queue_queue, false, false, false, false);
+        $channel->basic_publish($msg, '', $this->settings->queue_queue);
 
         while (!$this->response) {
             $channel->wait();
@@ -88,6 +95,7 @@ class Manager
      */
     public function onResponse(AMQPMessage $rep)
     {
+        $this->logger->debug('Incoming response');
         if ($rep->get('correlation_id') == $this->corr_id) {
 
 
