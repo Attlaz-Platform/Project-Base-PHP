@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Core\App\Command;
 
+use Attlaz\Core\Model\Settings;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -54,28 +55,33 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
 
     private $channel;
 
-    protected function initChannel()
+    protected function initChannel(Settings $settings)
     {
-        $this->connection = new AMQPStreamConnection('rabbit', '5672', 'guest', 'guest', '/');
-        $this->channel = $this->connection->channel();
 
-        /*
-            name: $queue
-            passive: false
-            durable: true // the queue will survive server restarts
-            exclusive: false // the queue can be accessed in other channels
-            auto_delete: false //the queue won't be deleted once the channel is closed.
-        */
-        $this->channel->queue_declare($this->queue, false, true, false, false);
-        /*
-    name: $exchange
-    type: direct
-    passive: false
-    durable: true // the exchange will survive server restarts
-    auto_delete: false //the exchange won't be deleted once the channel is closed.
-*/
-        $this->channel->exchange_declare($this->exchange, 'direct', false, true, false);
-        $this->channel->queue_bind($this->queue, $this->exchange);
+        $this->connection = new AMQPStreamConnection($settings->queue_host, $settings->queue_port, $settings->queue_user, $settings->queue_password);
+        $this->channel = $this->connection->channel();
+        $this->channel->queue_declare($settings->queue_queue, false, false, false, false);
+
+//        $this->connection = new AMQPStreamConnection('rabbit', '5672', 'guest', 'guest', '/');
+//        $this->channel = $this->connection->channel();
+//
+//        /*
+//            name: $queue
+//            passive: false
+//            durable: true // the queue will survive server restarts
+//            exclusive: false // the queue can be accessed in other channels
+//            auto_delete: false //the queue won't be deleted once the channel is closed.
+//        */
+//        $this->channel->queue_declare($this->queue, false, true, false, false);
+//        /*
+//    name: $exchange
+//    type: direct
+//    passive: false
+//    durable: true // the exchange will survive server restarts
+//    auto_delete: false //the exchange won't be deleted once the channel is closed.
+//*/
+//        $this->channel->exchange_declare($this->exchange, 'direct', false, true, false);
+//        $this->channel->queue_bind($this->queue, $this->exchange);
 
     }
 

@@ -59,25 +59,25 @@ class ManagerCommand extends BaseCommand
         $debug = $this->debug($result, $send, $received);
         $this->output->writeln(json_encode($debug, JSON_PRETTY_PRINT));
 
-        //Send task without result
-        $manager = new NoReplyManager($settings, $logger);
-        $task = new Task('dummy', ['input' => $messageText]);
-
-        $send = DateTimeHelper::getNow();
-        $manager->execute($task);
-
-        $this->output->writeln('Done');
-
-        //Send multiple tasks and combine results
-        //TODO: implement
-
-        $manager = new NoReplyManager($settings, $logger);
-        $task = new Task('quit', ['input' => $messageText]);
-
-        $send = DateTimeHelper::getNow();
-        $manager->execute($task);
-
-        $this->output->writeln('Done');
+//        //Send task without result
+//        $manager = new NoReplyManager($settings, $logger);
+//        $task = new Task('dummy', ['input' => $messageText]);
+//
+//        $send = DateTimeHelper::getNow();
+//        $manager->execute($task);
+//
+//        $this->output->writeln('Done');
+//
+//        //Send multiple tasks and combine results
+//        //TODO: implement
+//
+//        $manager = new NoReplyManager($settings, $logger);
+//        $task = new Task('quit', ['input' => $messageText]);
+//
+//        $send = DateTimeHelper::getNow();
+//        $manager->execute($task);
+//
+//        $this->output->writeln('Done');
 
     }
 

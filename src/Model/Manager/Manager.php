@@ -29,7 +29,7 @@ abstract class Manager
     {
         $this->connection = new AMQPStreamConnection($this->settings->queue_host, $this->settings->queue_port, $this->settings->queue_user, $this->settings->queue_password);
         $this->channel = $this->connection->channel();
-        $this->channel->queue_declare($this->settings->queue_queue, false, false, false, false);
+        $this->channel->queue_declare($this->settings->queue_queue, false, true, false, false);
     }
 
     protected function closeChannel()
