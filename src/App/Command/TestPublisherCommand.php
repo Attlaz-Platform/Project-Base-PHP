@@ -4,8 +4,9 @@ declare(strict_types=1);
  * http://symfony.com/doc/master/console.html
  */
 
-namespace Attlaz\Core\Command;
+namespace Attlaz\Core\App\Command;
 
+use Attlaz\Core\App\Command\BaseCommand;
 use OldSound\RabbitMqBundle\Command\RpcServerCommand;
 use OldSound\RabbitMqBundle\RabbitMq\RpcServer;
 use PhpAmqpLib\Connection\AMQPStreamConnection;

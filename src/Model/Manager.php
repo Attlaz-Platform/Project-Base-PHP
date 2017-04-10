@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Core\Model;
 
+use Attlaz\Core\Command\DeserializeTaskResult;
+use Attlaz\Core\Command\SerializeTask;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -16,10 +18,10 @@ class Manager
     private $corr_id;
 
     /**
-     * @param string $message
-     * @return string
+     * @param Task $task
+     * @return TaskResult
      */
-    public function execute(string $message)
+    public function execute(Task $task): TaskResult
     {
         $connection = new AMQPStreamConnection('rabbit', 5672, 'guest', 'guest');
         $channel = $connection->channel();
@@ -28,7 +30,7 @@ class Manager
          * creates an anonymous exclusive callback queue
          * $callback_queue has a value like amq.gen-_U0kJVm8helFzQk9P0z9gg
          */
-        list($callback_queue, ,) = $channel->queue_declare("", false, false, true, false);
+        list($callback_queue, ,) = $channel->queue_declare('', false, false, true, false);
 
         $channel->basic_consume($callback_queue, '', false, false, false, false, [
             $this,
@@ -41,14 +43,16 @@ class Manager
          * $this->corr_id has a value like 53e26b393313a
          */
         $this->corr_id = uniqid();
-        $jsonCredentials = json_encode($message);
+
+        $cmd = new SerializeTask();
+        $jsonTask = $cmd->__invoke($task);
 
         /*
          * create a message with two properties: reply_to, which is set to the
          * callback queue and correlation_id, which is set to a unique value for
          * every request
          */
-        $msg = new AMQPMessage($jsonCredentials, [
+        $msg = new AMQPMessage($jsonTask, [
             'correlation_id' => $this->corr_id,
             'reply_to'       => $callback_queue,
         ]);
@@ -78,7 +82,13 @@ class Manager
     public function onResponse(AMQPMessage $rep)
     {
         if ($rep->get('correlation_id') == $this->corr_id) {
-            $this->response = $rep->body;
+
+
+            $serializedTaskResult = $rep->body;
+            $cmd = new DeserializeTaskResult();
+            $taskResult = $cmd->__invoke($serializedTaskResult);
+
+            $this->response = $taskResult;
         }
     }
 }
