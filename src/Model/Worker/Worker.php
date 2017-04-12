@@ -43,19 +43,19 @@ class Worker
     {
 
 
-        $connection = new AMQPStreamConnection($this->settings->queue_host, $this->settings->queue_port, $this->settings->queue_user, $this->settings->queue_password);
+        $connection = new AMQPStreamConnection($this->settings->queue_job_host, $this->settings->queue_job_port, $this->settings->queue_job_user, $this->settings->queue_job_password);
         $this->channel = $connection->channel();
 
-        $this->channel->queue_declare($this->settings->queue_queue, false, true, false, false);
+        $this->channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
 
         $this->channel->basic_qos(null, 1, null);
 
-        $this->consumer_tag = $this->channel->basic_consume($this->settings->queue_queue, $this->name, false, false, false, false, [
+        $this->consumer_tag = $this->channel->basic_consume($this->settings->queue_job_name, $this->name, false, false, false, false, [
             $this,
             'onMessageReceive',
         ]);
         $this->logger->debug('Start listening', [
-            'queue'        => $this->settings->queue_queue,
+            'queue'        => $this->settings->queue_job_name,
             'consumer_tag' => $this->consumer_tag,
         ]);
 
@@ -63,7 +63,7 @@ class Worker
             $this->channel->wait();
         }
         $this->logger->debug('Stop listening', [
-            'queue'        => $this->settings->queue_queue,
+            'queue'        => $this->settings->queue_job_name,
             'consumer_tag' => $this->consumer_tag,
         ]);
         $this->channel->close();
@@ -80,7 +80,7 @@ class Worker
 
 
         $this->logger->debug('Incoming message', [
-            'queue'        => $this->settings->queue_queue,
+            'queue'        => $this->settings->queue_job_name,
             'consumer_tag' => $this->consumer_tag,
         ]);
 
@@ -163,7 +163,7 @@ class Worker
             $taskResult = $this->executeTask($task);
         } catch (\Throwable $ex) {
             $this->logger->error('Unable to process message: ' . $ex->getMessage(), [
-                'queue'        => $this->settings->queue_queue,
+                'queue'        => $this->settings->queue_job_name,
                 'consumer_tag' => $this->consumer_tag,
             ]);
             $taskResult = $this->getErrorTaskResult($ex);

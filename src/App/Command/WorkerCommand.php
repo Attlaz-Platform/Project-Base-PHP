@@ -9,13 +9,15 @@ use Attlaz\Core\Model\Settings;
 use Attlaz\Core\Model\Worker\Worker;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class WorkerCommand extends BaseCommand
 {
-protected const ARG_WORKER_NAME = 'name';
+    protected const ARG_WORKER_NAME = 'name';
+
     protected function configure()
     {
         parent::configure();
@@ -34,31 +36,23 @@ protected const ARG_WORKER_NAME = 'name';
 
         $this->output = $output;
 
-        $settings = new Settings();
-        $settings->queue_host = 'rabbit';
-        $settings->queue_port = 5672;
-        $settings->queue_user = 'guest';
-        $settings->queue_password = 'guest';
-        $settings->queue_queue = 'task';
+        /** @var Settings $settings */
+        $settings = $this->getContainer()
+                         ->get('settings');
 
-        $logger = new Logger('Attlaz');
-        $logger->pushHandler(new StreamHandler(STDOUT));
+        /** @var LoggerInterface $logger */
+        $logger = $this->getContainer()
+                       ->get('logger');
 
         $workerName = null;
-        if($input->hasArgument(self::ARG_WORKER_NAME))
-        {
+        if ($input->hasArgument(self::ARG_WORKER_NAME)) {
             $workerName = (string)$input->getArgument(self::ARG_WORKER_NAME);
         }
 
-
-
-
         $worker = new Worker($settings, $logger);
-        if($workerName !== null)
-        {
+        if ($workerName !== null) {
             $worker->setName($workerName);
         }
-
 
         $worker->listen();
 

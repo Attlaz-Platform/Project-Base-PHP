@@ -18,6 +18,7 @@ class ExecuteTask
             case 'dummy':
 
                 $message = $task->getArguments()['input'];
+                sleep(5);
 
                 return new TaskResult($task, 'I received message "' . $message . '" and responded', true);
                 break;

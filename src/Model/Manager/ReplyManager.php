@@ -106,8 +106,8 @@ class ReplyManager extends Manager
         /*
          * The request is sent to an rpc_queue queue.
          */
-        $this->logger->debug('Send message [queue: ' . $this->settings->queue_queue . ']');
+        $this->logger->debug('Send message [queue: ' . $this->settings->queue_job_name . ']');
 
-        $this->channel->basic_publish($msg, '', $this->settings->queue_queue);
+        $this->channel->basic_publish($msg, '', $this->settings->queue_job_name);
     }
 }

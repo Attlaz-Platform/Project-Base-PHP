@@ -6,11 +6,7 @@ namespace Attlaz\Core\App\Command;
 use Attlaz\Core\Model\Settings;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -58,30 +54,10 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     protected function initChannel(Settings $settings)
     {
 
-        $this->connection = new AMQPStreamConnection($settings->queue_host, $settings->queue_port, $settings->queue_user, $settings->queue_password);
+        $this->connection = new AMQPStreamConnection($settings->queue_job_host, $settings->queue_job_port, $settings->queue_job_user, $settings->queue_job_password);
         $this->channel = $this->connection->channel();
-        $this->channel->queue_declare($settings->queue_queue, false, false, false, false);
+        $this->channel->queue_declare($settings->queue_job_name, false, true, false, false);
 
-//        $this->connection = new AMQPStreamConnection('rabbit', '5672', 'guest', 'guest', '/');
-//        $this->channel = $this->connection->channel();
-//
-//        /*
-//            name: $queue
-//            passive: false
-//            durable: true // the queue will survive server restarts
-//            exclusive: false // the queue can be accessed in other channels
-//            auto_delete: false //the queue won't be deleted once the channel is closed.
-//        */
-//        $this->channel->queue_declare($this->queue, false, true, false, false);
-//        /*
-//    name: $exchange
-//    type: direct
-//    passive: false
-//    durable: true // the exchange will survive server restarts
-//    auto_delete: false //the exchange won't be deleted once the channel is closed.
-//*/
-//        $this->channel->exchange_declare($this->exchange, 'direct', false, true, false);
-//        $this->channel->queue_bind($this->queue, $this->exchange);
 
     }
 
