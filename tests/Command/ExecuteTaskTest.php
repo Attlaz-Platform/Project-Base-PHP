@@ -30,5 +30,7 @@ class ExecuteTaskTest extends TestCase
         $this->assertTrue($result->getSuccess());
         $this->assertEquals('Pong [Hello world!]', $result->getData());
     }
+    //TODO: test optional argument
+    //TODO: test non existing argument
 
 }
