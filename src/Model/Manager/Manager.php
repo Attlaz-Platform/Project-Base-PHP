@@ -27,9 +27,9 @@ abstract class Manager
 
     protected function initChannel()
     {
-        $this->connection = new AMQPStreamConnection($this->settings->queue_host, $this->settings->queue_port, $this->settings->queue_user, $this->settings->queue_password);
+        $this->connection = new AMQPStreamConnection($this->settings->queue_job_host, $this->settings->queue_job_port, $this->settings->queue_job_user, $this->settings->queue_job_password);
         $this->channel = $this->connection->channel();
-        $this->channel->queue_declare($this->settings->queue_queue, false, true, false, false);
+        $this->channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
     }
 
     protected function closeChannel()

@@ -11,6 +11,7 @@ use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,21 +33,17 @@ class ManagerCommand extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /** @var Settings $settings */
+        $settings = $this->getContainer()
+                         ->get('settings');
 
+        /** @var LoggerInterface $logger */
+        $logger = $this->getContainer()
+                       ->get('logger');
 
         $this->output = $output;
 
         $messageText = (string)$input->getArgument('message');
-
-        $settings = new Settings();
-        $settings->queue_host = 'rabbit';
-        $settings->queue_port = 5672;
-        $settings->queue_user = 'guest';
-        $settings->queue_password = 'guest';
-        $settings->queue_queue = 'task';
-
-        $logger = new Logger('Attlaz');
-        $logger->pushHandler(new StreamHandler(STDOUT));
 
         //Send task and expect result
         $manager = new ReplyManager($settings, $logger);
