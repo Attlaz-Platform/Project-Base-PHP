@@ -15,6 +15,28 @@ class ExecuteTask
         if ($logger) {
             $logger->debug('Execute task: ' . $task->getMethod());
         }
+
+        try {
+            $result = $this->executeTask($task, $logger);
+        } catch (\Throwable $ex) {
+            if ($logger) {
+                $logger->error('Unable to complete task: ' . $ex->getMessage());
+            }
+            $result = new TaskResult($task, $ex->getMessage(), false);
+        }
+
+        return $result;
+
+    }
+
+    /**
+     * @param Task $task
+     * @param LoggerInterface $logger
+     * @return TaskResult
+     * @throws \Exception
+     */
+    private function executeTask(Task $task, LoggerInterface $logger): TaskResult
+    {
         switch ($task->getMethod()) {
             case 'dummy':
 
@@ -45,10 +67,12 @@ class ExecuteTask
                 return $res;
 
                 break;
+            case 'error':
+                throw new \Exception('Unable to execute task');
+                break;
             default:
                 return new TaskResult($task, 'Unknown task method "' . $task->getMethod() . '"', false);
 
         }
-
     }
 }
