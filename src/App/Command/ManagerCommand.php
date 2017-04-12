@@ -9,8 +9,6 @@ use Attlaz\Core\Model\Manager\ReplyManager;
 use Attlaz\Core\Model\Settings;
 use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
