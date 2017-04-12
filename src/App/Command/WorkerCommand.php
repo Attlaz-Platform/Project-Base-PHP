@@ -3,12 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Core\App\Command;
 
-use Attlaz\Core\App\Command\BaseCommand;
-use Attlaz\Core\Model\Manager\ReplyManager;
 use Attlaz\Core\Model\Settings;
 use Attlaz\Core\Model\Worker\Worker;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
