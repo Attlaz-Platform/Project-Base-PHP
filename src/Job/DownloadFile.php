@@ -1,16 +1,11 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: stijn
- * Date: 15 Aug 17
- * Time: 00:29
- */
 
-namespace Attlaz\Core\Command\Job;
+namespace Attlaz\Core\Job;
 
+use Attlaz\Core\Model\JobCommand;
 use GuzzleHttp\Client;
 
-class DownloadFile
+class DownloadFile extends JobCommand
 {
     public function __invoke(string $url): string
     {

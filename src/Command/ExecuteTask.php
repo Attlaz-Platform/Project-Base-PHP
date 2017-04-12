@@ -3,13 +3,23 @@ declare(strict_types=1);
 
 namespace Attlaz\Core\Command;
 
-use Attlaz\Core\Command\Job\DownloadFile;
+use Attlaz\Core\Job\DownloadFile;
+use Attlaz\Core\Job\Log;
+use Attlaz\Core\Job\Ping;
 use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
 use Psr\Log\LoggerInterface;
 
 class ExecuteTask
 {
+
+    private const INVOKE_METHOD = '__invoke';
+    private $jobs = [
+        'download_file' => DownloadFile::class,
+        'log'           => Log::class,
+        'ping'          => Ping::class,
+    ];
+
     public function __invoke(Task $task, LoggerInterface $logger = null): TaskResult
     {
         if ($logger) {
@@ -17,7 +27,7 @@ class ExecuteTask
         }
 
         try {
-            $result = $this->executeTask($task, $logger);
+            $result = $this->executeTask($task);
         } catch (\Throwable $ex) {
             if ($logger) {
                 $logger->error('Unable to complete task: ' . $ex->getMessage());
@@ -31,48 +41,38 @@ class ExecuteTask
 
     /**
      * @param Task $task
-     * @param LoggerInterface $logger
      * @return TaskResult
      * @throws \Exception
      */
-    private function executeTask(Task $task, LoggerInterface $logger): TaskResult
+    private function executeTask(Task $task): TaskResult
     {
-        switch ($task->getMethod()) {
-            case 'dummy':
-
-                $message = $task->getArguments()['input'];
-                sleep(5);
-
-                return new TaskResult($task, 'I received message "' . $message . '" and responded', true);
-                break;
-            case 'log':
-                if ($logger) {
-                    $message = $task->getArguments()['input'];
-
-                    echo json_encode($message, JSON_PRETTY_PRINT);
-                    //$logger->debug('Log: ' . $message);
-                }
-
-                return new TaskResult($task, '', true);
-                break;
-            case 'download':
-
-                $url = $task->getArguments()['url'];
-
-                $cmd = new DownloadFile();
-                $content = $cmd->__invoke($url);
-
-                $res = new TaskResult($task, $content, true);
-
-                return $res;
-
-                break;
-            case 'error':
-                throw new \Exception('Unable to execute task');
-                break;
-            default:
-                return new TaskResult($task, 'Unknown task method "' . $task->getMethod() . '"', false);
+        $method = $task->getMethod();
+        if (!isset($this->jobs[$method])) {
+            throw new \Exception('Unknown method "' . $task->getMethod() . '"');
 
         }
+        $jobClass = $this->jobs[$method];
+
+        //Get arguments
+
+        $m = new \ReflectionMethod($jobClass, self::INVOKE_METHOD);
+
+        $parameterValues = [];
+        $parameters = $m->getParameters();
+        foreach ($parameters as $parameter) {
+            $parameterName = $parameter->getName();
+            if (!$task->hasArgument($parameterName)) {
+                throw new \Exception('Missing parameter "' . $parameterName . '"');
+            }
+            $parameterValues[] = $task->getArgument($parameterName);
+        }
+
+        $jobClassInstance = new $jobClass;
+        $result = call_user_func_array([
+            $jobClassInstance,
+            self::INVOKE_METHOD,
+        ], $parameterValues);
+
+        return new TaskResult($task, $result, true);
     }
 }
