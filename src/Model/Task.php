@@ -24,6 +24,16 @@ class Task implements \JsonSerializable
         return $this->arguments;
     }
 
+    public function hasArgument(string $name): bool
+    {
+        return isset($this->arguments[$name]);
+    }
+
+    public function getArgument(string $name)
+    {
+        return $this->arguments[$name];
+    }
+
     function jsonSerialize()
     {
         return [
