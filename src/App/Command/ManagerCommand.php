@@ -45,10 +45,13 @@ class ManagerCommand extends BaseCommand
 
         //Send task and expect result
         $manager = new ReplyManager($settings, $logger);
-        $task = new Task('dummy', ['input' => $messageText]);
+//        $task = new Task('dummy', ['input' => $messageText]);
+        $task = new Task('download', ['url' => 'http://ipv4.download.thinkbroadband.com/10MB.zip']);
 
         $send = DateTimeHelper::getNow();
         $result = $manager->execute($task);
+
+        file_put_contents('10MB.zip', base64_decode($result->getData()));
 
         $received = DateTimeHelper::getNow();
         $debug = $this->debug($result, $send, $received);

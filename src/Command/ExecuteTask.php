@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Core\Command;
 
+use Attlaz\Core\Command\Job\DownloadFile;
 use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
 use Psr\Log\LoggerInterface;
@@ -31,6 +32,18 @@ class ExecuteTask
                 }
 
                 return new TaskResult($task, '', true);
+                break;
+            case 'download':
+
+                $url = $task->getArguments()['url'];
+
+                $cmd = new DownloadFile();
+                $content = $cmd->__invoke($url);
+
+                $res = new TaskResult($task, $content, true);
+
+                return $res;
+
                 break;
             default:
                 return new TaskResult($task, 'Unknown task method "' . $task->getMethod() . '"', false);
