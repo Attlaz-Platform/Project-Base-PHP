@@ -1,0 +1,53 @@
+<?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: stijn
+ * Date: 22 Aug 17
+ * Time: 00:55
+ */
+
+namespace Attlaz\Core\Model\Manager;
+
+use Attlaz\Core\Model\Task;
+use Attlaz\Core\Model\TaskResult;
+use GuzzleHttp\Client;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Request;
+
+class RemoteManager
+{
+
+    public function execute(Task $task): TaskResult
+    {
+
+        $request = $this->createRequest($task);
+        $client = new Client(['timeout' => 10]);
+
+        $result = $client->send($request);
+
+        return $result;
+    }
+
+    public function executeAsync(Task $task): PromiseInterface
+    {
+        $request = $this->createRequest($task);
+        $client = new Client(['timeout' => 10]);
+
+        $result = $client->sendAsync($request);
+
+        return $result;
+    }
+
+    private function createRequest(Task $task): Request
+    {
+        $uri = 'http://localhost:8000/job/' . $task->getMethod() . '/execute';
+        $headers = [];
+
+        $body = [];
+        $body['parameters'] = $task->getArguments();
+        $body = json_encode($body);
+        $request = new Request('POST', $uri, $headers, $body);
+
+        return $request;
+    }
+}

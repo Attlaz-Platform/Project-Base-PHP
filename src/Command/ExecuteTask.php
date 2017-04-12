@@ -4,8 +4,11 @@ declare(strict_types=1);
 namespace Attlaz\Core\Command;
 
 use Attlaz\Core\Job\DownloadFile;
+use Attlaz\Core\Job\Example;
 use Attlaz\Core\Job\Log;
 use Attlaz\Core\Job\Ping;
+use Attlaz\Core\Job\Wait;
+use Attlaz\Core\Job\Wait2;
 use Attlaz\Core\Model\Task;
 use Attlaz\Core\Model\TaskResult;
 use Psr\Log\LoggerInterface;
@@ -18,6 +21,9 @@ class ExecuteTask
         'download_file' => DownloadFile::class,
         'log'           => Log::class,
         'ping'          => Ping::class,
+        'example'       => Example::class,
+        'wait'          => Wait::class,
+        'wait2'         => Wait2::class,
     ];
 
     public function __invoke(Task $task, LoggerInterface $logger = null): TaskResult
@@ -81,6 +87,7 @@ class ExecuteTask
      */
     private function getArgumentValue(Task $task, \ReflectionParameter $parameter)
     {
+        //TODO: validate argument data types
         $parameterName = $parameter->getName();
 
         if (!$task->hasArgument($parameterName) && !$parameter->isOptional()) {
