@@ -13,15 +13,18 @@ class Settings
     public $queue_job_user;
     public $queue_job_password;
 
-    public function parseFromFile(string $file)
+    public static function fromFile(string $file): Settings
     {
         $config = Yaml::parse(file_get_contents($file));
 
-        $this->queue_job_name = $config['queue']['job']['name'];
-        $this->queue_job_host = $config['queue']['job']['host'];
-        $this->queue_job_port = $config['queue']['job']['port'];
-        $this->queue_job_user = $config['queue']['job']['user'];
-        $this->queue_job_password = $config['queue']['job']['password'];
+        $settings = new Settings();
+        $settings->queue_job_name = $config['queue']['job']['name'];
+        $settings->queue_job_host = $config['queue']['job']['host'];
+        $settings->queue_job_port = $config['queue']['job']['port'];
+        $settings->queue_job_user = $config['queue']['job']['user'];
+        $settings->queue_job_password = $config['queue']['job']['password'];
+
+        return $settings;
 
     }
 

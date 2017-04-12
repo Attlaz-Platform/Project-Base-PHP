@@ -41,8 +41,7 @@ class App
 
     private function init(): void
     {
-        $this->settings = new Settings();
-        $this->settings->parseFromFile(__DIR__ . '/../env/config.yml');
+        $this->settings = Settings::fromFile(__DIR__ . '/../env/config.yml');
 
         $this->containerBuilder = new ContainerBuilder();
 
