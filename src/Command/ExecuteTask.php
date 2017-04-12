@@ -46,26 +46,9 @@ class ExecuteTask
      */
     private function executeTask(Task $task): TaskResult
     {
-        $method = $task->getMethod();
-        if (!isset($this->jobs[$method])) {
-            throw new \Exception('Unknown method "' . $task->getMethod() . '"');
+        $jobClass = $this->getJobClass($task);
 
-        }
-        $jobClass = $this->jobs[$method];
-
-        //Get arguments
-
-        $m = new \ReflectionMethod($jobClass, self::INVOKE_METHOD);
-
-        $parameterValues = [];
-        $parameters = $m->getParameters();
-        foreach ($parameters as $parameter) {
-            $parameterName = $parameter->getName();
-            if (!$task->hasArgument($parameterName)) {
-                throw new \Exception('Missing parameter "' . $parameterName . '"');
-            }
-            $parameterValues[] = $task->getArgument($parameterName);
-        }
+        $parameterValues = $this->getMethodArguments($task, $jobClass);
 
         $jobClassInstance = new $jobClass;
         $result = call_user_func_array([
@@ -74,5 +57,60 @@ class ExecuteTask
         ], $parameterValues);
 
         return new TaskResult($task, $result, true);
+    }
+
+    private function getMethodArguments(Task $task, $jobClass): array
+    {
+        $m = new \ReflectionMethod($jobClass, self::INVOKE_METHOD);
+
+        $parameterValues = [];
+        $parameters = $m->getParameters();
+        foreach ($parameters as $parameter) {
+
+            $parameterValues[] = $this->getArgumentValue($task, $parameter);;
+        }
+
+        return $parameterValues;
+    }
+
+    /**
+     * @param Task $task
+     * @param \ReflectionParameter $parameter
+     * @return mixed
+     * @throws \Exception
+     */
+    private function getArgumentValue(Task $task, \ReflectionParameter $parameter)
+    {
+        $parameterName = $parameter->getName();
+
+        if (!$task->hasArgument($parameterName) && !$parameter->isOptional()) {
+            throw new \Exception('Missing parameter "' . $parameterName . '"');
+        }
+
+        if (!$task->hasArgument($parameterName) && $parameter->isOptional()) {
+            $parameterValue = $parameter->getDefaultValue();
+
+        } else {
+            $parameterValue = $task->getArgument($parameterName);
+        }
+
+        return $parameterValue;
+    }
+
+    /**
+     * @param Task $task
+     * @return string
+     * @throws \Exception
+     */
+    private function getJobClass(Task $task): string
+    {
+        $method = $task->getMethod();
+        if (!isset($this->jobs[$method])) {
+            throw new \Exception('Unknown method "' . $task->getMethod() . '"');
+
+        }
+        $jobClass = $this->jobs[$method];
+
+        return $jobClass;
     }
 }
