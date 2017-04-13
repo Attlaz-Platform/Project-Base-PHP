@@ -7,11 +7,9 @@ use Attlaz\Framework\App\Command\ManagerCommand;
 use Attlaz\Framework\App\Command\SysInfoCommand;
 use Attlaz\Framework\App\Command\WorkerCommand;
 use Attlaz\Queue\Model\Settings;
-use Monolog\Handler\SlackbotHandler;
-use Monolog\Handler\SlackHandler;
 use Monolog\Handler\SlackWebhookHandler;
 use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+
 use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -55,6 +53,7 @@ class App
         $this->containerBuilder->set('settings', $this->settings);
 
         $logger = new Logger('Attlaz');
+        $logger->addGlobalContext('host', gethostname());
 
         $logger->pushHandler(new StreamHandler(STDOUT));
 
