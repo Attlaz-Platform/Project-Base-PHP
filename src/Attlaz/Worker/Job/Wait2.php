@@ -1,9 +1,9 @@
 <?php
 
-namespace Attlaz\Core\Job;
+namespace Attlaz\Worker\Job;
 
-use Attlaz\Core\Helper\DateTimeHelper;
-use Attlaz\Core\Model\JobCommand;
+use Attlaz\Framework\Helper\DateTimeHelper;
+use Attlaz\Worker\Model\JobCommand;
 
 class Wait2 extends JobCommand
 {

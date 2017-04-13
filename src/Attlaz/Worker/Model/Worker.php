@@ -50,11 +50,11 @@ class Worker
 
             $this->queue->connect();
 
-            $channel = $this->queue->getChannel();
+            $this->channel = $this->queue->getChannel();
 
-            $channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
+            $this->channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
 
-            $channel->basic_qos(null, 1, null);
+            $this->channel->basic_qos(null, 1, null);
 
             $this->consumer_tag = $this->channel->basic_consume($this->settings->queue_job_name, $this->name, false, false, false, false, [
                 $this,
@@ -65,7 +65,9 @@ class Worker
                 'consumer_tag' => $this->consumer_tag,
             ]);
 
+            $i = 0;
             while (count($this->channel->callbacks)) {
+                echo $i . PHP_EOL;
                 $this->channel->wait();
             }
             $this->logger->debug('Stop listening', [
