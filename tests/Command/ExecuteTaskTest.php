@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Command;
 
-use Attlaz\Core\Command\ExecuteTask;
-use Attlaz\Core\Model\Task;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Worker\Controller\ExecuteTask;
 use PHPUnit\Framework\TestCase;
 
 class ExecuteTaskTest extends TestCase

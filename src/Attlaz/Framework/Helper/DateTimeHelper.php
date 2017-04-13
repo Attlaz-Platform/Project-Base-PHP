@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Helper;
+namespace Attlaz\Framework\Helper;
 
 class DateTimeHelper
 {

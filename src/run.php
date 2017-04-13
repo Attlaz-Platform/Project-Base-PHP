@@ -3,5 +3,5 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$app = new \Attlaz\Core\App\App();
+$app = new \Attlaz\Framework\App\App();
 $app->run();

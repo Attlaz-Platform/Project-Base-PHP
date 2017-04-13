@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Command;
+namespace Attlaz\Framework\Serialization;
 
-use Attlaz\Core\Helper\DateTimeHelper;
-use Attlaz\Core\Model\TaskResult;
+use Attlaz\Framework\Helper\DateTimeHelper;
+use Attlaz\Framework\Model\TaskResult;
 
 class DeserializeTaskResult
 {

@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Model\Worker;
+namespace Attlaz\Worker\Model;
 
-use Attlaz\Core\Command\DeserializeTaskFromString;
-use Attlaz\Core\Command\ExecuteTask;
-use Attlaz\Core\Command\SerializeTaskResult;
-use Attlaz\Core\Helper\DateTimeHelper;
-use Attlaz\Core\Model\Settings;
-use Attlaz\Core\Model\Task;
-use Attlaz\Core\Model\TaskResult;
+use Attlaz\Framework\Helper\DateTimeHelper;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Framework\Serialization\DeserializeTaskFromString;
+use Attlaz\Framework\Serialization\SerializeTaskResult;
+use Attlaz\Queue\Model\Settings;
+use Attlaz\Worker\Controller\ExecuteTask;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -110,7 +110,7 @@ class Worker
 
     private function decodeBodyToTask(string $body): Task
     {
-        return (new DeserializeTaskFromString)($body);
+        return (new DeserializeTaskFromString())($body);
     }
 
     private function executeTask(Task $task): TaskResult

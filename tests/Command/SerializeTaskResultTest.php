@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace Command;
 
-use Attlaz\Core\Command\DeserializeTaskResult;
-use Attlaz\Core\Job\DownloadFile;
-use Attlaz\Core\Command\SerializeTaskResult;
-use Attlaz\Core\Model\Task;
-use Attlaz\Core\Model\TaskResult;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Framework\Serialization\DeserializeTaskResult;
+use Attlaz\Framework\Serialization\SerializeTaskResult;
 use PHPUnit\Framework\TestCase;
 
 class SerializeTaskResultTest extends TestCase

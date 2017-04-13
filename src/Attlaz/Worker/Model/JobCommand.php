@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Model;
+namespace Attlaz\Worker\Model;
 
 use Attlaz\Core\Model\Manager\RemoteManager;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskResult;
 use GuzzleHttp\Promise\PromiseInterface;
 use React\Promise\Promise;
 

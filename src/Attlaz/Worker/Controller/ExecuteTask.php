@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Command;
+namespace Attlaz\Worker\Controller;
 
 use Attlaz\Core\Job\DownloadFile;
 use Attlaz\Core\Job\Example;
@@ -9,8 +9,8 @@ use Attlaz\Core\Job\Log;
 use Attlaz\Core\Job\Ping;
 use Attlaz\Core\Job\Wait;
 use Attlaz\Core\Job\Wait2;
-use Attlaz\Core\Model\Task;
-use Attlaz\Core\Model\TaskResult;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskResult;
 use Psr\Log\LoggerInterface;
 
 class ExecuteTask

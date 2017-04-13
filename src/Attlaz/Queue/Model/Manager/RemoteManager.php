@@ -1,15 +1,9 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: stijn
- * Date: 22 Aug 17
- * Time: 00:55
- */
 
-namespace Attlaz\Core\Model\Manager;
+namespace Attlaz\Queue\Model\Manager;
 
-use Attlaz\Core\Model\Task;
-use Attlaz\Core\Model\TaskResult;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskResult;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
