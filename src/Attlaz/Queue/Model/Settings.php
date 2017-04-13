@@ -28,4 +28,19 @@ class Settings
 
     }
 
+    public static function fromEnv(): Settings
+    {
+
+
+        $settings = new Settings();
+        $settings->queue_job_name = getenv('queue_job_name');
+        $settings->queue_job_host = getenv('queue_job_host');
+        $settings->queue_job_port = getenv('queue_job_port');
+        $settings->queue_job_user = getenv('queue_job_user');
+        $settings->queue_job_password = getenv('queue_job_password');
+
+        return $settings;
+
+    }
+
 }
