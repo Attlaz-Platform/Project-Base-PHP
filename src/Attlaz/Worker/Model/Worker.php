@@ -60,14 +60,13 @@ class Worker
                 $this,
                 'onMessageReceive',
             ]);
+
             $this->logger->debug('Start listening', [
                 'queue'        => $this->settings->queue_job_name,
                 'consumer_tag' => $this->consumer_tag,
             ]);
 
-            $i = 0;
             while (count($this->channel->callbacks)) {
-                echo $i . PHP_EOL;
                 $this->channel->wait();
             }
             $this->logger->debug('Stop listening', [

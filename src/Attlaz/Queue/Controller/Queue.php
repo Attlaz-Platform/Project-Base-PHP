@@ -81,7 +81,7 @@ class Queue
 
             return $connection;
         } catch (\Exception $ex) {
-            throw new UnableToConnectToQueueException('Unable to connect to queue', 0, $ex);
+            throw new UnableToConnectToQueueException('Unable to connect to queue (' . $this->settings->queue_job_host . ':' . $this->settings->queue_job_port . ') ', 0, $ex);
         }
 
     }
