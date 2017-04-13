@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace Attlaz\Worker\Controller;
 
-use Attlaz\Core\Job\DownloadFile;
-use Attlaz\Core\Job\Example;
-use Attlaz\Core\Job\Log;
-use Attlaz\Core\Job\Ping;
-use Attlaz\Core\Job\Wait;
-use Attlaz\Core\Job\Wait2;
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Worker\Job\DownloadFile;
+use Attlaz\Worker\Job\Example;
+use Attlaz\Worker\Job\Log;
+use Attlaz\Worker\Job\Ping;
+use Attlaz\Worker\Job\Wait;
+use Attlaz\Worker\Job\Wait2;
 use Psr\Log\LoggerInterface;
 
 class ExecuteTask
