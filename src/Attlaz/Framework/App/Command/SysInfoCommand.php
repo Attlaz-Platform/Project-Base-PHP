@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\App\Command;
+namespace Attlaz\Framework\App\Command;
 
-use Attlaz\Core\Model\Settings;
+use Attlaz\Queue\Model\Settings;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

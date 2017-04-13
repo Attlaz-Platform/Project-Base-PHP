@@ -1,14 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\App\Command;
+namespace Attlaz\Framework\App\Command;
 
-use Attlaz\Core\Helper\DateTimeHelper;
-use Attlaz\Core\Model\Manager\NoReplyManager;
-use Attlaz\Core\Model\Manager\ReplyManager;
-use Attlaz\Core\Model\Settings;
-use Attlaz\Core\Model\Task;
-use Attlaz\Core\Model\TaskResult;
+use Attlaz\Framework\Helper\DateTimeHelper;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Queue\Model\Manager\ReplyManager;
+use Attlaz\Queue\Model\Settings;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

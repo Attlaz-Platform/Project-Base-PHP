@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Command;
+namespace Attlaz\Framework\Serialization;
 
-use Attlaz\Core\Model\Task;
+use Attlaz\Framework\Model\Task;
 
 class DeserializeTaskFromArray
 {

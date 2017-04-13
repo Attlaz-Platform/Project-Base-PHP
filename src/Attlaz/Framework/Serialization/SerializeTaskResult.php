@@ -1,11 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Command;
+namespace Attlaz\Framework\Serialization;
 
-use Attlaz\Core\Model\TaskResult;
-
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Attlaz\Framework\Model\TaskResult;
+use Symfony\Component\Serializer\Encoder\JsonEncode;
 
 class SerializeTaskResult
 {
@@ -13,7 +12,7 @@ class SerializeTaskResult
     {
 
 
-        $jsonEncoder = new JsonEncoder();
+        $jsonEncoder = new JsonEncode();
 
         $serialized = $jsonEncoder->encode($taskResult, 'json');
 

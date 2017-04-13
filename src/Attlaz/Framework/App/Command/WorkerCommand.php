@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\App\Command;
+namespace Attlaz\Framework\App\Command;
 
-use Attlaz\Core\Model\Settings;
-use Attlaz\Core\Model\Worker\Worker;
+
+use Attlaz\Queue\Model\Settings;
+use Attlaz\Worker\Model\Worker;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\App;
+namespace Attlaz\Framework\App;
 
-use Attlaz\Core\App\Command\ManagerCommand;
-use Attlaz\Core\App\Command\SysInfoCommand;
-use Attlaz\Core\App\Command\WorkerCommand;
-use Attlaz\Core\Model\Settings;
+use Attlaz\Framework\App\Command\ManagerCommand;
+use Attlaz\Framework\App\Command\SysInfoCommand;
+use Attlaz\Framework\App\Command\WorkerCommand;
+use Attlaz\Queue\Model\Settings;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Console\Application;
@@ -41,7 +41,7 @@ class App
 
     private function init(): void
     {
-        $this->settings = Settings::fromFile(__DIR__ . '/../env/config.yml');
+        $this->settings = Settings::fromFile(__DIR__ . '/../../../env/config.yml');
 
         $this->containerBuilder = new ContainerBuilder();
 

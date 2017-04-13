@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Core\Model\Manager;
+namespace Attlaz\Queue\Model\Manager;
 
-use Attlaz\Core\Command\SerializeTask;
-use Attlaz\Core\Model\Task;
+
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Serialization\SerializeTask;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class NoReplyManager extends Manager
