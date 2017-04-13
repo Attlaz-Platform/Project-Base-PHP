@@ -8,6 +8,7 @@ use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
 use Attlaz\Framework\Serialization\DeserializeTaskFromString;
 use Attlaz\Framework\Serialization\SerializeTaskResult;
+use Attlaz\Queue\Controller\Queue;
 use Attlaz\Queue\Model\Settings;
 use Attlaz\Worker\Controller\ExecuteTask;
 use PhpAmqpLib\Channel\AMQPChannel;
@@ -25,6 +26,9 @@ class Worker
     private $consumer_tag;
     private $name = '';
 
+    /** @var  Queue */
+    private $queue;
+
     public function __construct(Settings $settings, LoggerInterface $logger)
     {
         $this->settings = $settings;
@@ -41,33 +45,39 @@ class Worker
      */
     public function listen(): void
     {
+        try {
+            $this->queue = new Queue($this->settings, $this->logger);
 
+            $this->queue->connect();
 
-        $connection = new AMQPStreamConnection($this->settings->queue_job_host, $this->settings->queue_job_port, $this->settings->queue_job_user, $this->settings->queue_job_password);
-        $this->channel = $connection->channel();
+            $channel = $this->queue->getChannel();
 
-        $this->channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
+            $channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
 
-        $this->channel->basic_qos(null, 1, null);
+            $channel->basic_qos(null, 1, null);
 
-        $this->consumer_tag = $this->channel->basic_consume($this->settings->queue_job_name, $this->name, false, false, false, false, [
-            $this,
-            'onMessageReceive',
-        ]);
-        $this->logger->debug('Start listening', [
-            'queue'        => $this->settings->queue_job_name,
-            'consumer_tag' => $this->consumer_tag,
-        ]);
+            $this->consumer_tag = $this->channel->basic_consume($this->settings->queue_job_name, $this->name, false, false, false, false, [
+                $this,
+                'onMessageReceive',
+            ]);
+            $this->logger->debug('Start listening', [
+                'queue'        => $this->settings->queue_job_name,
+                'consumer_tag' => $this->consumer_tag,
+            ]);
 
-        while (count($this->channel->callbacks)) {
-            $this->channel->wait();
+            while (count($this->channel->callbacks)) {
+                $this->channel->wait();
+            }
+            $this->logger->debug('Stop listening', [
+                'queue'        => $this->settings->queue_job_name,
+                'consumer_tag' => $this->consumer_tag,
+            ]);
+
+            $this->queue->disconnect();
+        } catch (\Exception $ex) {
+            $this->logger->emergency($ex->getMessage());
         }
-        $this->logger->debug('Stop listening', [
-            'queue'        => $this->settings->queue_job_name,
-            'consumer_tag' => $this->consumer_tag,
-        ]);
-        $this->channel->close();
-        $connection->close();
+
     }
 
     /**
