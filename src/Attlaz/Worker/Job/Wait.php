@@ -1,9 +1,8 @@
 <?php
 
-namespace Attlaz\Core\Job;
+namespace Attlaz\Worker\Job;
 
-use Attlaz\Core\Model\JobCommand;
-use Monolog\Logger;
+use Attlaz\Worker\Model\JobCommand;
 
 class Wait extends JobCommand
 {

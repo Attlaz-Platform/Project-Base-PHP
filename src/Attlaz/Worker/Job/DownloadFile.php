@@ -1,8 +1,8 @@
 <?php
 
-namespace Attlaz\Core\Job;
+namespace Attlaz\Worker\Job;
 
-use Attlaz\Core\Model\JobCommand;
+use Attlaz\Worker\Model\JobCommand;
 use GuzzleHttp\Client;
 
 class DownloadFile extends JobCommand

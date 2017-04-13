@@ -1,9 +1,9 @@
 <?php
 
-namespace Attlaz\Core\Job;
+namespace Attlaz\Worker\Job;
 
-use Attlaz\Core\Model\JobCommand;
-use Attlaz\Core\Model\Task;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Worker\Model\JobCommand;
 
 class Example extends JobCommand
 {
