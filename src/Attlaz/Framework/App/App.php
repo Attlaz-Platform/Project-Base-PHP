@@ -7,6 +7,9 @@ use Attlaz\Framework\App\Command\ManagerCommand;
 use Attlaz\Framework\App\Command\SysInfoCommand;
 use Attlaz\Framework\App\Command\WorkerCommand;
 use Attlaz\Queue\Model\Settings;
+use Monolog\Handler\SlackbotHandler;
+use Monolog\Handler\SlackHandler;
+use Monolog\Handler\SlackWebhookHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Console\Application;
@@ -20,6 +23,8 @@ class App
 
     public function run(): void
     {
+
+
         $this->init();
 
         $this->application = new Application();
@@ -36,19 +41,25 @@ class App
         $cmd->setContainer($this->containerBuilder);
         $this->application->add($cmd);
 
+        $this->application->setDefaultCommand($cmd->getName());
         $this->application->run();
     }
 
     private function init(): void
     {
-        $this->settings = Settings::fromFile(__DIR__ . '/../../../env/config.yml');
+
 
         $this->containerBuilder = new ContainerBuilder();
 
+        $this->settings = Settings::fromFile(__DIR__ . '/../../../env/config.yml');
         $this->containerBuilder->set('settings', $this->settings);
 
         $logger = new Logger('Attlaz');
+
         $logger->pushHandler(new StreamHandler(STDOUT));
+
+        $userName = 'Attlaz @ ' . gethostname();
+        $logger->pushHandler(new SlackWebhookHandler('https://hooks.slack.com/services/REDACTED', '#attlaz-log', $userName, true, null, true, true, Logger::DEBUG));
 
         $this->containerBuilder->set('logger', $logger);
     }

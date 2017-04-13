@@ -51,6 +51,8 @@ class WorkerCommand extends BaseCommand
             $worker->setName($workerName);
         }
 
+
+
         $worker->listen();
 
     }
