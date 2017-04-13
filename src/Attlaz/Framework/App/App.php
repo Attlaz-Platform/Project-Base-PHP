@@ -51,7 +51,7 @@ class App
 
         $this->containerBuilder = new ContainerBuilder();
 
-        $this->settings = Settings::fromFile(__DIR__ . '/../../../env/config.yml');
+        $this->settings = Settings::fromEnv();
         $this->containerBuilder->set('settings', $this->settings);
 
         $logger = new Logger('Attlaz');
