@@ -20,9 +20,11 @@ class ManagerCommand extends BaseCommand
     {
         parent::configure();
         $this->setName('manager:start')
-             ->addArgument('message', InputArgument::REQUIRED)
-             ->setDescription('Send message to queue')
-             ->setHelp('This command allows you send a message to queue');
+             ->addArgument('task',
+
+                 InputArgument::REQUIRED)
+             ->setDescription('Put command to queue')
+             ->setHelp('This command allows you put a command to queue');
     }
 
     /** @var  OutputInterface */
@@ -40,21 +42,46 @@ class ManagerCommand extends BaseCommand
 
         $this->output = $output;
 
-        $messageText = (string)$input->getArgument('message');
+        $command = (string)$input->getArgument('task');
+        switch ($command) {
+            case 'ping':
+                $manager = new ReplyManager($settings, $logger);
+                $task = new Task('ping', ['input' => 'Hello world']);
+                $send = DateTimeHelper::getNow();
+                $result = $manager->execute($task);
+                $received = DateTimeHelper::getNow();
+                $debug = $this->debug($result, $send, $received);
+
+                break;
+            case 'quit':
+                $manager = new ReplyManager($settings, $logger);
+                $task = new Task('quit');
+                $manager->execute($task);
+
+                break;
+//            case 'example':
+//                $manager = new ReplyManager($settings, $logger);
+//                $task = new Task('example');
+//                $manager->execute($task);
+//
+//                break;
+        }
 
         //Send task and expect result
-        $manager = new ReplyManager($settings, $logger);
-//        $task = new Task('dummy', ['input' => $messageText]);
-        $task = new Task('download', ['url' => 'http://ipv4.download.thinkbroadband.com/10MB.zip']);
-
-        $send = DateTimeHelper::getNow();
-        $result = $manager->execute($task);
-
-        file_put_contents('10MB.zip', base64_decode($result->getData()));
-
-        $received = DateTimeHelper::getNow();
-        $debug = $this->debug($result, $send, $received);
-        $this->output->writeln(json_encode($debug, JSON_PRETTY_PRINT));
+//        $manager = new ReplyManager($settings, $logger);
+//        $task = new Task('ping', ['input' => $messageText]);
+////        $task = new Task('download', ['url' => 'http://ipv4.download.thinkbroadband.com/10MB.zip']);
+////
+////        $send = DateTimeHelper::getNow();
+//        $result = $manager->execute($task);
+//
+//        echo $result->getData() . PHP_EOL;
+//
+//        file_put_contents('10MB.zip', base64_decode($result->getData()));
+//
+//        $received = DateTimeHelper::getNow();
+//        $debug = $this->debug($result, $send, $received);
+//        $this->output->writeln(json_encode($debug, JSON_PRETTY_PRINT));
 
 //        //Send task without result
 //        $manager = new NoReplyManager($settings, $logger);
