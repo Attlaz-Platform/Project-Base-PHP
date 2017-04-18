@@ -5,7 +5,7 @@ namespace Attlaz\Worker\Model;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Queue\Model\Manager\RemoteManager;
+use Attlaz\Queue\Model\Manager\ApiManager;
 use GuzzleHttp\Promise\PromiseInterface;
 
 class JobCommand
@@ -14,7 +14,7 @@ class JobCommand
 
     public function __construct()
     {
-        $this->manager = new RemoteManager();
+        $this->manager = new ApiManager();
     }
 
     protected final function execute(Task $task): TaskResult

@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Queue\Model\Manager;
+namespace Attlaz\Manager;
 
-use Attlaz\Queue\Controller\Queue;
 use Attlaz\Queue\Model\Settings;
+use Attlaz\Queue\Queue;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use Psr\Log\LoggerInterface;

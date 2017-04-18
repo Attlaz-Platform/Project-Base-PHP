@@ -1,8 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Queue\Model\Manager;
-
+namespace Attlaz\Manager;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Serialization\SerializeTask;

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Queue\Model\Manager;
+namespace Attlaz\Manager;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
@@ -22,7 +22,6 @@ class ReplyManager extends Manager
      */
     public function execute(Task $task): TaskResult
     {
-
 
 
         $this->initChannel();
