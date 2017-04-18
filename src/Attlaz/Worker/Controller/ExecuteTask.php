@@ -5,9 +5,12 @@ namespace Attlaz\Worker\Controller;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Queue\Model\Settings;
 use Attlaz\Worker\Job\DownloadFile;
+use Attlaz\Worker\Job\DownloadFiles;
 use Attlaz\Worker\Job\Example;
 use Attlaz\Worker\Job\Log;
+use Attlaz\Worker\Job\Loop;
 use Attlaz\Worker\Job\Ping;
 use Attlaz\Worker\Job\Wait;
 use Attlaz\Worker\Job\Wait2;
@@ -18,26 +21,38 @@ class ExecuteTask
 
     private const INVOKE_METHOD = '__invoke';
     private $jobs = [
-        'download_file' => DownloadFile::class,
-        'log'           => Log::class,
-        'ping'          => Ping::class,
-        'example'       => Example::class,
-        'wait'          => Wait::class,
-        'wait2'         => Wait2::class,
+        'download_file'  => DownloadFile::class,
+        'log'            => Log::class,
+        'ping'           => Ping::class,
+        'example'        => Example::class,
+        'wait'           => Wait::class,
+        'wait2'          => Wait2::class,
+        'download_files' => DownloadFiles::class,
+        'loop'           => Loop::class,
     ];
+    /** @var  LoggerInterface */
+    private $logger;
+    /** @var  Settings */
+    private $settings;
 
-    public function __invoke(Task $task, LoggerInterface $logger = null): TaskResult
+    public function __construct(Settings $settings, LoggerInterface $logger)
     {
-        if ($logger) {
-            $logger->debug('Execute task: ' . $task->getMethod());
-        }
+        $this->settings = $settings;
+        $this->logger = $logger;
+    }
+
+    public function __invoke(Task $task): TaskResult
+    {
+
+
+        $this->logger->info('Execute task: ' . $task->getMethod() . ' (' . \json_encode($task->getArguments()) . ')');
 
         try {
             $result = $this->executeTask($task);
         } catch (\Throwable $ex) {
-            if ($logger) {
-                $logger->error('Unable to complete task: ' . $ex->getMessage());
-            }
+
+            $this->logger->error('Unable to complete task: ' . $ex->getMessage());
+
             $result = new TaskResult($task, $ex->getMessage(), false);
         }
 
@@ -56,7 +71,7 @@ class ExecuteTask
 
         $parameterValues = $this->getMethodArguments($task, $jobClass);
 
-        $jobClassInstance = new $jobClass;
+        $jobClassInstance = new $jobClass($this->settings, $this->logger);
         $result = call_user_func_array([
             $jobClassInstance,
             self::INVOKE_METHOD,
@@ -65,7 +80,7 @@ class ExecuteTask
         return new TaskResult($task, $result, true);
     }
 
-    private function getMethodArguments(Task $task, $jobClass): array
+    private function getMethodArguments(Task $task, string $jobClass): array
     {
         $m = new \ReflectionMethod($jobClass, self::INVOKE_METHOD);
 
@@ -104,11 +119,6 @@ class ExecuteTask
         return $parameterValue;
     }
 
-    /**
-     * @param Task $task
-     * @return string
-     * @throws \Exception
-     */
     private function getJobClass(Task $task): string
     {
         $method = $task->getMethod();
