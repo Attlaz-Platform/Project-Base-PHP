@@ -12,7 +12,7 @@ use Attlaz\Framework\Serialization\SerializeTaskResult;
 
 use Attlaz\Framework\Model\Settings;
 use Attlaz\Queue\Queue;
-use Attlaz\Worker\Controller\ExecuteTask;
+use Attlaz\Worker\Helper\ExecuteTaskHelper;
 use Attlaz\Worker\Helper\NameHelper;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -130,7 +130,7 @@ class Worker
     private function executeTask(Task $task): TaskResult
     {
 
-        $cmd = new ExecuteTask($this->logger);
+        $cmd = new ExecuteTaskHelper($this->logger);
 
         $taskResult = $cmd->__invoke($task);
 

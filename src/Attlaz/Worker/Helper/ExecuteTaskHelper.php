@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Worker\Controller;
+namespace Attlaz\Worker\Helper;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
@@ -15,7 +15,7 @@ use Attlaz\Worker\Job\Wait;
 use Attlaz\Worker\Job\Wait2;
 use Psr\Log\LoggerInterface;
 
-class ExecuteTask
+class ExecuteTaskHelper
 {
 
     private const INVOKE_METHOD = '__invoke';
