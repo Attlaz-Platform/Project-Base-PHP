@@ -139,7 +139,8 @@ class Worker
          * Creating a reply message with the same correlation id than the incoming message
          */
         $correlationId = $originalMessage->get('correlation_id');
-        $client = $originalMessage->get('reply_to');
+        $replyQueueName = (string)$originalMessage->get('reply_to');
+
         /** @var AMQPChannel $channel */
         $channel = $originalMessage->delivery_info['channel'];
 
@@ -152,13 +153,10 @@ class Worker
          * Publishing to the same channel from the incoming message
          */
 
-        $channel->basic_publish($msg, '', $client);
+        $this->queue->publishMessage($msg, $replyQueueName);
+//        $channel->basic_publish($msg, '', $client);
     }
 
-    /**
-     * @param $messageBody
-     * @return TaskResult
-     */
     private function handleMessage(string $messageBody): TaskResult
     {
         $received = DateTimeHelper::getNow();
@@ -166,6 +164,7 @@ class Worker
             $task = $this->decodeBodyToTask($messageBody);
             if ($task->getMethod() === 'quit') {
                 $this->cancel();
+                throw new \Exception('Worker stopped');
             }
 
             $taskResult = $this->executeTask($task);
@@ -185,7 +184,6 @@ class Worker
 
     private function cancel()
     {
-
         $this->channel->basic_cancel($this->consumer_tag);
 
     }

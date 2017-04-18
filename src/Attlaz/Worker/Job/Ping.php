@@ -12,7 +12,7 @@ class Ping extends JobCommand
         return [
             'hostname' => gethostname(),
             'ip'       => gethostbyname(gethostname()),
-            'test',
+            'input'    => $input,
         ];
     }
 }
