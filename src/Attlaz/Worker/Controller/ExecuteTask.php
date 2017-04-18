@@ -5,7 +5,7 @@ namespace Attlaz\Worker\Controller;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Queue\Model\Settings;
+use Attlaz\Framework\Model\Settings;
 use Attlaz\Worker\Job\DownloadFile;
 use Attlaz\Worker\Job\DownloadFiles;
 use Attlaz\Worker\Job\Example;

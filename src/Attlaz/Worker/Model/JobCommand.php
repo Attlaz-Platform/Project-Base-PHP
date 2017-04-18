@@ -10,7 +10,7 @@ use Attlaz\Framework\Serialization\DeserializeTaskResult;
 use Attlaz\Framework\Serialization\SerializeTask;
 use Attlaz\Manager\Manager;
 
-use Attlaz\Queue\Model\Settings;
+use Attlaz\Framework\Model\Settings;
 use GuzzleHttp\Psr7\Request;
 
 class JobCommand

@@ -3,7 +3,7 @@
 namespace Attlaz\Queue;
 
 use Attlaz\Queue\Exception\UnableToConnectToQueueException;
-use Attlaz\Queue\Model\Settings;
+use Attlaz\Framework\Model\Settings;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;

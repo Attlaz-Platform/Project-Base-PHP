@@ -4,12 +4,16 @@ declare(strict_types=1);
 namespace Attlaz\Worker\Job;
 
 use Attlaz\Worker\Model\JobCommand;
-use Monolog\Logger;
 
-class Log extends JobCommand
+class Loop extends JobCommand
 {
-    public function __invoke(string $message, int $logLevel = Logger::DEBUG): void
+    public function __invoke(int $times = 1): void
     {
-        echo 'LOG: ' . $message . ' [' . $logLevel . ']' . PHP_EOL;
+        if ($times > 0) {
+            $task = new \Attlaz\Framework\Model\Task('loop', ['times' => $times - 1]);
+
+            $this->sendTaskWithoutResult($task);
+        }
+
     }
 }

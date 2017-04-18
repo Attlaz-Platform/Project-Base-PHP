@@ -10,7 +10,7 @@ use Attlaz\Framework\Model\TaskResult;
 use Attlaz\Framework\Serialization\DeserializeTaskFromString;
 use Attlaz\Framework\Serialization\SerializeTaskResult;
 
-use Attlaz\Queue\Model\Settings;
+use Attlaz\Framework\Model\Settings;
 use Attlaz\Queue\Queue;
 use Attlaz\Worker\Controller\ExecuteTask;
 use PhpAmqpLib\Channel\AMQPChannel;
