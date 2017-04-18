@@ -12,17 +12,11 @@ class DownloadFile extends JobCommand
     {
         $client = new Client();
         $res = $client->request('GET', $url, []);
-//        echo $res->getStatusCode();
-//// "200"
-        // var_dump($res->getHeaders());
-// 'application/json; charset=utf8'
-        $body = $res->getBody();
 
-        // $body = utf8_encode($body);
+        $body = $res->getBody()
+                    ->getContents();
 
         return base64_encode($body);
-
-// {"type":"User"...'
 
 // Send an asynchronous request.
 //        $request = new \GuzzleHttp\Psr7\Request('GET', 'http://httpbin.org');
