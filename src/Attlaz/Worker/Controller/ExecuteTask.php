@@ -57,11 +57,6 @@ class ExecuteTask
 
     }
 
-    /**
-     * @param Task $task
-     * @return TaskResult
-     * @throws \Exception
-     */
     private function executeTask(Task $task): TaskResult
     {
         $jobClass = $this->getJobClass($task);
@@ -91,15 +86,9 @@ class ExecuteTask
         return $parameterValues;
     }
 
-    /**
-     * @param Task $task
-     * @param \ReflectionParameter $parameter
-     * @return mixed
-     * @throws \Exception
-     */
     private function getArgumentValue(Task $task, \ReflectionParameter $parameter)
     {
-        //TODO: validate argument data types
+
         $parameterName = $parameter->getName();
 
         if (!$task->hasArgument($parameterName) && !$parameter->isOptional()) {
@@ -113,7 +102,27 @@ class ExecuteTask
             $parameterValue = $task->getArgument($parameterName);
         }
 
+        if ($parameter->hasType()) {
+            $this->validateParameterValueType($parameterValue, $parameter->getType());
+        }
+
         return $parameterValue;
+    }
+
+    private function validateParameterValueType($value, \ReflectionType $type): void
+    {
+
+
+        $type = $type->getName();
+        switch ($type) {
+            case 'int':
+                if (!\is_int($value)) {
+                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
+                }
+                break;
+            default:
+                $this->logger->warning('Unknown parameter type "' . $type . '"');
+        }
     }
 
     private function getJobClass(Task $task): string
