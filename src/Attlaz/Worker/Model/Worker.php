@@ -12,7 +12,6 @@ use Attlaz\Queue\Controller\Queue;
 use Attlaz\Queue\Model\Settings;
 use Attlaz\Worker\Controller\ExecuteTask;
 use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
 
@@ -51,8 +50,6 @@ class Worker
             $this->queue->connect();
 
             $this->channel = $this->queue->getChannel();
-
-            $this->channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
 
             $this->channel->basic_qos(null, 1, null);
 

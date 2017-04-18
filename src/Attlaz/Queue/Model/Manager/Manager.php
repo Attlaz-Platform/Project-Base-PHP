@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Queue\Model\Manager;
 
-
+use Attlaz\Queue\Controller\Queue;
 use Attlaz\Queue\Model\Settings;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -20,22 +20,24 @@ abstract class Manager
     /** @var  AMQPStreamConnection */
     protected $connection;
 
+    private $queueConnection;
+
     public function __construct(Settings $settings, LoggerInterface $logger)
     {
         $this->settings = $settings;
         $this->logger = $logger;
+
+        $this->queueConnection = new Queue($settings, $logger);
     }
 
     protected function initChannel()
     {
-        $this->connection = new AMQPStreamConnection($this->settings->queue_job_host, $this->settings->queue_job_port, $this->settings->queue_job_user, $this->settings->queue_job_password);
-        $this->channel = $this->connection->channel();
-        $this->channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
+        $this->queueConnection->connect();
+        $this->channel = $this->queueConnection->getChannel();
     }
 
     protected function closeChannel()
     {
-        $this->channel->close();
-        $this->connection->close();
+        $this->queueConnection->disconnect();
     }
 }

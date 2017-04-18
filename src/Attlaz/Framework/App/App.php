@@ -7,6 +7,7 @@ use Attlaz\Framework\App\Command\ManagerCommand;
 use Attlaz\Framework\App\Command\SysInfoCommand;
 use Attlaz\Framework\App\Command\WorkerCommand;
 use Attlaz\Queue\Model\Settings;
+use Monolog\Handler\NullHandler;
 use Monolog\Handler\SlackWebhookHandler;
 use Monolog\Handler\StreamHandler;
 
@@ -54,6 +55,7 @@ class App
 
         $logger = new Logger('Attlaz');
         $logger->addGlobalContext('host', gethostname());
+        // $logger->pushHandler(new NullHandler());
 
         $logger->pushHandler(new StreamHandler(STDOUT));
 
