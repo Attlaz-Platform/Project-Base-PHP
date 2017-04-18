@@ -1,42 +1,66 @@
-version: '2'
+version: '3'
 
 services:
-  app:
-    container_name: attlaz_app
-    restart: unless-stopped
-    build: .
+#  web:
+#    image: richarvey/nginx-php-fpm
+#    env_file:
+#            - attlaz.env
 #    ports:
-#      - "8000:8888"
+#      - "80:80"
+#    networks:
+#          - frontend
+#    volumes:
+#          - ./web:/var/www/html
+  api:
+    image: attlaz/api:0.0.1
+    build: ./api
+    env_file:
+        - attlaz.env
+    networks:
+          - frontend
+          - backend
+    ports:
+          - "80:80"
     volumes:
-      - .:/var/www/app
-    links:
-      - rabbit
-#  db:
-#        container_name: magento2devbox_db_c28709db73f8348f74c51759d5c7ae59
-#        restart: always
-#        image: mysql:5.6
-#        ports:
-#          - "3306"
-#        environment:
-#          - MYSQL_ROOT_PASSWORD=root
-#          - MYSQL_DATABASE=magento2
-#        volumes:
-#          - "./shared/db:/var/lib/mysql"
-#          - "./shared/var/logs/mysql:/var/log/mysql"
-  rabbit:
-    container_name: attlaz_queue
-#      container_name: magento2devbox_rabbit_c28709db73f8348f74c51759d5c7ae59
-    restart: unless-stopped
+          - ./api:/var/www/html
+          - ./src:/var/www/src
+    depends_on:
+            - queue
+
+  queue:
     image: rabbitmq:3-management
+    env_file:
+            - attlaz.env
     ports:
       - "32769:15672"
-      - "5672"
+      - "5672:5672"
+    networks:
+          - backend
+    deploy:
+          replicas: 1
+          update_config:
+            parallelism: 2
+            delay: 10s
 
-#  elasticsearch:
-#        container_name: magento2devbox_elastic_c28709db73f8348f74c51759d5c7ae59
-#        restart: always
-#        image: elasticsearch:2
-#        ports:
-#          - "9200"
-
-
+  worker:
+      image: attlaz/worker:0.0.1
+      build: ./worker
+      env_file:
+              - attlaz.env
+      networks:
+                - backend
+      deploy:
+                replicas: 1
+                update_config:
+                  parallelism: 2
+                  delay: 10s
+      volumes:
+          - ./worker:/var/attlaz
+          - ./src:/var/src
+      depends_on:
+        - queue
+networks:
+  frontend:
+    internal: false
+  backend:
+    internal: false
