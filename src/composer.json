@@ -15,7 +15,8 @@
     "symfony/serializer": "^3.3",
     "react/promise": "^2.5",
     "react/event-loop": "^0.4.3",
-    "guzzlehttp/guzzle": "^6.3"
+    "guzzlehttp/guzzle": "^6.3",
+    "echron/tools": "dev-develop"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.3"

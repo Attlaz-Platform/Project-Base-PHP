@@ -4,63 +4,59 @@ Base Attlaz Application
 
 ## Getting Started
 
-
-
 ### Prerequisites
 
 Install docker and docker-compose
 
-### Installing
+Build images
+docker build --no-cache -t attlaz/worker:0.0.1 .
+
+## Non Swarm Mode (Debug)
 
 Start docker containers
 
 ```
-docker-compose up -build -d
+docker-compose up --build --d
 ```
 
-And repeat
 
+Start Queue (run as admin)
 ```
-until finished
+docker-compose up queue
 ```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Run unit tests inside docker container:
-
+(admin panel is available at localhost:32769)
+Start API
 ```
-docker-compose exec app /var/www/app/vendor/bin/phpunit -c /var/www/app/phpunit.xml
+docker-compose up api
 ```
 
+Start one worker
 ```
-docker-compose exec app php /var/www/app/src/run.php worker:start
-```
-
-```
-docker-compose exec app php /var/www/app/src/run.php manager:start <message>
+docker-compose run worker php /var/attlaz/worker/run.php
 ```
 
-### Break down into end to end tests
-
-Explain what these tests test and why
+Kill environment
 
 ```
-Give an example
+docker-compose kill
 ```
 
-### And coding style tests
 
-Explain what these tests test and why
 
+## Swarm mode
+Start swarm
 ```
-Give an example
+docker swarm init
+docker stack deploy --compose-file=docker-compose.yml ATTLAZ
 ```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
+Scaling workers
+```
+docker service scale ATTLAZ_worker=10 --detach=false
+```
+Stop swarm
+```
+docker swarm leave --force
+```
 
 ## Built With
 
