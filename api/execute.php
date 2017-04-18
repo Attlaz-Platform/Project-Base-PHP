@@ -13,7 +13,7 @@ $cmd = new \Attlaz\Framework\Serialization\DeserializeTaskFromString();
 
 $task = $cmd->__invoke($request);
 
-$settings = new \Attlaz\Queue\Model\Settings();
+$settings = new \Attlaz\Framework\Model\Settings();
 $settings->queue_job_host = 'queue';
 $settings->queue_job_name = 'task';
 $settings->queue_job_port = 5672;
@@ -36,6 +36,12 @@ $manager = new \Attlaz\Manager\Manager($settings, $logger);
 //    return;
 //}
 $send = \Attlaz\Framework\Helper\DateTimeHelper::getNow();
+
+if (false) {
+    $manager->sendTaskWithoutResult($task);
+
+    return;
+}
 $response = $manager->sendTaskWithResult($task);
 
 $cmd = new \Attlaz\Framework\Serialization\SerializeTaskResult();

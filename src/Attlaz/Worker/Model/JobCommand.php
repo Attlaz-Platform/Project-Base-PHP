@@ -80,10 +80,6 @@ class JobCommand
                 yield $client->sendAsync($request)
                              ->then(function (\Psr\Http\Message\ResponseInterface $response) use ($task) {
 
-
-//                                 echo 'Response: ' . $response->getBody()
-//                                                              ->getContents();
-
                                  $strTaskResult = $response->getBody()
                                                            ->getContents();
 
@@ -98,24 +94,11 @@ class JobCommand
             }
         })();
 
+        //https://blog.madewithlove.be/post/concurrent-http-requests/
         $each = new \GuzzleHttp\Promise\EachPromise($promises, [
-            'concurrency' => 4,
+            'concurrency' => 100,
             'fulfilled'   => function (array $response) use (&$results) {
-
-                //echo 'Fulfilled response: ' . $response['result'] . \PHP_EOL;
-//        if ($response instanceof GuzzleHttp\Psr7\Response) {
-//
-//        }
-//
-//        echo get_class($response) . PHP_EOL;
-//        echo $response->getBody()
-//                      ->getContents();
-//        $profile = json_decode($response->getBody()
-//                                        ->getContents(), true);
-
                 $results[] = $response['result'];
-                //  echo 'Finished' . PHP_EOL;
-                // Do something with the profile.
             },
         ]);
 

@@ -52,12 +52,14 @@ services:
 #      networks:
 #                - private
       deploy:
-                replicas: 1
+                replicas: 10
                 update_config:
                   parallelism: 2
                   delay: 10s
       volumes:
           - .:/var/attlaz
+      command:
+        - "/var/attlaz/worker/run.php"
 #           - ./worker:/var/attlaz
 #                    - ./src:/var/src
 #      depends_on:
