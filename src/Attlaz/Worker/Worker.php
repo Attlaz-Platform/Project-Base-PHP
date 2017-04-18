@@ -113,7 +113,7 @@ class Worker
 
     private function getErrorTaskResult(\Throwable $error): TaskResult
     {
-        return new TaskResult(null, 'Unable to execute task: ' . $error->getMessage(), false);
+        return new TaskResult(new Task('unknown'), 'Unable to execute task: ' . $error->getMessage(), false);
     }
 
     private function decodeBodyToTask(string $body): Task
@@ -124,9 +124,9 @@ class Worker
     private function executeTask(Task $task): TaskResult
     {
 
-        $cmd = new ExecuteTask();
+        $cmd = new ExecuteTask($this->settings, $this->logger);
 
-        $taskResult = $cmd->__invoke($task, $this->logger);
+        $taskResult = $cmd->__invoke($task);
 
         return $taskResult;
 
@@ -164,10 +164,12 @@ class Worker
             $task = $this->decodeBodyToTask($messageBody);
             if ($task->getMethod() === 'quit') {
                 $this->cancel();
-                throw new \Exception('Worker stopped');
+
+                $taskResult = new TaskResult($task, '', true);
+            } else {
+                $taskResult = $this->executeTask($task);
             }
 
-            $taskResult = $this->executeTask($task);
         } catch (\Throwable $ex) {
             $this->logger->error('Unable to process message: ' . $ex->getMessage(), [
                 'queue'        => $this->settings->queue_job_name,

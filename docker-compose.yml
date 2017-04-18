@@ -1,66 +1,70 @@
 version: '3'
 
+#volumes:
+#  cache:
+#    driver: "local"
+#  logs:
+#    driver: "local"
+#
+
+
+
 services:
-#  web:
-#    image: richarvey/nginx-php-fpm
-#    env_file:
-#            - attlaz.env
-#    ports:
-#      - "80:80"
-#    networks:
-#          - frontend
-#    volumes:
-#          - ./web:/var/www/html
   api:
     image: attlaz/api:0.0.1
     build: ./api
     env_file:
         - attlaz.env
-    networks:
-          - frontend
-          - backend
+#    networks:
+#          - public
+#          - private
     ports:
           - "80:80"
     volumes:
           - ./api:/var/www/html
           - ./src:/var/www/src
-    depends_on:
-            - queue
+#    depends_on:
+#            - queue
 
   queue:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.6.12-management
+    hostname: queue
     env_file:
-            - attlaz.env
+      - attlaz.env
     ports:
       - "32769:15672"
       - "5672:5672"
-    networks:
-          - backend
+#    networks:
+#      - private
     deploy:
-          replicas: 1
-          update_config:
-            parallelism: 2
-            delay: 10s
+        replicas: 1
+        update_config:
+          parallelism: 2
+          delay: 10s
 
   worker:
-      image: attlaz/worker:0.0.1
-      build: ./worker
+  #php /var/attlaz/worker/run.php
+#      image: attlaz/worker:0.0.1
+      image: php7.2-devbox:20171016_2029
+    #  build: ./worker
       env_file:
               - attlaz.env
-      networks:
-                - backend
+#      networks:
+#                - private
       deploy:
                 replicas: 1
                 update_config:
                   parallelism: 2
                   delay: 10s
       volumes:
-          - ./worker:/var/attlaz
-          - ./src:/var/src
-      depends_on:
-        - queue
-networks:
-  frontend:
-    internal: false
-  backend:
-    internal: false
+          - .:/var/attlaz
+#           - ./worker:/var/attlaz
+#                    - ./src:/var/src
+#      depends_on:
+#        - queue
+
+#networks:
+#  public:
+#    driver: "bridge"
+#  private:
+#    driver: "bridge"
