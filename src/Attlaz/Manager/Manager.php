@@ -3,41 +3,58 @@ declare(strict_types=1);
 
 namespace Attlaz\Manager;
 
+use Attlaz\Framework\App\Logger;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Manager\Handler\NoReplyHandler;
+use Attlaz\Manager\Handler\ReplyHandler;
 use Attlaz\Queue\Model\Settings;
 use Attlaz\Queue\Queue;
-use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
-use Psr\Log\LoggerInterface;
 
-abstract class Manager
+class Manager
 {
+
+    private $replyHandler;
+    private $noReplyHandler;
+
     /** @var Settings */
     protected $settings;
-    /** @var LoggerInterface */
+    /** @var Logger */
     protected $logger;
-    /** @var  AMQPChannel */
-    protected $channel;
-    /** @var  AMQPStreamConnection */
-    protected $connection;
 
     private $queueConnection;
 
-    public function __construct(Settings $settings, LoggerInterface $logger)
+    public function __construct(Settings $settings, Logger $logger)
     {
         $this->settings = $settings;
         $this->logger = $logger;
 
         $this->queueConnection = new Queue($settings, $logger);
+
+        $this->replyHandler = new ReplyHandler($logger);
+        $this->noReplyHandler = new NoReplyHandler($logger);
+
     }
 
-    protected function initChannel()
+    public function sendTaskWithoutResult(Task $task): void
     {
         $this->queueConnection->connect();
-        $this->channel = $this->queueConnection->getChannel();
+
+        $this->noReplyHandler->setQueue($this->queueConnection);
+        $this->noReplyHandler->execute($task);
+
+        $this->queueConnection->disconnect();
     }
 
-    protected function closeChannel()
+    public function sendTaskWithResult(Task $task): TaskResult
     {
+        $this->queueConnection->connect();
+
+        $this->replyHandler->setQueue($this->queueConnection);
+        $response = $this->replyHandler->execute($task);
+
         $this->queueConnection->disconnect();
+
+        return $response;
     }
 }

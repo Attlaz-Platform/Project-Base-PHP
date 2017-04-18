@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Manager;
+namespace Attlaz\Manager\Handler;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
@@ -9,7 +9,7 @@ use Attlaz\Framework\Serialization\DeserializeTaskResult;
 use Attlaz\Framework\Serialization\SerializeTask;
 use PhpAmqpLib\Message\AMQPMessage;
 
-class ReplyManager extends Manager
+class ReplyHandler extends Handler
 {
 
     private $response;
@@ -24,10 +24,6 @@ class ReplyManager extends Manager
     {
 
 
-        $this->initChannel();
-
-        //var_dump($this->channel);
-
         $callback_queue = $this->listenToPrivateResponseQueue();
 
         $this->response = null;
@@ -41,10 +37,9 @@ class ReplyManager extends Manager
 
         while (!$this->response) {
             //TODO: set timeout
-            $this->channel->wait();
+            $this->queue->getChannel()
+                        ->wait();
         }
-
-        $this->closeChannel();
 
         return $this->response;
     }
@@ -56,7 +51,7 @@ class ReplyManager extends Manager
      *
      * @param AMQPMessage $rep
      */
-    public function onResponse(AMQPMessage $rep)
+    public function onResponse(AMQPMessage $rep): void
     {
         $this->logger->debug('Incoming response');
         if ($rep->get('correlation_id') == $this->correlation_id) {
@@ -76,12 +71,14 @@ class ReplyManager extends Manager
      */
     private function listenToPrivateResponseQueue()
     {
-        list($callback_queue, ,) = $this->channel->queue_declare('', false, false, true, false);
+        list($callback_queue, ,) = $this->queue->getChannel()
+                                               ->queue_declare('', false, false, true, false);
 
-        $this->channel->basic_consume($callback_queue, '', false, false, false, false, [
-            $this,
-            'onResponse',
-        ]);
+        $this->queue->getChannel()
+                    ->basic_consume($callback_queue, '', false, false, false, false, [
+                        $this,
+                        'onResponse',
+                    ]);
 
         return $callback_queue;
     }
@@ -109,8 +106,9 @@ class ReplyManager extends Manager
         /*
          * The request is sent to an rpc_queue queue.
          */
-        $this->logger->debug('Send message [queue: ' . $this->settings->queue_job_name . ']');
+//        $this->logger->debug('Send message [queue: ' . $this->settings->queue_job_name . ']');
 
-        $this->channel->basic_publish($msg, '', $this->settings->queue_job_name);
+        $this->queue->publishMessage($msg, 'task');
+//        $this->channel->basic_publish($msg, '', $this->settings->queue_job_name);
     }
 }

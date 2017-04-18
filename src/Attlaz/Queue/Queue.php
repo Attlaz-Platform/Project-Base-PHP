@@ -2,10 +2,11 @@
 
 namespace Attlaz\Queue;
 
-use Attlaz\Queue\Model\Exception\UnableToConnectToQueueException;
+use Attlaz\Queue\Exception\UnableToConnectToQueueException;
 use Attlaz\Queue\Model\Settings;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
 
 class Queue
@@ -79,5 +80,11 @@ class Queue
             throw new UnableToConnectToQueueException('Unable to connect to queue (' . $this->settings->queue_job_host . ':' . $this->settings->queue_job_port . ') ', 0, $ex);
         }
 
+    }
+
+    public function publishMessage(AMQPMessage $message, string $queueName)
+    {
+        $this->logger->debug('Send message to queue', ['queue' => $queueName]);
+        $this->channel->basic_publish($message, '', $queueName);
     }
 }
