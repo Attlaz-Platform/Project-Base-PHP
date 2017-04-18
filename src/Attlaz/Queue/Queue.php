@@ -1,6 +1,6 @@
 <?php
 
-namespace Attlaz\Queue\Controller;
+namespace Attlaz\Queue;
 
 use Attlaz\Queue\Model\Exception\UnableToConnectToQueueException;
 use Attlaz\Queue\Model\Settings;
@@ -31,7 +31,7 @@ class Queue
         $retryAfterSeconds = 5;
 
         $retries = 0;
-        $maxRetries = PHP_INT_MAX;
+        $maxRetries = 3;
         while ($tryConnecting) {
             $retries++;
             $tryConnecting = false;

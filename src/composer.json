@@ -10,6 +10,7 @@
     "symfony/dependency-injection": "^3.3",
     "php-amqplib/php-amqplib": "^2.6",
     "monolog/monolog": "^1.23",
+    "bramus/monolog-colored-line-formatter": "~2.0",
     "symfony/yaml": "^3.3",
     "symfony/serializer": "^3.3",
     "react/promise": "^2.5",

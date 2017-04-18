@@ -2,7 +2,9 @@
 
 namespace Attlaz\Framework\App;
 
-class Logger extends \Monolog\Logger
+use Psr\Log\LoggerInterface;
+
+class Logger extends \Monolog\Logger implements LoggerInterface
 {
     private $globalContext = [];
 

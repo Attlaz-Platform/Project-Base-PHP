@@ -1,23 +1,25 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Worker\Model;
+namespace Attlaz\Worker;
 
+use Attlaz\Framework\App\Logger;
 use Attlaz\Framework\Helper\DateTimeHelper;
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
 use Attlaz\Framework\Serialization\DeserializeTaskFromString;
 use Attlaz\Framework\Serialization\SerializeTaskResult;
-use Attlaz\Queue\Controller\Queue;
+
 use Attlaz\Queue\Model\Settings;
+use Attlaz\Queue\Queue;
 use Attlaz\Worker\Controller\ExecuteTask;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
-use Psr\Log\LoggerInterface;
 
 class Worker
 {
     private $settings;
+    /** @var Logger */
     private $logger;
     /** @var  AMQPChannel */
     private $channel;
@@ -28,7 +30,7 @@ class Worker
     /** @var  Queue */
     private $queue;
 
-    public function __construct(Settings $settings, LoggerInterface $logger)
+    public function __construct(Settings $settings, Logger $logger)
     {
         $this->settings = $settings;
         $this->logger = $logger;
@@ -58,18 +60,16 @@ class Worker
                 'onMessageReceive',
             ]);
 
-            $this->logger->debug('Start listening', [
-                'queue'        => $this->settings->queue_job_name,
-                'consumer_tag' => $this->consumer_tag,
-            ]);
+            $this->logger->addGlobalContext('queue', $this->settings->queue_job_name);
+            $this->logger->addGlobalContext('consumer_tag', $this->consumer_tag);
+            $this->logger->addGlobalContext('ip', gethostbyname(gethostname()));
+
+            $this->logger->debug('Start listening');
 
             while (count($this->channel->callbacks)) {
                 $this->channel->wait();
             }
-            $this->logger->debug('Stop listening', [
-                'queue'        => $this->settings->queue_job_name,
-                'consumer_tag' => $this->consumer_tag,
-            ]);
+            $this->logger->debug('Stop listening');
 
             $this->queue->disconnect();
         } catch (\Exception $ex) {
