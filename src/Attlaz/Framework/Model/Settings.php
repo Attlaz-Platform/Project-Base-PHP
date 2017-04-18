@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Queue\Model;
+namespace Attlaz\Framework\Model;
 
 use Symfony\Component\Yaml\Yaml;
 

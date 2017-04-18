@@ -8,7 +8,7 @@ use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
 use Attlaz\Manager\Handler\NoReplyHandler;
 use Attlaz\Manager\Handler\ReplyHandler;
-use Attlaz\Queue\Model\Settings;
+use Attlaz\Framework\Model\Settings;
 use Attlaz\Queue\Queue;
 
 class Manager
