@@ -3,33 +3,44 @@ declare(strict_types=1);
 
 namespace Attlaz\Worker\Model;
 
-use Attlaz\Framework\App\Logger;
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
 use Attlaz\Framework\Serialization\DeserializeTaskResult;
 use Attlaz\Framework\Serialization\SerializeTask;
-use Attlaz\Manager\Manager;
-
-use Attlaz\Framework\Model\Settings;
+use GuzzleHttp\Client;
+use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\ResponseInterface;
 
 class JobCommand
 {
-    private $manager;
 
-    public function __construct(Settings $settings, Logger $logger)
+    private $client;
+
+    public function __construct()
     {
-        $this->manager = new Manager($settings, $logger);
+
+        $this->client = new Client([]);
     }
 
     protected final function sendTaskWithResult(Task $task): TaskResult
     {
-        return $this->manager->sendTaskWithResult($task);
+        $request = $this->createRequest($task);
+        /** @var ResponseInterface $response */
+        $response = $this->client->send($request, true);
+
+        $strTaskResult = $response->getBody()
+                                  ->getContents();
+        $cmd = new DeserializeTaskResult();
+        $taskResult = $cmd->__invoke($strTaskResult);
+
+        return $taskResult;
     }
 
     protected final function sendTaskWithoutResult(Task $task): void
     {
-        $this->manager->sendTaskWithoutResult($task);
+        $request = $this->createRequest($task);
+        $this->client->send($request);
     }
 //
 //    protected final function executeMultiple(array $tasks): array
@@ -70,32 +81,33 @@ class JobCommand
     {
 
         $results = [];
-        $client = new \GuzzleHttp\Client([]);
-        $promises = (function () use ($tasks, $client) {
+
+        $promises = (function () use ($tasks) {
+
 
             foreach ($tasks as $task) {
 
-                $request = $this->createRequest($task);
+                $request = $this->createRequest($task, true);
 
-                yield $client->sendAsync($request)
-                             ->then(function (\Psr\Http\Message\ResponseInterface $response) use ($task) {
+                yield $this->client->sendAsync($request)
+                                   ->then(function (ResponseInterface $response) use ($task) {
 
-                                 $strTaskResult = $response->getBody()
-                                                           ->getContents();
+                                       $strTaskResult = $response->getBody()
+                                                                 ->getContents();
 
-                                 $cmd = new DeserializeTaskResult();
-                                 $taskResult = $cmd->__invoke($strTaskResult);
+                                       $cmd = new DeserializeTaskResult();
+                                       $taskResult = $cmd->__invoke($strTaskResult);
 
-                                 return [
-                                     'task'   => $task,
-                                     'result' => $taskResult,
-                                 ];
-                             });
+                                       return [
+                                           'task'   => $task,
+                                           'result' => $taskResult,
+                                       ];
+                                   });
             }
         })();
 
         //https://blog.madewithlove.be/post/concurrent-http-requests/
-        $each = new \GuzzleHttp\Promise\EachPromise($promises, [
+        $each = new EachPromise($promises, [
             'concurrency' => 100,
             'fulfilled'   => function (array $response) use (&$results) {
                 $results[] = $response['result'];
@@ -108,9 +120,12 @@ class JobCommand
         return $results;
     }
 
-    private function createRequest(Task $task): Request
+    private function createRequest(Task $task, bool $await = false): Request
     {
         $uri = 'http://api:80/execute.php';
+        if ($await) {
+            $uri = 'http://api:80/execute.php?wait=1';
+        }
         $headers = [];
 
         $cmd = new SerializeTask();

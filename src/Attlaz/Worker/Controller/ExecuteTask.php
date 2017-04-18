@@ -5,7 +5,6 @@ namespace Attlaz\Worker\Controller;
 
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Framework\Model\Settings;
 use Attlaz\Worker\Job\DownloadFile;
 use Attlaz\Worker\Job\DownloadFiles;
 use Attlaz\Worker\Job\Example;
@@ -32,12 +31,10 @@ class ExecuteTask
     ];
     /** @var  LoggerInterface */
     private $logger;
-    /** @var  Settings */
-    private $settings;
 
-    public function __construct(Settings $settings, LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger)
     {
-        $this->settings = $settings;
+
         $this->logger = $logger;
     }
 
@@ -71,7 +68,7 @@ class ExecuteTask
 
         $parameterValues = $this->getMethodArguments($task, $jobClass);
 
-        $jobClassInstance = new $jobClass($this->settings, $this->logger);
+        $jobClassInstance = new $jobClass();
         $result = call_user_func_array([
             $jobClassInstance,
             self::INVOKE_METHOD,

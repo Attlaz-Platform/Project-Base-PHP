@@ -11,6 +11,11 @@ $request = file_get_contents("php://input");
 
 $cmd = new \Attlaz\Framework\Serialization\DeserializeTaskFromString();
 
+$await = false;
+if (isset($_GET['wait']) && $_GET['wait'] === '1') {
+    $await = true;
+}
+
 $task = $cmd->__invoke($request);
 
 $settings = new \Attlaz\Framework\Model\Settings();
@@ -30,19 +35,15 @@ $logger->addGlobalContext('app', 'api');
 
 $manager = new \Attlaz\Manager\Manager($settings, $logger);
 
-//if (false) {
-//    $manager->sendTaskWithoutResult($task);
-//
-//    return;
-//}
-$send = \Attlaz\Framework\Helper\DateTimeHelper::getNow();
+//$send = \Attlaz\Framework\Helper\DateTimeHelper::getNow();
 
-if (false) {
+if ($await) {
+    $response = $manager->sendTaskWithResult($task);
+
+    $cmd = new \Attlaz\Framework\Serialization\SerializeTaskResult();
+    echo $cmd->__invoke($response);
+} else {
     $manager->sendTaskWithoutResult($task);
 
     return;
 }
-$response = $manager->sendTaskWithResult($task);
-
-$cmd = new \Attlaz\Framework\Serialization\SerializeTaskResult();
-echo $cmd->__invoke($response);
