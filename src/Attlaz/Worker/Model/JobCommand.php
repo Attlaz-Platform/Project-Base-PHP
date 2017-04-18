@@ -7,7 +7,6 @@ use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
 use Attlaz\Queue\Model\Manager\RemoteManager;
 use GuzzleHttp\Promise\PromiseInterface;
-use React\Promise\Promise;
 
 class JobCommand
 {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Attlaz\Worker\Job;
 
@@ -8,7 +9,7 @@ use Attlaz\Worker\Model\JobCommand;
 class Example extends JobCommand
 {
 
-    public function __invoke(string $input)
+    public function __invoke()
     {
         $this->executeSubTask();
 //        $this->executeSubTaskAsync();

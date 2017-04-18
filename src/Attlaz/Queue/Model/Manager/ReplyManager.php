@@ -22,7 +22,12 @@ class ReplyManager extends Manager
      */
     public function execute(Task $task): TaskResult
     {
+
+
+
         $this->initChannel();
+
+        //var_dump($this->channel);
 
         $callback_queue = $this->listenToPrivateResponseQueue();
 

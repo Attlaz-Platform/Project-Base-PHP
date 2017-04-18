@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Attlaz\Worker\Job;
 
@@ -6,8 +7,12 @@ use Attlaz\Worker\Model\JobCommand;
 
 class Ping extends JobCommand
 {
-    public function __invoke(string $input): string
+    public function __invoke(string $input): array
     {
-        return 'Pong [' . $input . ']';
+        return [
+            'hostname' => gethostname(),
+            'ip'       => gethostbyname(gethostname()),
+            'test',
+        ];
     }
 }

@@ -4,16 +4,8 @@ namespace Attlaz\Queue\Controller;
 
 use Attlaz\Queue\Model\Exception\UnableToConnectToQueueException;
 use Attlaz\Queue\Model\Settings;
-use Attlaz\Framework\Helper\DateTimeHelper;
-use Attlaz\Framework\Model\Task;
-use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Framework\Serialization\DeserializeTaskFromString;
-use Attlaz\Framework\Serialization\SerializeTaskResult;
-
-use Attlaz\Worker\Controller\ExecuteTask;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
 
 class Queue
@@ -60,6 +52,9 @@ class Queue
         }
 
         $this->channel = $this->connection->channel();
+
+        //Open channel
+        $this->channel->queue_declare($this->settings->queue_job_name, false, true, false, false);
     }
 
     public function disconnect()
