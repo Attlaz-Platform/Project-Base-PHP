@@ -7,6 +7,7 @@ class NameHelper
 {
     public static function getRandomName(): string
     {
+        /** @noinspection SpellCheckingInspection */
         $names = [
             'Athens',
             'Thessaloniki',

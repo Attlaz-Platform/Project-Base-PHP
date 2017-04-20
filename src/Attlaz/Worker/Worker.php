@@ -147,8 +147,8 @@ class Worker
         $correlationId = $originalMessage->get('correlation_id');
         $replyQueueName = (string)$originalMessage->get('reply_to');
 
-        /** @var AMQPChannel $channel */
-        $channel = $originalMessage->delivery_info['channel'];
+//        /** @var AMQPChannel $channel */
+//        $channel = $originalMessage->delivery_info['channel'];
 
         $cmd = new SerializeTaskResult();
         $serializedTaskResult = $cmd->__invoke($taskResult);
@@ -160,7 +160,6 @@ class Worker
          */
 
         $this->queue->publishMessage($msg, $replyQueueName);
-//        $channel->basic_publish($msg, '', $client);
     }
 
     private function handleMessage(string $messageBody): TaskResult
