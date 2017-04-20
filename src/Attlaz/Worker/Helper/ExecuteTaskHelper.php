@@ -7,12 +7,10 @@ use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
 use Attlaz\Worker\Job\DownloadFile;
 use Attlaz\Worker\Job\DownloadFiles;
-use Attlaz\Worker\Job\Example;
 use Attlaz\Worker\Job\Log;
 use Attlaz\Worker\Job\Loop;
 use Attlaz\Worker\Job\Ping;
 use Attlaz\Worker\Job\Wait;
-use Attlaz\Worker\Job\Wait2;
 use Psr\Log\LoggerInterface;
 
 class ExecuteTaskHelper
@@ -23,9 +21,7 @@ class ExecuteTaskHelper
         'download_file'  => DownloadFile::class,
         'log'            => Log::class,
         'ping'           => Ping::class,
-        'example'        => Example::class,
         'wait'           => Wait::class,
-        'wait2'          => Wait2::class,
         'download_files' => DownloadFiles::class,
         'loop'           => Loop::class,
     ];
@@ -111,12 +107,25 @@ class ExecuteTaskHelper
 
     private function validateParameterValueType($value, \ReflectionType $type): void
     {
-
-
         $type = $type->getName();
         switch ($type) {
             case 'int':
                 if (!\is_int($value)) {
+                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
+                }
+                break;
+            case 'string':
+                if (!\is_string($value)) {
+                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
+                }
+                break;
+            case 'array':
+                if (!\is_array($value)) {
+                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
+                }
+                break;
+            case 'bool':
+                if (!\is_bool($value)) {
                     throw new \Exception('Invalid parameter type, "' . $type . '" expected');
                 }
                 break;
