@@ -14,6 +14,7 @@ use Attlaz\Framework\Model\Settings;
 use Attlaz\Queue\Queue;
 use Attlaz\Worker\Helper\ExecuteTaskHelper;
 use Attlaz\Worker\Helper\NameHelper;
+use Monolog\Handler\AbstractHandler;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -31,9 +32,12 @@ class Worker
     /** @var  Queue */
     private $queue;
 
-    public function __construct(Settings $settings, Logger $logger)
+    private $executeTaskHelper;
+
+    public function __construct(Settings $settings, ExecuteTaskHelper $executeTaskHelper, Logger $logger)
     {
         $this->settings = $settings;
+        $this->executeTaskHelper = $executeTaskHelper;
         $this->logger = $logger;
     }
 
@@ -93,11 +97,6 @@ class Worker
     {
 
 
-        $this->logger->debug('Incoming message', [
-            'queue'        => $this->settings->queue_job_name,
-            'consumer_tag' => $this->consumer_tag,
-        ]);
-
         $messageBody = $message->getBody();
 
         $taskResult = $this->handleMessage($messageBody);
@@ -110,6 +109,14 @@ class Worker
          * Acknowledging the message
          */
         $this->channel->basic_ack($message->delivery_info['delivery_tag']);
+
+        $handlers = $this->logger->getHandlers();
+        foreach ($handlers as $handler) {
+            if ($handler instanceof AbstractHandler) {
+                $handler->close();
+            }
+
+        }
     }
 
     private function messageExpectReply(AMQPMessage $message): bool
@@ -130,9 +137,8 @@ class Worker
     private function executeTask(Task $task): TaskResult
     {
 
-        $cmd = new ExecuteTaskHelper($this->logger);
 
-        $taskResult = $cmd->__invoke($task);
+        $taskResult = $this->executeTaskHelper->__invoke($task);
 
         return $taskResult;
 
@@ -164,6 +170,11 @@ class Worker
 
     private function handleMessage(string $messageBody): TaskResult
     {
+        $this->logger->debug('Incoming message', [
+            'body'         => $messageBody,
+            'queue'        => $this->settings->queue_job_name,
+            'consumer_tag' => $this->consumer_tag,
+        ]);
         $received = DateTimeHelper::getNow();
         try {
             $task = $this->decodeBodyToTask($messageBody);
@@ -182,6 +193,7 @@ class Worker
             ]);
             $taskResult = $this->getErrorTaskResult($ex);
         }
+
         $responded = DateTimeHelper::getNow();
         $taskResult->setReceived($received);
         $taskResult->setResponded($responded);

@@ -3,35 +3,24 @@ declare(strict_types=1);
 
 namespace Attlaz\Worker\Helper;
 
+use Attlaz\Framework\App\Project;
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Worker\Job\DownloadFile;
-use Attlaz\Worker\Job\DownloadFiles;
-use Attlaz\Worker\Job\Log;
-use Attlaz\Worker\Job\Loop;
-use Attlaz\Worker\Job\Ping;
-use Attlaz\Worker\Job\Wait;
+use Attlaz\Worker\Model\JobCommand;
 use Psr\Log\LoggerInterface;
 
 class ExecuteTaskHelper
 {
 
-    private const INVOKE_METHOD = '__invoke';
-    private $jobs = [
-        'download_file'  => DownloadFile::class,
-        'log'            => Log::class,
-        'ping'           => Ping::class,
-        'wait'           => Wait::class,
-        'download_files' => DownloadFiles::class,
-        'loop'           => Loop::class,
-    ];
     /** @var  LoggerInterface */
     private $logger;
+    private $project;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(Project $project, LoggerInterface $logger)
     {
 
         $this->logger = $logger;
+        $this->project = $project;
     }
 
     public function __invoke(Task $task): TaskResult
@@ -42,6 +31,8 @@ class ExecuteTaskHelper
 
         try {
             $result = $this->executeTask($task);
+
+            $this->logger->info('Task: ' . $task->getMethod() . ' execution complete (' . \json_encode($task->getArguments()) . ')');
         } catch (\Throwable $ex) {
 
             $this->logger->error('Unable to complete task: ' . $ex->getMessage());
@@ -55,22 +46,21 @@ class ExecuteTaskHelper
 
     private function executeTask(Task $task): TaskResult
     {
-        $jobClass = $this->getJobClass($task);
+        $jobCommand = $this->getJobClass($task);
 
-        $parameterValues = $this->getMethodArguments($task, $jobClass);
+        $parameterValues = $this->getMethodArguments($task, $jobCommand);
 
-        $jobClassInstance = new $jobClass();
         $result = call_user_func_array([
-            $jobClassInstance,
-            self::INVOKE_METHOD,
+            $jobCommand,
+            JobCommand::INVOKE_METHOD,
         ], $parameterValues);
 
         return new TaskResult($task, $result, true);
     }
 
-    private function getMethodArguments(Task $task, string $jobClass): array
+    private function getMethodArguments(Task $task, JobCommand $jobClass): array
     {
-        $m = new \ReflectionMethod($jobClass, self::INVOKE_METHOD);
+        $m = new \ReflectionMethod($jobClass, JobCommand::INVOKE_METHOD);
 
         $parameterValues = [];
         $parameters = $m->getParameters();
@@ -134,15 +124,35 @@ class ExecuteTaskHelper
         }
     }
 
-    private function getJobClass(Task $task): string
+    private function getJobClass(Task $task): JobCommand
     {
-        $method = $task->getMethod();
-        if (!isset($this->jobs[$method])) {
-            throw new \Exception('Unknown method "' . $task->getMethod() . '"');
 
+
+        $commandName = $task->getMethod();
+
+        if (!$this->project->hasCommand($commandName)) {
+            throw new \Exception('Unable to execute command "' . $commandName . '": command not found');
         }
-        $jobClass = $this->jobs[$method];
 
-        return $jobClass;
+        $commandClass = $this->project->getCommandClass($commandName);
+
+        $container = $this->project->getContainer();
+        if (!$container->has($commandClass)) {
+            throw new \Exception('Unable to execute command "' . $commandName . '": class not found');
+        }
+
+        $command = $container->get($commandClass);
+
+        if (!$command instanceof JobCommand) {
+            throw new \Exception('Unable to execute command "' . $commandName . '": must be ' . JobCommand::class);
+        }
+
+        $command->setLogger($this->logger);
+
+        if (!method_exists($command, JobCommand::INVOKE_METHOD)) {
+            throw new \Exception('Unable to execute command "' . $commandName . '": execute method does not exist');
+        }
+
+        return $command;
     }
 }

@@ -13,23 +13,30 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
-class JobCommand
+/**
+ * show off @method
+ *
+ * @method execute()
+ */
+abstract class JobCommand implements LoggerAwareInterface
 {
 
+    /** @var  Client */
     private $client;
+    /** @var  LoggerInterface */
+    protected $logger;
 
-    public function __construct()
-    {
-
-        $this->client = new Client([]);
-    }
+    const INVOKE_METHOD = 'execute';
 
     protected final function sendTaskWithResult(Task $task): TaskResult
     {
         $request = $this->createRequest($task);
         /** @var ResponseInterface $response */
-        $response = $this->client->send($request, true);
+        $response = $this->getHTTPClient()
+                         ->send($request, true);
 
         $strTaskResult = $response->getBody()
                                   ->getContents();
@@ -42,7 +49,8 @@ class JobCommand
     protected final function sendTaskWithoutResult(Task $task): void
     {
         $request = $this->createRequest($task);
-        $this->client->send($request);
+        $this->getHTTPClient()
+             ->send($request);
     }
 //
 //    protected final function executeMultiple(array $tasks): array
@@ -79,6 +87,16 @@ class JobCommand
 //        //  return $deferred->promise();
 //    }
 //
+    private function getHTTPClient(): Client
+    {
+        if (\is_null($this->client)) {
+            $this->client = new Client([]);
+        }
+
+        return $this->client;
+
+    }
+
     protected final function executeMultipleAsync(TaskCollection $tasks): TaskResultCollection
     {
 
@@ -91,20 +109,21 @@ class JobCommand
 
                 $request = $this->createRequest($task, true);
 
-                yield $this->client->sendAsync($request)
-                                   ->then(function (ResponseInterface $response) use ($task) {
+                yield $this->getHTTPClient()
+                           ->sendAsync($request)
+                           ->then(function (ResponseInterface $response) use ($task) {
 
-                                       $strTaskResult = $response->getBody()
-                                                                 ->getContents();
+                               $strTaskResult = $response->getBody()
+                                                         ->getContents();
 
-                                       $cmd = new DeserializeTaskResult();
-                                       $taskResult = $cmd->__invoke($strTaskResult);
+                               $cmd = new DeserializeTaskResult();
+                               $taskResult = $cmd->__invoke($strTaskResult);
 
-                                       return [
-                                           'task'   => $task,
-                                           'result' => $taskResult,
-                                       ];
-                                   });
+                               return [
+                                   'task'   => $task,
+                                   'result' => $taskResult,
+                               ];
+                           });
             }
         })();
 
@@ -126,7 +145,7 @@ class JobCommand
     private function createRequest(Task $task, bool $await = false): Request
     {
         //TODO: get endpoint from configuration
-        $uri = 'http://api:80/task/execute?wait=1';
+        $uri = 'http://api:80/task/execute';
         if ($await) {
             $uri = 'http://api:80/task/execute?wait=1';
         }
@@ -138,5 +157,10 @@ class JobCommand
         $request = new Request('POST', $uri, $headers, $body);
 
         return $request;
+    }
+
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
     }
 }
