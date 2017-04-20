@@ -10,10 +10,13 @@ class DeserializeTaskFromArray
     public function __invoke(array $taskArray): Task
     {
 
-        if (!isset($taskArray['method']) || !isset($taskArray['arguments'])) {
-            throw new \InvalidArgumentException('Unable to deserialize task, properties method and arguments are required');
-        }
 
+        if (!\key_exists('arguments', $taskArray)) {
+            throw new \InvalidArgumentException('Unable to deserialize task, arguments is not defined');
+        }
+        if (!\key_exists('method', $taskArray)) {
+            throw new \InvalidArgumentException('Unable to deserialize task, method is not defined');
+        }
         $method = $taskArray['method'];
         $arguments = $taskArray['arguments'];
 
