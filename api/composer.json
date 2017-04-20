@@ -5,15 +5,6 @@
   "type": "project",
   "require": {
     "php": "^7.1",
-    "attlaz/core": "dev-master"
-  },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../src",
-      "options": {
-        "symlink": true
-      }
-    }
-  ]
+    "slim/slim": "^3.0"
+  }
 }

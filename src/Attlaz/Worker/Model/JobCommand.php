@@ -125,9 +125,10 @@ class JobCommand
 
     private function createRequest(Task $task, bool $await = false): Request
     {
-        $uri = 'http://api:80/execute.php';
+        //TODO: get endpoint from configuration
+        $uri = 'http://api:80/task/execute?wait=1';
         if ($await) {
-            $uri = 'http://api:80/execute.php?wait=1';
+            $uri = 'http://api:80/task/execute?wait=1';
         }
         $headers = [];
 
