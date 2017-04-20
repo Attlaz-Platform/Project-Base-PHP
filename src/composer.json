@@ -17,7 +17,8 @@
     "react/event-loop": "^0.4.3",
     "guzzlehttp/guzzle": "^6.3",
     "echron/tools": "dev-develop",
-    "echron/datatypes": "dev-develop"
+    "echron/datatypes": "dev-develop",
+    "php-di/php-di": "6.0.0-alpha4"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.3"
