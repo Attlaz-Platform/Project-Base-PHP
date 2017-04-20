@@ -1,15 +1,28 @@
 <?php
+declare(strict_types=1);
+
+namespace Attlaz\Api;
+
+use Psr\Log\LoggerInterface;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
 class ErrorHandler
 {
     private $logger;
+    private $statusCode = 500;
 
-    public function __construct(\Psr\Log\LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    public function __invoke(Slim\Http\Request $request, Slim\Http\Response $response, \Throwable $exception)
+    public function setStatusCode(int $statusCode)
+    {
+        $this->statusCode = $statusCode;
+    }
+
+    public function __invoke(Request $request, Response $response, \Throwable $exception)
     {
 
 
@@ -24,7 +37,7 @@ class ErrorHandler
             'ex'      => $exception->getTraceAsString(),
         ]);
 
-        $response = $response->withStatus(500)
+        $response = $response->withStatus($this->statusCode)
                              ->withHeader('Content-Type', 'application/json');
 
         return $response->write(json_encode([
@@ -32,10 +45,7 @@ class ErrorHandler
             'content' => 'Something went wrong: ' . $exception->getMessage(),
             'request' => $logRequest,
         ]));
-//        return $response
-//            ->withStatus(500)
-//            ->withHeader('Content-Type', 'text/html')
-//            ->write('Something went wrong!');
+
     }
 
 }
