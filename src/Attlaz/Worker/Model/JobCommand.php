@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Attlaz\Worker\Model;
 
 use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskCollection;
 use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Framework\Model\TaskResultCollection;
 use Attlaz\Framework\Serialization\DeserializeTaskResult;
 use Attlaz\Framework\Serialization\SerializeTask;
 use GuzzleHttp\Client;
@@ -77,10 +79,10 @@ class JobCommand
 //        //  return $deferred->promise();
 //    }
 //
-    protected final function executeMultipleAsync(array $tasks): array
+    protected final function executeMultipleAsync(TaskCollection $tasks): TaskResultCollection
     {
 
-        $results = [];
+        $results = new TaskResultCollection();
 
         $promises = (function () use ($tasks) {
 
@@ -110,7 +112,8 @@ class JobCommand
         $each = new EachPromise($promises, [
             'concurrency' => 100,
             'fulfilled'   => function (array $response) use (&$results) {
-                $results[] = $response['result'];
+
+                $results->addTaskResult($response['result']);
             },
         ]);
 
