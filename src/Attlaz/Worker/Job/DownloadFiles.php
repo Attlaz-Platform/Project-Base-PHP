@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Worker\Job;
 
-use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Framework\Model\Task;
+use Attlaz\Framework\Model\TaskCollection;
 use Attlaz\Worker\Model\JobCommand;
 
 class DownloadFiles extends JobCommand
@@ -13,14 +14,13 @@ class DownloadFiles extends JobCommand
         $results = [];
 
         if ($async) {
-            $tasks = [];
+            $tasks = new TaskCollection();
             foreach ($urls as $url) {
-                $tasks[] = new \Attlaz\Framework\Model\Task('download_file', ['url' => $url]);
+                $tasks->addTask(new Task('download_file', ['url' => $url]));
             }
 
             $taskResults = $this->executeMultipleAsync($tasks);
 
-            /** @var TaskResult $taskResult */
             foreach ($taskResults as $taskResult) {
                 $results[] = $taskResult->getData();
             }
@@ -37,7 +37,7 @@ class DownloadFiles extends JobCommand
 
     private function downloadFile(string $url): string
     {
-        $task = new \Attlaz\Framework\Model\Task('download_file', ['url' => $url]);
+        $task = new Task('download_file', ['url' => $url]);
 
         $taskResult = $this->sendTaskWithResult($task);
 
