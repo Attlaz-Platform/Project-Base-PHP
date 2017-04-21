@@ -24,6 +24,24 @@ $streamHandlerFormatter->includeStacktraces(true);
 
 $streamHandler->setFormatter($streamHandlerFormatter);
 $logger->pushHandler($streamHandler);
+/**
+ * Elastic handler
+ */
+$config = [
+    'host'      => 'de65d406293de24f3eb75085a9f9399a.us-east-1.aws.found.io',
+    'port'      => 9243,
+    'username'  => 'elastic',
+    'password'  => 'AQzdVOMZsbBbVaw9Pd1NRfej',
+    'transport' => 'https',
+];
+$client = new \Elastica\Client($config);
+
+$elasticSearchHandler = new \Monolog\Handler\ElasticSearchHandler($client, []);
+
+$elastiHandler = new \Monolog\Formatter\ElasticaFormatter('attlaz', 'json');
+
+$elasticSearchHandler->setFormatter($elastiHandler);
+$logger->pushHandler($elasticSearchHandler);
 
 \Monolog\ErrorHandler::register($logger);
 
@@ -42,23 +60,11 @@ if (!file_exists($projectRegistrationFile)) {
     if ($projectLogger instanceof \Monolog\Logger || $projectLogger instanceof Attlaz\Framework\App\Logger) {
         $projectLogger->pushHandler($slackHandler);
         $projectLogger->pushHandler($streamHandler);
+        $projectLogger->pushHandler($elasticSearchHandler);
     }
 
     $executeTaskHelper = new \Attlaz\Worker\Helper\ExecuteTaskHelper($project, $projectLogger);
 
-    if (false) {
-        $task = new \Attlaz\Framework\Model\Task('syncCatalog', [
-            'externalIds' => [
-                11505,
-                15706,
-                14757,
-                8793,
-            ],
-        ]);
-        $executeTaskHelper->__invoke($task);
-
-        return;
-    }
     $app = new \Attlaz\Worker\Worker($settings, $executeTaskHelper, $projectLogger);
     $app->listen();
 }
