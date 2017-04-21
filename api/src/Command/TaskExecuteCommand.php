@@ -3,22 +3,14 @@ declare(strict_types=1);
 
 namespace Attlaz\Api\Command;
 
-use Attlaz\Framework\App\Logger;
-use Attlaz\Framework\Model\Settings;
 use Attlaz\Framework\Serialization\DeserializeTaskFromString;
 use Attlaz\Framework\Serialization\SerializeTaskResult;
-use Attlaz\Manager\Manager;
+
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-class TaskExecuteCommand
+class TaskExecuteCommand extends ApiCommand
 {
-    private $logger;
-
-    public function __construct(Logger $logger)
-    {
-        $this->logger = $logger;
-    }
 
     public function __invoke(Request $request, Response $response): Response
     {
@@ -54,15 +46,4 @@ class TaskExecuteCommand
         return $response;
     }
 
-    private function getManager(): Manager
-    {
-        $settings = new Settings();
-        $settings->queue_job_host = 'queue';
-        $settings->queue_job_name = 'task';
-        $settings->queue_job_port = 5672;
-        $settings->queue_job_user = 'guest';
-        $settings->queue_job_password = 'guest';
-
-        return new Manager($settings, $this->logger);
-    }
 }

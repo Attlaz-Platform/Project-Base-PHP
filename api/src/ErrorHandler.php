@@ -22,10 +22,13 @@ class ErrorHandler
         $this->statusCode = $statusCode;
     }
 
-    public function __invoke(Request $request, Response $response, \Throwable $exception)
+    public function __invoke(Request $request, Response $response, \Throwable $exception = null)
     {
 
 
+        if (\is_null($exception)) {
+            $exception = new \Exception();
+        }
         $logRequest = [
             'method' => $request->getMethod(),
             'params' => $request->getQueryParams(),

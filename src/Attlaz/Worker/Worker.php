@@ -110,6 +110,8 @@ class Worker
          */
         $this->channel->basic_ack($message->delivery_info['delivery_tag']);
 
+        //Flush logging handlers
+        //TODO: separate this from the worker
         $handlers = $this->logger->getHandlers();
         foreach ($handlers as $handler) {
             if ($handler instanceof AbstractHandler) {

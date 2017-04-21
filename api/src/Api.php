@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Api;
 
+use Attlaz\Api\Command\StatusCommand;
+use Attlaz\Api\Command\System\BranchesCommand;
 use Attlaz\Api\Command\TaskExecuteCommand;
 use Attlaz\Api\Middleware\LoggingMiddleware;
 use Attlaz\Framework\App\Logger;
@@ -56,13 +58,38 @@ class Api
 
         $logger = $this->logger;
         $this->app->post('/task/execute', function (Request $request, Response $response) use ($logger) {
-
-
             $command = new TaskExecuteCommand($logger);
 
             return $command->__invoke($request, $response);
-
         });
+        $this->app->get('/system/branches', function (Request $request, Response $response) use ($logger) {
+            $command = new BranchesCommand($logger);
+
+            return $command->__invoke($request, $response);
+        });
+        $this->app->get('/system/commands', function (Request $request, Response $response) use ($logger) {
+            $command = new BranchesCommand($logger);
+
+            return $command->__invoke($request, $response);
+        });
+        $this->app->get('/system/command/{commandId}/executions', function (Request $request, Response $response) use ($logger) {
+            $commandId = $request->getParam('commandId');
+            $command = new BranchesCommand($logger);
+
+            return $command->__invoke($request, $response);
+        });
+        $this->app->get('/system/command/{commandId}/execution/{executionId}/logs', function (Request $request, Response $response) use ($logger) {
+            $commandId = $request->getParam('commandId');
+            $executionId = $request->getParam('executionId');
+            $command = new BranchesCommand($logger);
+
+            return $command->__invoke($request, $response);
+        });
+//        $this->app->get('/status', function (Request $request, Response $response) use ($logger) {
+//            $command = new StatusCommand($logger);
+//
+//            return $command->__invoke($request, $response);
+//        });
 
         $this->app->run();
     }

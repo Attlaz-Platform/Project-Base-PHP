@@ -7,7 +7,7 @@ use Attlaz\Framework\App\Logger;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class LoggingMiddleware
+class AuthMiddleware
 {
     private $logger;
 
@@ -18,17 +18,13 @@ class LoggingMiddleware
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next): ResponseInterface
     {
-        $uri = $request->getUri()
-                       ->getPath();
         $logRequest = [
-
             'method' => $request->getMethod(),
-            'uri'    => $uri,
             'params' => $request->getQueryParams(),
             'body'   => $request->getBody()
                                 ->__toString(),
         ];
-        $this->logger->info('Incoming request: ' . $uri, [
+        $this->logger->info('Incoming request', [
             'request' => $logRequest,
         ]);
 
