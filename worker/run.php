@@ -15,6 +15,9 @@ $logger->pushHandler($slackHandler);
 
 $streamHandler = new Monolog\Handler\StreamHandler('php://stdout', \Monolog\Logger::DEBUG);
 
+$introspectionProcessor = new \Monolog\Processor\IntrospectionProcessor();
+$logger->pushProcessor($introspectionProcessor);
+
 //$format = '[%datetime%] %channel%.%level_name%: %message%. PHP_EOL .%context%' . PHP_EOL . '%extra%\n';
 
 $streamHandlerFormatter = new \Bramus\Monolog\Formatter\ColoredLineFormatter();
@@ -36,7 +39,7 @@ $config = [
 ];
 $client = new \Elastica\Client($config);
 
-$elasticSearchHandler = new \Monolog\Handler\ElasticSearchHandler($client, []);
+$elasticSearchHandler = new \Monolog\Handler\ElasticSearchHandler($client, ['ignore_error' => true]);
 
 $elastiHandler = new \Monolog\Formatter\ElasticaFormatter('attlaz', 'json');
 
@@ -49,7 +52,6 @@ $endPointFile = BP_WORKER . '/../project/src/endpoint.php';
 $projectChannel = new \Attlaz\Framework\App\ProjectChannel($endPointFile, $logger);
 
 $settings = \Attlaz\Framework\Model\Settings::fromFile(BP_WORKER . '/../config.yml');
-
 
 $app = new \Attlaz\Worker\Worker($settings, $projectChannel, $logger);
 $app->listen();

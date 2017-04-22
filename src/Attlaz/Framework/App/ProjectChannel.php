@@ -54,13 +54,15 @@ class ProjectChannel
 
     private function parseProjectTaskExecutionOutput(array $output): TaskResult
     {
-
+        var_dump($output);
         if (count($output) !== 1) {
+
             throw new \Exception('Invalid response');
         }
 
         $strTaskResult = $output[0];
-        $strTaskResult = \base64_decode($strTaskResult);
+        $strTaskResult = \base64_decode($strTaskResult, true);
+        $this->logger->debug('Response received: ' . $strTaskResult);
 
         $cmd = new DeserializeTaskResult();
         $taskResult = $cmd->__invoke($strTaskResult);

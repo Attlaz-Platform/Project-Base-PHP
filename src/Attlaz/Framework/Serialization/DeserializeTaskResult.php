@@ -11,6 +11,10 @@ class DeserializeTaskResult
     public function __invoke(string $serializedTaskResult): TaskResult
     {
         $taskObject = json_decode($serializedTaskResult, true);
+        if (\is_null($taskObject)) {
+            throw new \Exception('Unable to deserialize task result, decoded object cannot be null');
+        }
+
         if (!\key_exists('task', $taskObject)) {
             throw new \InvalidArgumentException('Unable to deserialize task result, task is not defined [' . $serializedTaskResult . ']');
         }
@@ -37,21 +41,22 @@ class DeserializeTaskResult
         }
         $task = new TaskResult($task, $data, $success);
 
-        $received = $taskObject['received'];
-
-        if (!is_array($received)) {
-            throw new \InvalidArgumentException('Unable to deserialize task result, property received must be serialized as array [' . $serializedTaskResult . ']');
-        }
-        $received = DateTimeHelper::deserialize($received);
-        $task->setReceived($received);
-
+        //TODO: change received, responded to task history objects
+//        $received = $taskObject['received'];
 //
-        $responded = $taskObject['responded'];
-        if (!is_array($responded)) {
-            throw new \InvalidArgumentException('Unable to deserialize task result, property responded must be serialized as array [' . $serializedTaskResult . ']');
-        }
-        $responded = DateTimeHelper::deserialize($responded);
-        $task->setResponded($responded);
+//        if (!is_array($received)) {
+//            throw new \InvalidArgumentException('Unable to deserialize task result, property received must be serialized as array [' . $serializedTaskResult . ']');
+//        }
+//        $received = DateTimeHelper::deserialize($received);
+//        $task->setReceived($received);
+//
+////
+//        $responded = $taskObject['responded'];
+//        if (!is_array($responded)) {
+//            throw new \InvalidArgumentException('Unable to deserialize task result, property responded must be serialized as array [' . $serializedTaskResult . ']');
+//        }
+//        $responded = DateTimeHelper::deserialize($responded);
+//        $task->setResponded($responded);
 
         return $task;
 

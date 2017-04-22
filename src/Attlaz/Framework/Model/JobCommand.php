@@ -1,12 +1,8 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Worker\Model;
+namespace Attlaz\Framework\Model;
 
-use Attlaz\Framework\Model\Task;
-use Attlaz\Framework\Model\TaskCollection;
-use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Framework\Model\TaskResultCollection;
 use Attlaz\Framework\Serialization\DeserializeTaskResult;
 use Attlaz\Framework\Serialization\SerializeTask;
 use GuzzleHttp\Client;
