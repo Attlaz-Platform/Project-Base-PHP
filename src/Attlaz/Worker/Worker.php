@@ -144,6 +144,7 @@ class Worker
         /*
          * Acknowledging the message
          */
+        //TODO: when not able to handle message (error, wrong version, ..., don't acknowledge it)
         $this->channel->basic_ack($message->delivery_info['delivery_tag']);
 
         //$message->delivery_info['channel']->basic_nack($message->delivery_info['delivery_tag']);
