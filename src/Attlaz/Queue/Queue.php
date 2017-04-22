@@ -73,12 +73,36 @@ class Queue
     private function createConnection(): AMQPStreamConnection
     {
 
+        //http://www.rabbitmq.com/heartbeats.html
+        $heartbeat = 15;
+
         try {
-            $connection = new AMQPStreamConnection($this->settings->queue_job_host, $this->settings->queue_job_port, $this->settings->queue_job_user, $this->settings->queue_job_password);
+            $host = $this->settings->queue_job_host;
+            $port = $this->settings->queue_job_port;
+            $user = $this->settings->queue_job_user;
+            $password = $this->settings->queue_job_password;
+            $vhost = '/';
+            $insist = false;
+            $login_method = 'AMQPLAIN';
+            $login_response = null;
+            $locale = 'en_US';
+            $connection_timeout = 3.0;
+
+            if ($heartbeat === 0) {
+                //Default value
+                $read_write_timeout = 3.0;
+            } else {
+                $read_write_timeout = 2 * $heartbeat;
+            }
+
+            $context = null;
+            $keepalive = true;
+
+            $connection = new AMQPStreamConnection($host, $port, $user, $password, $vhost, $insist, $login_method, $login_response, $locale, $connection_timeout, $read_write_timeout, $context, $keepalive, $heartbeat);
 
             return $connection;
         } catch (\Exception $ex) {
-            throw new UnableToConnectToQueueException('Unable to connect to queue (' . $this->settings->queue_job_host . ':' . $this->settings->queue_job_port . ') ', 0, $ex);
+            throw new UnableToConnectToQueueException('Unable to connect to queue "' . $this->settings->queue_job_host . ':' . $this->settings->queue_job_port . '": ' . $ex->getMessage() . '', 0, $ex);
         }
 
     }

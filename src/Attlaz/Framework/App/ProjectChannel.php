@@ -54,7 +54,6 @@ class ProjectChannel
 
     private function parseProjectTaskExecutionOutput(array $output): TaskResult
     {
-        var_dump($output);
         if (count($output) !== 1) {
 
             throw new \Exception('Invalid response');
