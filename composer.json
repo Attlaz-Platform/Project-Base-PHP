@@ -27,7 +27,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Attlaz\\": "Attlaz"
+      "Attlaz\\": "src/Attlaz"
     }
   },
   "autoload-dev": {
