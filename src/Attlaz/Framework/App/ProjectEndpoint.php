@@ -16,16 +16,38 @@ class ProjectEndpoint
 
     public function __construct(Project $project)
     {
+
         $this->project = $project;
 
         $this->logger = $this->project->getContainer()
                                       ->get(LoggerInterface::class);
+
+        \ob_start(function ($buffer) {
+            $this->logger->info('[Unregistered output] ' . $buffer);
+        });
 
     }
 
     public function handleRequest(): string
     {
 
+        $task = $this->getTask();
+
+        $result = $this->executeTask($task);
+
+        $cmd = new SerializeTaskResult();
+        $strTaskResult = $cmd->__invoke($result);
+
+        $this->logger->debug('Sending back response: ' . $strTaskResult);
+        $strTaskResult = base64_encode($strTaskResult);
+
+        ob_end_flush();
+        echo $strTaskResult;
+        exit(0);
+    }
+
+    private function getTask(): Task
+    {
         $options = getopt("t:");
 
         if (!isset($options['t'])) {
@@ -37,14 +59,7 @@ class ProjectEndpoint
         $cmd = new DeserializeTaskFromString();
         $task = $cmd->__invoke($strTask);
 
-        $result = $this->executeTask($task);
-
-        $cmd = new SerializeTaskResult();
-        $strTaskResult = $cmd->__invoke($result);
-        $strTaskResult = base64_encode($strTaskResult);
-
-        echo $strTaskResult;
-        exit(0);
+        return $task;
     }
 
     private function executeTask(Task $task): TaskResult

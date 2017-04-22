@@ -6,7 +6,7 @@ namespace Attlaz\Worker\Helper;
 use Attlaz\Framework\App\Project;
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Worker\Model\JobCommand;
+use Attlaz\Framework\Model\JobCommand;
 use Psr\Log\LoggerInterface;
 
 class ExecuteTaskHelper
