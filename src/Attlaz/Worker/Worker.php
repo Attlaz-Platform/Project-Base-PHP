@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Attlaz\Worker;
 
 use Attlaz\Framework\App\Logger;
+use Attlaz\Framework\App\ProjectChannel;
 use Attlaz\Framework\Helper\DateTimeHelper;
 use Attlaz\Framework\Model\Task;
 use Attlaz\Framework\Model\TaskResult;
@@ -33,12 +34,12 @@ class Worker
     /** @var  Queue */
     private $queue;
 
-    private $executeTaskHelper;
+    private $projectChannel;
 
-    public function __construct(Settings $settings, ExecuteTaskHelper $executeTaskHelper, Logger $logger)
+    public function __construct(Settings $settings, ProjectChannel $projectChannel, Logger $logger)
     {
         $this->settings = $settings;
-        $this->executeTaskHelper = $executeTaskHelper;
+        $this->projectChannel = $projectChannel;
         $this->logger = $logger;
     }
 
@@ -46,7 +47,6 @@ class Worker
     {
         if (empty($this->name)) {
             $this->name = NameHelper::getRandomName();
-
         }
 
         return $this->name;
@@ -179,7 +179,7 @@ class Worker
     {
 
 
-        $taskResult = $this->executeTaskHelper->__invoke($task);
+        $taskResult = $this->projectChannel->requestTaskExecution($task);
 
         return $taskResult;
 

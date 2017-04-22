@@ -45,26 +45,11 @@ $logger->pushHandler($elasticSearchHandler);
 
 \Monolog\ErrorHandler::register($logger);
 
-$projectRegistrationFile = BP_WORKER . '/../project/src/registration.php';
-if (!file_exists($projectRegistrationFile)) {
-    $logger->error('Unable to load project registration file, file does not exist');
-} else {
-    require BP_WORKER . '/../project/src/registration.php';
+$endPointFile = BP_WORKER . '/../project/src/endpoint.php';
+$projectChannel = new \Attlaz\Framework\App\ProjectChannel($endPointFile, $logger);
 
-    $project = \Attlaz\Framework\App\ProjectRegistrar::getProject();
-    $settings = \Attlaz\Framework\Model\Settings::fromFile(BP_WORKER . '/../config.yml');
+$settings = \Attlaz\Framework\Model\Settings::fromFile(BP_WORKER . '/../config.yml');
 
-    /** @var \Psr\Log\LoggerInterface $projectLogger */
-    $projectLogger = $project->getContainer()
-                             ->get(\Psr\Log\LoggerInterface::class);
-    if ($projectLogger instanceof \Monolog\Logger || $projectLogger instanceof Attlaz\Framework\App\Logger) {
-        $projectLogger->pushHandler($slackHandler);
-        $projectLogger->pushHandler($streamHandler);
-        $projectLogger->pushHandler($elasticSearchHandler);
-    }
 
-    $executeTaskHelper = new \Attlaz\Worker\Helper\ExecuteTaskHelper($project, $projectLogger);
-
-    $app = new \Attlaz\Worker\Worker($settings, $executeTaskHelper, $projectLogger);
-    $app->listen();
-}
+$app = new \Attlaz\Worker\Worker($settings, $projectChannel, $logger);
+$app->listen();
