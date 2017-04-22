@@ -16,6 +16,7 @@ use Attlaz\Worker\Helper\ExecuteTaskHelper;
 use Attlaz\Worker\Helper\NameHelper;
 use Monolog\Handler\AbstractHandler;
 use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Exception\AMQPRuntimeException;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class Worker
@@ -77,13 +78,44 @@ class Worker
             $this->logger->debug('Start listening');
 
             while (count($this->channel->callbacks)) {
-                $this->channel->wait();
+                try {
+//                    $this->channel->wait(null, false, $timeout);
+                    $this->channel->wait();
+                } catch (\PhpAmqpLib\Exception\AMQPTimeoutException $e) {
+                    $this->logger->error('Queue timeout, reconnecting (' . $e->getMessage() . ')');
+
+                    $this->queue->disconnect();
+
+                } catch (AMQPRuntimeException $ex) {
+                    $this->logger->error('Queue runtime error (' . $ex->getMessage() . ')');
+                    //TODO: make sure all connections are closed
+                    $this->disconnect();
+
+                    $this->listen();
+
+                    return;
+
+                } catch (\Throwable $ex) {
+                    $this->logger->error('Queue unknown error (' . $ex->getMessage() . ')');
+                    throw $ex;
+                }
+
             }
             $this->logger->debug('Stop listening');
 
             $this->queue->disconnect();
         } catch (\Exception $ex) {
-            $this->logger->emergency($ex->getMessage());
+            $this->logger->emergency('Queue error: ' . $ex->getMessage());
+        }
+
+    }
+
+    private function disconnect()
+    {
+        try {
+            $this->queue->disconnect();
+        } catch (\Exception $ex) {
+            $this->logger->error('Exception while disconnecting (' . $ex->getMessage() . ')');
         }
 
     }
@@ -110,15 +142,22 @@ class Worker
          */
         $this->channel->basic_ack($message->delivery_info['delivery_tag']);
 
+        //$message->delivery_info['channel']->basic_nack($message->delivery_info['delivery_tag']);
+
         //Flush logging handlers
         //TODO: separate this from the worker
-        $handlers = $this->logger->getHandlers();
-        foreach ($handlers as $handler) {
-            if ($handler instanceof AbstractHandler) {
-                $handler->close();
-            }
+        try {
+            $handlers = $this->logger->getHandlers();
+            foreach ($handlers as $handler) {
+                if ($handler instanceof AbstractHandler) {
+                    $handler->close();
+                }
 
+            }
+        } catch (\Throwable $ex) {
+            $this->logger->error($ex->getMessage());
         }
+
     }
 
     private function messageExpectReply(AMQPMessage $message): bool
@@ -182,7 +221,7 @@ class Worker
             $task = $this->decodeBodyToTask($messageBody);
             if ($task->getMethod() === 'quit') {
                 $this->cancel();
-
+                //$this->queue->disconnect();
                 $taskResult = new TaskResult($task, '', true);
             } else {
                 $taskResult = $this->executeTask($task);
