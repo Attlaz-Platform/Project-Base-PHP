@@ -14,6 +14,8 @@ class ProjectEndpoint
     private $project;
     private $logger;
 
+    private $isCalledByWorker = false;
+
     public function __construct(Project $project)
     {
 
@@ -22,16 +24,20 @@ class ProjectEndpoint
         $this->logger = $this->project->getContainer()
                                       ->get(LoggerInterface::class);
 
-        \ob_start(function ($buffer) {
-            $this->logger->info('[Unregistered output] ' . $buffer);
-        });
+        if ($this->isCalledByWorker) {
+            \ob_start(function ($buffer) {
+                $this->logger->info('[Unregistered output] ' . $buffer);
+            });
+        }
 
     }
 
-    public function handleRequest(): string
+    public function handleRequest(Task $task = null): string
     {
 
-        $task = $this->getTask();
+        if (\is_null($task)) {
+            $task = $this->getTask();
+        }
 
         $result = $this->executeTask($task);
 
@@ -41,7 +47,10 @@ class ProjectEndpoint
         $this->logger->debug('Sending back response: ' . $strTaskResult);
         $strTaskResult = base64_encode($strTaskResult);
 
-        ob_end_flush();
+        if ($this->isCalledByWorker) {
+            ob_end_flush();
+        }
+
         echo $strTaskResult;
         exit(0);
     }
@@ -53,6 +62,9 @@ class ProjectEndpoint
         if (!isset($options['t'])) {
             throw new \Exception('Invalid request');
         }
+
+        $this->isCalledByWorker = true;
+
         $strTask = $options['t'];
         $strTask = base64_decode($strTask);
 
