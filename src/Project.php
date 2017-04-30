@@ -3,12 +3,14 @@ declare(strict_types=1);
 
 namespace Attlaz\Project;
 
-use Attlaz\Framework\Model\JobCommand;
-use Attlaz\Framework\Model\Task;
-use Attlaz\Framework\Model\TaskResult;
-use Attlaz\Framework\Serialization\DeserializeTaskFromString;
-use Attlaz\Framework\Serialization\SerializeTaskResult;
-use Attlaz\Worker\Helper\ExecuteTaskHelper;
+
+use Attlaz\Project\App\Logger;
+use Attlaz\Project\Helper\ExecuteTaskHelper;
+use Attlaz\Project\Model\JobCommand;
+use Attlaz\Project\Model\Task;
+use Attlaz\Project\Model\TaskResult;
+use Attlaz\Project\Serialization\DeserializeTaskFromString;
+use Attlaz\Project\Serialization\SerializeTaskResult;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -64,7 +66,7 @@ class Project
     {
         return [
             \Psr\Log\LoggerInterface::class        => \DI\factory(function () {
-                $logger = new \Attlaz\Framework\App\Logger("Attlaz Project A'Domo");
+                $logger = new Logger("Attlaz Project A'Domo");
 //        $logger->addGlobalContext('branch', 'adomo');
 //        $logger->addGlobalContext('version', '0.1.0');
 //        $logger->addGlobalContext('execution', \Echron\Tools\StringHelper::generateGuid());
