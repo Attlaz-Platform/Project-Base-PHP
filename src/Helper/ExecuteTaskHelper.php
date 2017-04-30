@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace Attlaz\Project\Helper;
 
 
-use Attlaz\Framework\Model\JobCommand;
-use Attlaz\Framework\Model\Task;
-use Attlaz\Framework\Model\TaskResult;
+use Attlaz\Project\Model\JobCommand;
+use Attlaz\Project\Model\Task;
+use Attlaz\Project\Model\TaskResult;
 use Attlaz\Project\Project;
 use Psr\Log\LoggerInterface;
 
