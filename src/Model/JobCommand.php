@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
-use Attlaz\Framework\Serialization\DeserializeTaskResult;
-use Attlaz\Framework\Serialization\SerializeTask;
+use Attlaz\Project\Serialization\DeserializeTaskResult;
+use Attlaz\Project\Serialization\SerializeTask;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Promise\Promise;
