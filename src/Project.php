@@ -8,8 +8,8 @@ use Attlaz\Project\Helper\ExecuteTaskHelper;
 use Attlaz\Project\Model\JobCommand;
 use Attlaz\Project\Model\Log\Processor as LogProcessor;
 use Attlaz\Project\Model\Task;
+use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskResult;
-use Attlaz\Project\Serialization\DeserializeTaskFromString;
 use Attlaz\Project\Serialization\SerializeTaskResult;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
@@ -93,7 +93,6 @@ class Project
         return [
             \Psr\Log\LoggerInterface::class        => \DI\factory(function () {
                 $logger = new Logger("Attlaz Project " . $this->branchCode);
-
 
                 $this->logProcessor = new LogProcessor();
                 $logger->pushProcessor($this->logProcessor);
@@ -190,7 +189,7 @@ class Project
         return $this->commands[$commandName];
     }
 
-    public function handleRequest(Task $task = null): string
+    public function handleRequest(TaskExecutionRequest $taskExecutionRequest = null): string
     {
 //        \ob_start(function ($buffer) {
 //            $this->logger->info('[Unregistered output] ' . $buffer);
@@ -198,13 +197,13 @@ class Project
 
         $strTaskResult = '';
         try {
-            if (\is_null($task)) {
-                $task = $this->getTask();
+            if (\is_null($taskExecutionRequest)) {
+                $taskExecutionRequest = $this->getTaskExecutionRequest();
             }
 
-            $this->logProcessor->setExecutionId($task->getId());
+            $this->logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
 
-            $result = $this->executeTask($task);
+            $result = $this->executeTask($taskExecutionRequest->getTask());
 
             $cmd = new SerializeTaskResult();
             $strTaskResult = $cmd->__invoke($result);
@@ -221,20 +220,18 @@ class Project
         exit(0);
     }
 
-    private function getTask(): Task
+    private function getTaskExecutionRequest(): TaskExecutionRequest
     {
         $strTask = $this->getCLIOption(self::TASK_PARAM_SHORT, self::TASK_PARAM_LONG);
 
         if (\is_null($strTask)) {
-            throw new \Exception('Invalid request: task not defined');
+            throw new \Exception('Invalid request: task execution request not defined');
         }
 
         $strTask = base64_decode($strTask);
+        $taskArray = \json_decode($strTask, true);
 
-        $cmd = new DeserializeTaskFromString();
-        $task = $cmd->__invoke($strTask);
-
-        return $task;
+        return TaskExecutionRequest::fromArray($taskArray);
     }
 
     private function getCLIOption(string $short, string $long): ?string
