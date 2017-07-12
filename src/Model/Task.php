@@ -5,7 +5,7 @@ namespace Attlaz\Project\Model;
 
 class Task implements \JsonSerializable
 {
-    private $id;
+
     private $method;
     private $arguments;
 
@@ -35,22 +35,26 @@ class Task implements \JsonSerializable
         return $this->arguments[$name];
     }
 
-    public function setId(string $id)
-    {
-        $this->id = $id;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     function jsonSerialize()
     {
         return [
-            'id'        => $this->id,
             'method'    => $this->method,
             'arguments' => $this->arguments,
         ];
+    }
+
+    public static function fromArray(array $input): self
+    {
+        if (!\key_exists('arguments', $input)) {
+            throw new \InvalidArgumentException('Unable to deserialize task, arguments is not defined');
+        }
+        if (!\key_exists('method', $input)) {
+            throw new \InvalidArgumentException('Unable to deserialize task, method is not defined');
+        }
+
+        $method = $input['method'];
+        $arguments = $input['arguments'];
+
+        return new self($method, $arguments);
     }
 }
