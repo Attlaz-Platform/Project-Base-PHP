@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Attlaz\Project;
 
-
 use Attlaz\Project\App\Logger;
 use Attlaz\Project\Helper\ExecuteTaskHelper;
 use Attlaz\Project\Model\JobCommand;
@@ -17,7 +16,7 @@ use Psr\Log\LoggerInterface;
 
 class Project
 {
-    private $projectName;
+    private $branchCode;
 
     private $commands;
 
@@ -31,15 +30,40 @@ class Project
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(string $projectName, string $definitionsFile = null)
+    private $mode = self::MODE_PRODUCTION;
+
+    public const MODE_PRODUCTION = 'production';
+    public const MODE_DEVELOP = 'develop';
+
+    public function __construct(string $branchCode, string $definitionsFile = null)
     {
-        $this->projectName = $projectName;
+        if (empty($branchCode)) {
+            throw new \InvalidArgumentException('Branch code cannot be empty');
+        }
+
+        ini_set('memory_limit', '2G');
+        date_default_timezone_set('Europe/Brussels');
+
+        $this->branchCode = $branchCode;
         $this->commands = [];
 
         $this->initDI($definitionsFile);
 
         $this->logger = $this->getContainer()
                              ->get(LoggerInterface::class);
+    }
+
+    public function setMode(string $mode)
+    {
+        if ($mode !== self::MODE_PRODUCTION && $mode !== self::MODE_DEVELOP) {
+            throw new \InvalidArgumentException('Invalid mode "' . $mode . '", must be product or develop');
+        }
+        $this->mode = $mode;
+
+        if ($this->mode === self::MODE_DEVELOP) {
+            error_reporting(E_ALL);
+            ini_set('display_errors', '1');
+        }
     }
 
     private function initDI(string $definitionsFile = null)
@@ -66,10 +90,7 @@ class Project
     {
         return [
             \Psr\Log\LoggerInterface::class        => \DI\factory(function () {
-                $logger = new Logger("Attlaz Project A'Domo");
-//        $logger->addGlobalContext('branch', 'adomo');
-//        $logger->addGlobalContext('version', '0.1.0');
-//        $logger->addGlobalContext('execution', \Echron\Tools\StringHelper::generateGuid());
+                $logger = new Logger("Attlaz Project " . $this->branchCode);
 
                 $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
@@ -97,35 +118,22 @@ class Project
                 return $logger;
             }),
             \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (\Psr\Log\LoggerInterface $logger) {
-                $cache = new \Cache\Adapter\PHPArray\ArrayCachePool();
+                //$cache = new \Cache\Adapter\PHPArray\ArrayCachePool();
+
+                $manager = new \MongoDB\Driver\Manager('mongodb://hq.attlaz.com');
+
+                $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_cache');
+
+                $cache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
+                $cache->setLogger($logger);
 
                 return $cache;
-                if (false) {
-                    $filesystemAdapter = new \League\Flysystem\Adapter\Local(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR);
-
-                    $logger->debug('Cache: ' . $filesystemAdapter->getPathPrefix());
-                    $filesystem = new \League\Flysystem\Filesystem($filesystemAdapter);
-
-                    $cache = new \Cache\Adapter\Filesystem\FilesystemCachePool($filesystem);
-                    $cache->setLogger($logger);
-
-                    return $cache;
-                } else {
-                    $manager = new \MongoDB\Driver\Manager('mongodb://hq.attlaz.com');
-
-                    $collection = new \MongoDB\Collection($manager, 'attlaz', 'adomo_cache');
-
-                    $cache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
-                    $cache->setLogger($logger);
-
-                    return $cache;
-                }
                 // $cache = new \League\Flysystem\Adapter\NullAdapter();
             }),
             \Echron\IO\Client\Cache::class         => \DI\factory(function () {
                 $manager = new \MongoDB\Driver\Manager('mongodb://hq.attlaz.com');
 
-                $collection = new \MongoDB\Collection($manager, 'attlaz', 'adomo');
+                $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_storage');
 
 //$collection = \Cache\Adapter\MongoDB\MongoDBCachePool::createCollection($manager, '178.117.199.50:27017', 'attlaz.test');
 
@@ -228,10 +236,10 @@ class Project
 //        var_dump($argv);
 
         if (isset($options[$short])) {
-            return $options[$short];
+            return (string)$options[$short];
         }
         if (isset($options[$long])) {
-            return $options[$long];
+            return (string)$options[$long];
         }
 
         return null;
