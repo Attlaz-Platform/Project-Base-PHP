@@ -5,6 +5,7 @@ namespace Attlaz\Project\Model;
 
 class Task implements \JsonSerializable
 {
+    private $id;
     private $method;
     private $arguments;
 
@@ -34,9 +35,20 @@ class Task implements \JsonSerializable
         return $this->arguments[$name];
     }
 
+    public function setId(string $id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
     function jsonSerialize()
     {
         return [
+            'id'        => $this->id,
             'method'    => $this->method,
             'arguments' => $this->arguments,
         ];

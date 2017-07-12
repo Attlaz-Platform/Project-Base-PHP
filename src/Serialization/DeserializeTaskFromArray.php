@@ -15,10 +15,15 @@ class DeserializeTaskFromArray
         if (!\key_exists('method', $taskArray)) {
             throw new \InvalidArgumentException('Unable to deserialize task, method is not defined');
         }
+
         $method = $taskArray['method'];
         $arguments = $taskArray['arguments'];
 
         $task = new Task($method, $arguments);
+
+        if (!\key_exists('id', $taskArray)) {
+            $task->setId($taskArray['id']);
+        }
 
         return $task;
     }

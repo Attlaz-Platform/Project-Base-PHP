@@ -6,6 +6,7 @@ namespace Attlaz\Project;
 use Attlaz\Project\App\Logger;
 use Attlaz\Project\Helper\ExecuteTaskHelper;
 use Attlaz\Project\Model\JobCommand;
+use Attlaz\Project\Model\Log\Processor as LogProcessor;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskResult;
 use Attlaz\Project\Serialization\DeserializeTaskFromString;
@@ -26,7 +27,8 @@ class Project
     private const TASK_PARAM_SHORT = 't';
     private const TASK_PARAM_LONG = 'task';
 
-    private $executionUuid;
+    /** @var LogProcessor */
+    private $logProcessor;
     /** @var LoggerInterface */
     private $logger;
 
@@ -91,6 +93,10 @@ class Project
         return [
             \Psr\Log\LoggerInterface::class        => \DI\factory(function () {
                 $logger = new Logger("Attlaz Project " . $this->branchCode);
+
+
+                $this->logProcessor = new LogProcessor();
+                $logger->pushProcessor($this->logProcessor);
 
                 $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
@@ -195,6 +201,8 @@ class Project
             if (\is_null($task)) {
                 $task = $this->getTask();
             }
+
+            $this->logProcessor->setExecutionId($task->getId());
 
             $result = $this->executeTask($task);
 
