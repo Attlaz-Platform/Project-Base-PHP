@@ -5,12 +5,14 @@ namespace Attlaz\Project;
 
 use Attlaz\Project\App\Logger;
 use Attlaz\Project\Helper\ExecuteTaskHelper;
+use Attlaz\Project\Model\Cache\FailOverCachePool;
 use Attlaz\Project\Model\JobCommand;
 use Attlaz\Project\Model\Log\Processor as LogProcessor;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -129,7 +131,19 @@ class Project
 
                 $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_cache');
 
-                $cache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
+                $cachePools = [];
+
+                $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
+                $mongoDBCache->setLogger($logger);
+                $cachePools[] = $mongoDBCache;
+
+                $fileCache = new ArrayCachePool(null);
+                $cachePools[] = $fileCache;
+
+                $cache = new FailOverCachePool($cachePools, [
+                    'skip_on_failure'        => true,
+                    'remove_pool_on_failure' => true,
+                ]);
                 $cache->setLogger($logger);
 
                 return $cache;
