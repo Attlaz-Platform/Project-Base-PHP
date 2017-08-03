@@ -217,21 +217,29 @@ class Project
 
             $this->logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
 
-            $result = $this->executeTask($taskExecutionRequest->getTask());
+            $taskExecutionResult = $this->executeTask($taskExecutionRequest->getTask());
 
             $cmd = new SerializeTaskResult();
-            $strTaskResult = $cmd->__invoke($result);
+            $strTaskResult = $cmd->__invoke($taskExecutionResult);
 
             $this->logger->debug('Sending back response: ' . $strTaskResult);
             $strTaskResult = base64_encode($strTaskResult);
+
+            echo $strTaskResult;
+            if ($taskExecutionResult->getSuccess()) {
+                exit(0);
+            } else {
+                //TODO: change exit code based on exception type
+                exit(1);
+            }
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
+            exit(1);
         }
 
         // ob_end_flush();
 
-        echo $strTaskResult;
-        exit(0);
+        exit(1);
     }
 
     private function getTaskExecutionRequest(): TaskExecutionRequest
