@@ -88,7 +88,9 @@ class FailOverCachePool extends AbstractCachePool
 
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
+        echo 'store in cache' . \PHP_EOL;
         foreach ($this->getCaches() as $cacheKey => $cache) {
+            echo $cacheKey . \PHP_EOL;
             try {
                 $saved = $cache->storeItemInCache($item, $ttl);
                 if ($saved) {
@@ -97,8 +99,10 @@ class FailOverCachePool extends AbstractCachePool
 
                 }
             } catch (CachePoolException $e) {
-                $this->logger->error('Unable to save', $e);
+                $this->log('error', 'Unable to save: ' . $e->getMessage());
                 // $this->handleException($poolKey, __FUNCTION__, $e);
+            } catch (\Exception $e) {
+                $this->log('error', 'Unable to save: ' . $e->getMessage());
             }
         }
     }
@@ -108,7 +112,7 @@ class FailOverCachePool extends AbstractCachePool
         foreach ($this->getCaches() as $cacheKey => $cache) {
             try {
                 $item = $cache->fetchObjectFromCache($key);
-                if ($item['isHit']) {
+                if ($item[0] === true) {
                     return $item;
                     //[isHit, value, tags[], expirationTimestamp]
 
@@ -118,6 +122,13 @@ class FailOverCachePool extends AbstractCachePool
                 // $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
+
+        return [
+            false,
+            null,
+            [],
+            null,
+        ];
     }
 
     protected function clearAllObjectsFromCache()
