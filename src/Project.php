@@ -9,7 +9,7 @@ use Attlaz\Project\Model\JobCommand;
 use Attlaz\Project\Model\Log\Processor as LogProcessor;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\Model\TaskResult;
+use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
@@ -250,7 +250,7 @@ class Project
         return null;
     }
 
-    private function executeTask(Task $task): TaskResult
+    private function executeTask(Task $task): TaskExecutionResult
     {
         $cmd = new ExecuteTaskHelper($this);
 

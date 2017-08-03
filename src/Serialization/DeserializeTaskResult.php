@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Serialization;
 
-use Attlaz\Project\Model\TaskResult;
+use Attlaz\Project\Model\TaskExecutionResult;
 
 class DeserializeTaskResult
 {
-    public function __invoke(string $serializedTaskResult): TaskResult
+    public function __invoke(string $serializedTaskResult): TaskExecutionResult
     {
         $taskObject = json_decode($serializedTaskResult, true);
         if (\is_null($taskObject)) {
@@ -38,7 +38,7 @@ class DeserializeTaskResult
         if (!is_bool($success)) {
             throw new \InvalidArgumentException('Unable to deserialize task result, property success must be serialized as bool [' . $serializedTaskResult . ']');
         }
-        $task = new TaskResult($task, $data, $success);
+        $task = new TaskExecutionResult($task, $data, $success);
 
         //TODO: change received, responded to task history objects
 //        $received = $taskObject['received'];
