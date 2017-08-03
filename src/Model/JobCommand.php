@@ -28,7 +28,7 @@ abstract class JobCommand implements LoggerAwareInterface
 
     const INVOKE_METHOD = 'execute';
 
-    protected final function sendTaskWithResult(Task $task, string $branch): TaskResult
+    protected final function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
         $request = $this->createRequest($task, $branch);
         /** @var ResponseInterface $response */
@@ -113,9 +113,9 @@ abstract class JobCommand implements LoggerAwareInterface
 //        return $this->curlMultiHandler;
 //    }
 
-    protected final function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskResultCollection
+    protected final function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
     {
-        $results = new TaskResultCollection();
+        $results = new TaskExecutionResultCollection();
 
         echo 'Create promises' . \PHP_EOL;
         $promises = (function () use ($tasks, $branch) {

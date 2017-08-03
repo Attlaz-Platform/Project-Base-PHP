@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
-class TaskResult implements \JsonSerializable
+class TaskExecutionResult implements \JsonSerializable
 {
     /** @var Task */
     private $task;

@@ -6,7 +6,7 @@ namespace Attlaz\Project\Helper;
 
 use Attlaz\Project\Model\JobCommand;
 use Attlaz\Project\Model\Task;
-use Attlaz\Project\Model\TaskResult;
+use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Project;
 use Psr\Log\LoggerInterface;
 
@@ -25,7 +25,7 @@ class ExecuteTaskHelper
                                 ->get(LoggerInterface::class);
     }
 
-    public function __invoke(Task $task): TaskResult
+    public function __invoke(Task $task): TaskExecutionResult
     {
         $this->logger->info('Execute task: ' . $task->getMethod() . ' (' . \json_encode($task->getArguments()) . ')');
 
@@ -36,13 +36,13 @@ class ExecuteTaskHelper
         } catch (\Throwable $ex) {
             $this->logger->error('Unable to complete task: ' . $ex->getMessage(), ['exception' => $ex]);
 
-            $result = new TaskResult($task, $ex->getMessage(), false);
+            $result = new TaskExecutionResult($task, $ex->getMessage(), false);
         }
 
         return $result;
     }
 
-    private function executeTask(Task $task): TaskResult
+    private function executeTask(Task $task): TaskExecutionResult
     {
         $jobCommand = $this->getJobClass($task);
 
@@ -53,7 +53,7 @@ class ExecuteTaskHelper
             JobCommand::INVOKE_METHOD,
         ], $parameterValues);
 
-        return new TaskResult($task, $result, true);
+        return new TaskExecutionResult($task, $result, true);
     }
 
     private function getMethodArguments(Task $task, JobCommand $jobClass): array

@@ -5,15 +5,15 @@ namespace Attlaz\Project\Model;
 
 use Echron\DataTypes\BasicCollection;
 
-class TaskResultCollection extends BasicCollection
+class TaskExecutionResultCollection extends BasicCollection
 {
 
-    public function addTaskResult(TaskResult $taskResult)
+    public function addTaskResult(TaskExecutionResult $taskResult)
     {
         parent::addToCollection($taskResult);
     }
 
-    public function current(): TaskResult
+    public function current(): TaskExecutionResult
     {
         return parent::current();
     }
