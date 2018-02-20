@@ -6,7 +6,7 @@ namespace Attlaz\Project\Model;
 class TaskExecutionRequest
 {
     private $task;
-    private $executionId;
+    private $id;
 
     public function __construct(Task $task, string $executionId)
     {
@@ -18,7 +18,7 @@ class TaskExecutionRequest
         }
 
         $this->task = $task;
-        $this->executionId = $executionId;
+        $this->id = $executionId;
     }
 
     public function getTask(): Task
@@ -26,9 +26,9 @@ class TaskExecutionRequest
         return $this->task;
     }
 
-    public function getExecutionId(): string
+    public function getId(): string
     {
-        return $this->executionId;
+        return $this->id;
     }
 
     public static function fromArray(array $input): self
@@ -36,15 +36,15 @@ class TaskExecutionRequest
         if (!\key_exists('task', $input)) {
             throw new \InvalidArgumentException('Unable to deserialize TaskExecutionRequest, task is not defined');
         }
-        if (!\key_exists('execution_id', $input)) {
-            throw new \InvalidArgumentException('Unable to deserialize TaskExecutionRequest, execution_id is not defined');
+        if (!\key_exists('id', $input)) {
+            throw new \InvalidArgumentException('Unable to deserialize TaskExecutionRequest, id is not defined');
         }
 
         $taskArray = $input['task'];
         $task = Task::fromArray($taskArray);
 
-        $executionId = $input['execution_id'];
+        $id = $input['id'];
 
-        return new self($task, $executionId);
+        return new self($task, $id);
     }
 }
