@@ -6,18 +6,18 @@ namespace Attlaz\Project\Model;
 class Task implements \JsonSerializable
 {
 
-    private $method;
+    private $command;
     private $arguments;
 
-    public function __construct(string $method, array $arguments = [])
+    public function __construct(string $command, array $arguments = [])
     {
-        $this->method = $method;
+        $this->command = $command;
         $this->arguments = $arguments;
     }
 
-    public function getMethod(): string
+    public function getCommand(): string
     {
-        return $this->method;
+        return $this->command;
     }
 
     public function getArguments(): array
@@ -38,7 +38,7 @@ class Task implements \JsonSerializable
     function jsonSerialize()
     {
         return [
-            'method'    => $this->method,
+            'command'   => $this->command,
             'arguments' => $this->arguments,
         ];
     }
@@ -46,15 +46,15 @@ class Task implements \JsonSerializable
     public static function fromArray(array $input): self
     {
         if (!\key_exists('arguments', $input)) {
-            throw new \InvalidArgumentException('Unable to deserialize task, arguments is not defined');
+            throw new \InvalidArgumentException('Unable to deserialize Task, arguments is not defined');
         }
-        if (!\key_exists('method', $input)) {
-            throw new \InvalidArgumentException('Unable to deserialize task, method is not defined');
+        if (!\key_exists('command', $input)) {
+            throw new \InvalidArgumentException('Unable to deserialize Task, command is not defined');
         }
 
-        $method = $input['method'];
+        $command = $input['command'];
         $arguments = $input['arguments'];
 
-        return new self($method, $arguments);
+        return new self($command, $arguments);
     }
 }
