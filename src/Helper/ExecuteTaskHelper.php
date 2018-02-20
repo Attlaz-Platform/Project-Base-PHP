@@ -27,12 +27,12 @@ class ExecuteTaskHelper
 
     public function __invoke(Task $task): TaskExecutionResult
     {
-        $this->logger->info('Execute task: ' . $task->getMethod() . ' (' . \json_encode($task->getArguments()) . ')');
+        $this->logger->info('Execute task: ' . $task->getCommand() . ' (' . \json_encode($task->getArguments()) . ')');
 
         try {
             $result = $this->executeTask($task);
 
-            $this->logger->info('Task: ' . $task->getMethod() . ' execution complete (' . \json_encode($task->getArguments()) . ')');
+            $this->logger->info('Task: ' . $task->getCommand() . ' execution complete (' . \json_encode($task->getArguments()) . ')');
         } catch (\Throwable $ex) {
             $this->logger->error('Unable to complete task: ' . $ex->getMessage(), ['exception' => $ex]);
 
@@ -121,7 +121,7 @@ class ExecuteTaskHelper
 
     private function getJobClass(Task $task): JobCommand
     {
-        $commandName = $task->getMethod();
+        $commandName = $task->getCommand();
 
         if (!$this->project->hasCommand($commandName)) {
             throw new \Exception('Unable to execute command "' . $commandName . '": command not found');
