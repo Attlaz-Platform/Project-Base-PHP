@@ -215,7 +215,7 @@ class Project
                 $taskExecutionRequest = $this->getTaskExecutionRequest();
             }
 
-            $this->logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
+            $this->logProcessor->setExecutionId($taskExecutionRequest->getId());
 
             $taskExecutionResult = $this->executeTask($taskExecutionRequest->getTask());
 
