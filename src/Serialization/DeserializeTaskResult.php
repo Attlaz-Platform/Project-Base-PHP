@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Serialization;
 
+use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskExecutionResult;
 
 class DeserializeTaskResult
@@ -29,8 +30,7 @@ class DeserializeTaskResult
             throw new \InvalidArgumentException('Unable to deserialize task result, property task must be serialized as array [' . $serializedTaskResult . ']');
         }
 
-        $cmd = new DeserializeTaskFromArray();
-        $task = $cmd->__invoke($taskArray);
+        $task = Task::fromArray($taskArray);
 
         $data = $taskObject['data'];
 
