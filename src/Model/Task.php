@@ -43,6 +43,11 @@ class Task implements \JsonSerializable
         ];
     }
 
+    function __toString()
+    {
+        return json_encode($this->jsonSerialize());
+    }
+
     public static function fromArray(array $input): self
     {
         if (!\key_exists('command', $input)) {

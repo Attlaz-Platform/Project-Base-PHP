@@ -1,8 +1,0 @@
-queue:
-  job:
-    name: task
-    #host: 192.168.0.251
-    host: rabbit
-    port: 5672
-    user: guest
-    password: guest

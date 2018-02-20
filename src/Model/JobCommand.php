@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Attlaz\Project\Model;
 
 use Attlaz\Project\Serialization\DeserializeTaskResult;
-use Attlaz\Project\Serialization\SerializeTask;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Promise\Promise;
@@ -186,8 +185,7 @@ abstract class JobCommand implements LoggerAwareInterface
             'Content-Type' => 'application/json',
         ];
 
-        $cmd = new SerializeTask();
-        $body = $cmd->__invoke($task);
+        $body = $task->__toString();
 
         $request = new Request('POST', $uri, $headers, $body);
 

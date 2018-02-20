@@ -9,10 +9,9 @@ class SerializeTaskCollection
 {
     public function __invoke(TaskCollection $taskCollection): string
     {
-        $cmd = new SerializeTask();
         $data = [];
         foreach ($taskCollection as $task) {
-            $data[] = $cmd->__invoke($task);
+            $data[] = $task->__toString();
         }
 
         return json_encode($data);
