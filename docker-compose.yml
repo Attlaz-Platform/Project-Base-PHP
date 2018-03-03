@@ -1,72 +1,16 @@
 version: '3'
 
-#volumes:
-#  cache:
-#    driver: "local"
-#  logs:
-#    driver: "local"
-#
-
-
-
 services:
-  api:
-    image: attlaz/api:0.0.1
-    build: ./api
-    env_file:
-        - attlaz.env
-#    networks:
-#          - public
-#          - private
-    ports:
-          - "80:80"
-    volumes:
-          - ./api:/var/www/html
-          - ./src:/var/www/src
-#    depends_on:
-#            - queue
-
-  queue:
-    image: rabbitmq:3.6.12-management
-    hostname: queue
-    env_file:
-      - attlaz.env
-    ports:
-      - "32769:15672"
-      - "5672:5672"
-#    networks:
-#      - private
-    deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-
-  worker:
-  #php /var/attlaz/worker/run.php
-#      image: attlaz/worker:0.0.1
-      image: php7.2-devbox:20171016_2029
-    #  build: ./worker
-      env_file:
-              - attlaz.env
-#      networks:
-#                - private
-      deploy:
-                replicas: 10
-                update_config:
-                  parallelism: 2
-                  delay: 10s
+  composer:
+      image: composer:latest
       volumes:
-          - .:/var/attlaz
-      command:
-        - "/var/attlaz/worker/run.php"
-#           - ./worker:/var/attlaz
-#                    - ./src:/var/src
-#      depends_on:
-#        - queue
+            - .:/app
 
-#networks:
-#  public:
-#    driver: "bridge"
-#  private:
-#    driver: "bridge"
+      #docker-compose run composer update --working-dir . --ignore-platform-reqs
+
+  phpunit:
+        image: phpunit/phpunit:6.0.6
+        volumes:
+              - ../:/app
+        #docker-compose run phpunit -c /app/phpunit.xml
+
