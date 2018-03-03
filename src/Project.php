@@ -92,8 +92,10 @@ class Project
 
     private function getDefinitions(): array
     {
+        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@storage';
+
         return [
-            \Psr\Log\LoggerInterface::class        => \DI\factory(function () {
+            \Psr\Log\LoggerInterface::class        => \DI\factory(function () use ($mongoDBConnectionString) {
                 $logger = new Logger("Attlaz Project " . $this->branchCode);
 
                 $this->logProcessor = new LogProcessor();
@@ -114,7 +116,7 @@ class Project
                 /**
                  * Log to MongoDB
                  */
-                $mongoDBClient = new \MongoDB\Client('mongodb://hq.attlaz.com');
+                $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString);
 
                 $mongoDBHandler = new \Monolog\Handler\MongoDBHandler($mongoDBClient, 'attlaz', 'log');
 
@@ -127,7 +129,7 @@ class Project
             \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (\Psr\Log\LoggerInterface $logger) {
                 //$cache = new \Cache\Adapter\PHPArray\ArrayCachePool();
 
-                $manager = new \MongoDB\Driver\Manager('mongodb://hq.attlaz.com');
+                $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString);
 
                 $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_cache');
 
