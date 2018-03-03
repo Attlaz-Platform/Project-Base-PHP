@@ -93,9 +93,14 @@ class Project
     private function getDefinitions(): array
     {
         $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@storage';
+//        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@hq.attlaz.com';
+
+        $mongoDBUriOptions = [
+            'readPreference' => 'nearest',
+        ];
 
         return [
-            \Psr\Log\LoggerInterface::class        => \DI\factory(function () use ($mongoDBConnectionString) {
+            \Psr\Log\LoggerInterface::class        => \DI\factory(function () use ($mongoDBConnectionString, $mongoDBUriOptions) {
                 $logger = new Logger("Attlaz Project " . $this->branchCode);
 
                 $this->logProcessor = new LogProcessor();
@@ -116,7 +121,7 @@ class Project
                 /**
                  * Log to MongoDB
                  */
-                $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString);
+                $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString, $mongoDBUriOptions);
 
                 $mongoDBHandler = new \Monolog\Handler\MongoDBHandler($mongoDBClient, 'attlaz', 'log');
 
@@ -126,10 +131,10 @@ class Project
 
                 return $logger;
             }),
-            \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (\Psr\Log\LoggerInterface $logger) {
+            \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (\Psr\Log\LoggerInterface $logger) use ($mongoDBConnectionString, $mongoDBUriOptions) {
                 //$cache = new \Cache\Adapter\PHPArray\ArrayCachePool();
 
-                $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString);
+                $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
                 $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_cache');
 
@@ -151,8 +156,8 @@ class Project
                 return $cache;
                 // $cache = new \League\Flysystem\Adapter\NullAdapter();
             }),
-            \Echron\IO\Client\Cache::class         => \DI\factory(function () {
-                $manager = new \MongoDB\Driver\Manager('mongodb://hq.attlaz.com');
+            \Echron\IO\Client\Cache::class         => \DI\factory(function () use ($mongoDBConnectionString, $mongoDBUriOptions) {
+                $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
                 $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_storage');
 
