@@ -14,6 +14,7 @@ use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use DI\ContainerBuilder;
+use Monolog\Formatter\NormalizerFormatter;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -93,7 +94,7 @@ class Project
     private function getDefinitions(): array
     {
         $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@storage';
-//        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@hq.attlaz.com';
+        //$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@hq.attlaz.com';
 
         $mongoDBUriOptions = [
             'readPreference' => 'nearest',
@@ -124,6 +125,7 @@ class Project
                 $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString, $mongoDBUriOptions);
 
                 $mongoDBHandler = new \Monolog\Handler\MongoDBHandler($mongoDBClient, 'attlaz', 'log');
+                $mongoDBHandler->setFormatter(new NormalizerFormatter('Y-m-d\TH:i:s.v\Z'));
 
                 $logger->pushHandler($mongoDBHandler);
 
