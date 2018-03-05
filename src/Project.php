@@ -93,7 +93,7 @@ class Project
 
     private function getDefinitions(): array
     {
-        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@storage';
+        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@Attlaz-storage-1,Attlaz-storage-2,Attlaz-storage-3';
         //$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@hq.attlaz.com';
 
         $mongoDBUriOptions = [
