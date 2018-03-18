@@ -226,7 +226,7 @@ class Project
 
             $this->logProcessor->setExecutionId($taskExecutionRequest->getId());
 
-            $taskExecutionResult = $this->executeTask($taskExecutionRequest->getTask());
+            $taskExecutionResult = $this->executeTask($taskExecutionRequest);
 
             $cmd = new SerializeTaskResult();
             $strTaskResult = $cmd->__invoke($taskExecutionResult);
@@ -281,7 +281,7 @@ class Project
         return null;
     }
 
-    private function executeTask(Task $task): TaskExecutionResult
+    private function executeTask(TaskExecutionRequest $task): TaskExecutionResult
     {
         $cmd = new ExecuteTaskHelper($this);
 
