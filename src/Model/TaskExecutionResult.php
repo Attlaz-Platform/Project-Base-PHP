@@ -16,7 +16,7 @@ class TaskExecutionResult implements \JsonSerializable
     /** @var  \DateTime */
     private $responded;
 
-    public function __construct(Task $task, $data, $success = true)
+    public function __construct(string $task, $data, $success = true)
     {
         $this->task = $task;
         $this->data = $data;

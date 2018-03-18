@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Helper;
 
-
 use Attlaz\Project\Model\JobCommand;
-use Attlaz\Project\Model\Task;
+use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Project;
 use Psr\Log\LoggerInterface;
@@ -25,62 +24,62 @@ class ExecuteTaskHelper
                                 ->get(LoggerInterface::class);
     }
 
-    public function __invoke(Task $task): TaskExecutionResult
+    public function __invoke(TaskExecutionRequest $request): TaskExecutionResult
     {
-        $this->logger->info('Execute task: ' . $task->getCommand() . ' (' . \json_encode($task->getArguments()) . ')');
+        $this->logger->info('Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ')');
 
         try {
-            $result = $this->executeTask($task);
+            $result = $this->executeTask($request);
 
-            $this->logger->info('Task: ' . $task->getCommand() . ' execution complete (' . \json_encode($task->getArguments()) . ')');
+            $this->logger->info('Task: ' . $request->getTask() . ' execution complete (' . \json_encode($request->getArguments()) . ')');
         } catch (\Throwable $ex) {
             $this->logger->error('Unable to complete task: ' . $ex->getMessage(), ['exception' => $ex]);
 
-            $result = new TaskExecutionResult($task, $ex->getMessage(), false);
+            $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
         }
 
         return $result;
     }
 
-    private function executeTask(Task $task): TaskExecutionResult
+    private function executeTask(TaskExecutionRequest $request): TaskExecutionResult
     {
-        $jobCommand = $this->getJobClass($task);
+        $jobCommand = $this->getJobClass($request);
 
-        $parameterValues = $this->getMethodArguments($task, $jobCommand);
+        $parameterValues = $this->getMethodArguments($request, $jobCommand);
 
         $result = call_user_func_array([
             $jobCommand,
             JobCommand::INVOKE_METHOD,
         ], $parameterValues);
 
-        return new TaskExecutionResult($task, $result, true);
+        return new TaskExecutionResult($request->getTask(), $result, true);
     }
 
-    private function getMethodArguments(Task $task, JobCommand $jobClass): array
+    private function getMethodArguments(TaskExecutionRequest $request, JobCommand $jobClass): array
     {
         $m = new \ReflectionMethod($jobClass, JobCommand::INVOKE_METHOD);
 
         $parameterValues = [];
         $parameters = $m->getParameters();
         foreach ($parameters as $parameter) {
-            $parameterValues[] = $this->getArgumentValue($task, $parameter);;
+            $parameterValues[] = $this->getArgumentValue($request, $parameter);;
         }
 
         return $parameterValues;
     }
 
-    private function getArgumentValue(Task $task, \ReflectionParameter $parameter)
+    private function getArgumentValue(TaskExecutionRequest $request, \ReflectionParameter $parameter)
     {
         $parameterName = $parameter->getName();
 
-        if (!$task->hasArgument($parameterName) && !$parameter->isOptional()) {
+        if (!$request->hasArgument($parameterName) && !$parameter->isOptional()) {
             throw new \Exception('Missing parameter "' . $parameterName . '"');
         }
 
-        if (!$task->hasArgument($parameterName) && $parameter->isOptional()) {
+        if (!$request->hasArgument($parameterName) && $parameter->isOptional()) {
             $parameterValue = $parameter->getDefaultValue();
         } else {
-            $parameterValue = $task->getArgument($parameterName);
+            $parameterValue = $request->getArgument($parameterName);
         }
 
         if ($parameter->hasType()) {
@@ -119,9 +118,9 @@ class ExecuteTaskHelper
         }
     }
 
-    private function getJobClass(Task $task): JobCommand
+    private function getJobClass(TaskExecutionRequest $task): JobCommand
     {
-        $commandName = $task->getCommand();
+        $commandName = $task->getTask();
 
         if (!$this->project->hasCommand($commandName)) {
             throw new \Exception('Unable to execute command "' . $commandName . '": command not found');
