@@ -71,7 +71,7 @@ class TaskExecutionRequest
 
         $request = new self($task, $id);
 
-        if (!\key_exists('arguments', $input)) {
+        if (\key_exists('arguments', $input)) {
             $arguments = $input['arguments'];
             if (\is_array($arguments)) {
                 $request->setArguments($arguments);
