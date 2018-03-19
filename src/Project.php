@@ -8,7 +8,6 @@ use Attlaz\Project\Helper\ExecuteTaskHelper;
 use Attlaz\Project\Model\Cache\FailOverCachePool;
 use Attlaz\Project\Model\JobCommand;
 use Attlaz\Project\Model\Log\Processor as LogProcessor;
-use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
@@ -212,7 +211,7 @@ class Project
         return $this->commands[$commandName];
     }
 
-    public function handleRequest(TaskExecutionRequest $taskExecutionRequest = null): string
+    public function handleRequest(TaskExecutionRequest $taskExecutionRequest = null): void
     {
 //        \ob_start(function ($buffer) {
 //            $this->logger->info('[Unregistered output] ' . $buffer);
@@ -232,9 +231,8 @@ class Project
             $strTaskResult = $cmd->__invoke($taskExecutionResult);
 
             $this->logger->debug('Sending back response: ' . $strTaskResult);
-            $strTaskResult = base64_encode($strTaskResult);
 
-            echo $strTaskResult;
+            $this->sendResponse($strTaskResult);
             if ($taskExecutionResult->getSuccess()) {
                 exit(0);
             } else {
@@ -249,6 +247,11 @@ class Project
         // ob_end_flush();
 
         exit(1);
+    }
+
+    private function sendResponse(string $result)
+    {
+        echo \base64_encode('Result') . ':' . base64_encode($result);
     }
 
     private function getTaskExecutionRequest(): TaskExecutionRequest
