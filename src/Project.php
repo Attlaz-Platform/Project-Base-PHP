@@ -3,17 +3,13 @@ declare(strict_types=1);
 
 namespace Attlaz\Project;
 
-use Attlaz\Project\App\Logger;
 use Attlaz\Project\Helper\ExecuteTaskHelper;
-use Attlaz\Project\Model\Cache\FailOverCachePool;
 use Attlaz\Project\Model\JobCommand;
 use Attlaz\Project\Model\Log\Processor as LogProcessor;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
-use Cache\Adapter\PHPArray\ArrayCachePool;
 use DI\ContainerBuilder;
-use Monolog\Formatter\NormalizerFormatter;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -81,99 +77,14 @@ class Project
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
 
-        $containerBuilder->addDefinitions($this->getDefinitions());
+        $containerBuilder->addDefinitions(__DIR__ . '/di.php');
+//        $containerBuilder->addDefinitions($this->getDefinitions());
 
         if (!\is_null($definitionsFile)) {
             $containerBuilder->addDefinitions($definitionsFile);
         }
 
         $this->container = $containerBuilder->build();
-    }
-
-    private function getDefinitions(): array
-    {
-        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@Attlaz-storage-1,Attlaz-storage-2,Attlaz-storage-3';
-        //$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@hq.attlaz.com';
-
-        $mongoDBUriOptions = [
-            'readPreference' => 'nearest',
-        ];
-
-        return [
-            \Psr\Log\LoggerInterface::class        => \DI\factory(function () use ($mongoDBConnectionString, $mongoDBUriOptions) {
-                $logger = new Logger("Attlaz Project " . $this->branchCode);
-
-                $this->logProcessor = new LogProcessor();
-                $logger->pushProcessor($this->logProcessor);
-
-                $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
-
-                $formatter = new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
-//        $formatter = new \Monolog\Formatter\LineFormatter($format);
-                $formatter->allowInlineLineBreaks(true);
-                $formatter->includeStacktraces(true);
-
-                $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
-                $streamHandler->setFormatter($formatter);
-
-                $logger->pushHandler($streamHandler);
-
-                /**
-                 * Log to MongoDB
-                 */
-                $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString, $mongoDBUriOptions);
-
-                $mongoDBHandler = new \Monolog\Handler\MongoDBHandler($mongoDBClient, 'attlaz', 'log');
-                $mongoDBHandler->setFormatter(new NormalizerFormatter('Y-m-d\TH:i:s.v\Z'));
-
-                $logger->pushHandler($mongoDBHandler);
-
-                \Monolog\ErrorHandler::register($logger);
-
-                return $logger;
-            }),
-            \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (\Psr\Log\LoggerInterface $logger) use ($mongoDBConnectionString, $mongoDBUriOptions) {
-                //$cache = new \Cache\Adapter\PHPArray\ArrayCachePool();
-
-                $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
-
-                $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_cache');
-
-                $cachePools = [];
-
-                $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
-                $mongoDBCache->setLogger($logger);
-                $cachePools[] = $mongoDBCache;
-
-                $fileCache = new ArrayCachePool(null);
-                $cachePools[] = $fileCache;
-
-                $cache = new FailOverCachePool($cachePools, [
-                    'skip_on_failure'        => true,
-                    'remove_pool_on_failure' => true,
-                ]);
-                $cache->setLogger($logger);
-
-                return $cache;
-                // $cache = new \League\Flysystem\Adapter\NullAdapter();
-            }),
-            \Echron\IO\Client\Cache::class         => \DI\factory(function () use ($mongoDBConnectionString, $mongoDBUriOptions) {
-                $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
-
-                $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_storage');
-
-//$collection = \Cache\Adapter\MongoDB\MongoDBCachePool::createCollection($manager, '178.117.199.50:27017', 'attlaz.test');
-
-//var_dump($collection);
-//die();
-                $pool = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
-
-                $cacheClient = new \Echron\IO\Client\Cache($pool);
-
-                return $cacheClient;
-            }),
-
-        ];
     }
 
     public function getContainer(): ContainerInterface
@@ -213,17 +124,16 @@ class Project
 
     public function handleRequest(TaskExecutionRequest $taskExecutionRequest = null): void
     {
-//        \ob_start(function ($buffer) {
-//            $this->logger->info('[Unregistered output] ' . $buffer);
-//        });
-
         $strTaskResult = '';
         try {
             if (\is_null($taskExecutionRequest)) {
                 $taskExecutionRequest = $this->getTaskExecutionRequest();
             }
 
-            $this->logProcessor->setExecutionId($taskExecutionRequest->getId());
+            /** @var \Attlaz\Project\Model\Log\Processor logProcessor */
+            $logProcessor = new \Attlaz\Project\Model\Log\Processor();
+            $logProcessor->setExecutionId($taskExecutionRequest->getId());
+            $this->logger->pushProcessor($logProcessor);
 
             $taskExecutionResult = $this->executeTask($taskExecutionRequest);
 
@@ -289,5 +199,16 @@ class Project
         $cmd = new ExecuteTaskHelper($this);
 
         return $cmd->__invoke($task);
+    }
+
+    private function runAsLocal(): bool
+    {
+        $jetbrains = \getenv('JETBRAINS_REMOTE_RUN');
+        if ($jetbrains === '1') {
+            return true;
+        }
+
+        //TODO: handle local test run in CLI
+        return false;
     }
 }
