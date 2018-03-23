@@ -7,12 +7,10 @@ class Task implements \JsonSerializable
 {
 
     private $command;
-    private $arguments;
 
-    public function __construct(string $command, array $arguments = [])
+    public function __construct(string $command)
     {
         $this->command = $command;
-        $this->arguments = $arguments;
     }
 
     public function getCommand(): string
@@ -39,11 +37,6 @@ class Task implements \JsonSerializable
         }
         $command = $input['command'];
 
-        $arguments = [];
-        if (\key_exists('arguments', $input)) {
-            $arguments = $input['arguments'];
-        }
-
-        return new self($command, $arguments);
+        return new self($command);
     }
 }
