@@ -10,6 +10,7 @@ use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,6 +20,7 @@ use Psr\Log\LoggerInterface;
  */
 abstract class JobCommand implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
 
     /** @var  Client */
     private $client;
