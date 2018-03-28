@@ -77,6 +77,8 @@ class Project
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
 
+        $containerBuilder->addDefinitions(['branchCode' => $this->branchCode]);
+
         $containerBuilder->addDefinitions(__DIR__ . '/di.php');
 //        $containerBuilder->addDefinitions($this->getDefinitions());
 
