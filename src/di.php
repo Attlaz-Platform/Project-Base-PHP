@@ -9,9 +9,12 @@ $mongoDBUriOptions = [
     'readPreference' => 'nearest',
 ];
 
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+
 return [
-    \Psr\Log\LoggerInterface::class        => \DI\factory(function () use ($mongoDBConnectionString, $mongoDBUriOptions) {
-        $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $this->branchCode);
+    \Psr\Log\LoggerInterface::class        => \DI\factory(function (ContainerInterface $c) use ($mongoDBConnectionString, $mongoDBUriOptions) {
+        $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $c->get('branchCode'));
 
         $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
@@ -49,10 +52,10 @@ return [
 
         return $logger;
     }),
-    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (\Psr\Log\LoggerInterface $logger) use ($mongoDBConnectionString, $mongoDBUriOptions) {
+    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (ContainerInterface $c, LoggerInterface $logger) use ($mongoDBConnectionString, $mongoDBUriOptions) {
         $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
-        $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_cache');
+        $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_cache');
 
         $cachePools = [];
 
@@ -71,10 +74,10 @@ return [
 
         return $cache;
     }),
-    \Echron\IO\Client\Cache::class         => \DI\factory(function () use ($mongoDBConnectionString, $mongoDBUriOptions) {
+    \Echron\IO\Client\Cache::class         => \DI\factory(function (ContainerInterface $c) use ($mongoDBConnectionString, $mongoDBUriOptions) {
         $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
-        $collection = new \MongoDB\Collection($manager, 'attlaz', $this->branchCode . '_storage');
+        $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_storage');
 
         $pool = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
 
