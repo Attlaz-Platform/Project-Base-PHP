@@ -10,6 +10,7 @@ use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
 use DI\ContainerBuilder;
+use project\src\Helper\TaskExecutionRequestHelper;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -22,8 +23,7 @@ class Project
     /** @var ContainerInterface */
     private $container;
 
-    private const TASK_PARAM_SHORT = 't';
-    private const TASK_PARAM_LONG = 'task';
+
 
     /** @var LogProcessor */
     private $logProcessor;
@@ -76,9 +76,7 @@ class Project
 
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
-
         $containerBuilder->addDefinitions(['branchCode' => $this->branchCode]);
-
         $containerBuilder->addDefinitions(__DIR__ . '/di.php');
 //        $containerBuilder->addDefinitions($this->getDefinitions());
 
@@ -124,20 +122,20 @@ class Project
         return $this->commands[$commandName];
     }
 
-    public function handleRequest(TaskExecutionRequest $taskExecutionRequest = null): void
+    public function handleRequest(TaskExecutionRequest $request = null): void
     {
         $strTaskResult = '';
         try {
-            if (\is_null($taskExecutionRequest)) {
-                $taskExecutionRequest = $this->getTaskExecutionRequest();
+            if (\is_null($request)) {
+                $request = TaskExecutionRequestHelper::getRequest();
             }
 
             /** @var \Attlaz\Project\Model\Log\Processor logProcessor */
             $logProcessor = new \Attlaz\Project\Model\Log\Processor();
-            $logProcessor->setExecutionId($taskExecutionRequest->getId());
+            $logProcessor->setExecutionId($request->getExecutionId());
             $this->logger->pushProcessor($logProcessor);
 
-            $taskExecutionResult = $this->executeTask($taskExecutionRequest);
+            $taskExecutionResult = $this->executeTask($request);
 
             $cmd = new SerializeTaskResult();
             $strTaskResult = $cmd->__invoke($taskExecutionResult);
@@ -166,35 +164,7 @@ class Project
         echo \base64_encode('Result') . ':' . base64_encode($result);
     }
 
-    private function getTaskExecutionRequest(): TaskExecutionRequest
-    {
-        $strTask = $this->getCLIOption(self::TASK_PARAM_SHORT, self::TASK_PARAM_LONG);
 
-        if (\is_null($strTask)) {
-            throw new \Exception('Invalid request: task execution request not defined');
-        }
-
-        $strTask = base64_decode($strTask);
-        $taskArray = \json_decode($strTask, true);
-
-        return TaskExecutionRequest::fromArray($taskArray);
-    }
-
-    private function getCLIOption(string $short, string $long): ?string
-    {
-        $options = getopt($short . ':');
-//        var_dump($options);
-//        var_dump($argv);
-
-        if (isset($options[$short])) {
-            return (string)$options[$short];
-        }
-        if (isset($options[$long])) {
-            return (string)$options[$long];
-        }
-
-        return null;
-    }
 
     private function executeTask(TaskExecutionRequest $task): TaskExecutionResult
     {

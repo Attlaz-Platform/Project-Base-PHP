@@ -120,7 +120,7 @@ class ExecuteTaskHelper
 
     private function getJobClass(TaskExecutionRequest $task): JobCommand
     {
-        $commandName = $task->getTask();
+        $commandName = $task->getCommand();
 
         if (!$this->project->hasCommand($commandName)) {
             throw new \Exception('Unable to execute command "' . $commandName . '": command not found');
