@@ -38,7 +38,7 @@ class DeserializeTaskResult
         if (!is_bool($success)) {
             throw new \InvalidArgumentException('Unable to deserialize task result, property success must be serialized as bool [' . $serializedTaskResult . ']');
         }
-        $task = new TaskExecutionResult($task, $data, $success);
+        $task = new TaskExecutionResult($task->id, $data, $success);
 
         //TODO: change received, responded to task history objects
 //        $received = $taskObject['received'];

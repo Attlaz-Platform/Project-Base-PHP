@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-namespace project\src\Helper;
+namespace Attlaz\Project\Helper;
 
 use Attlaz\Project\Model\TaskExecutionRequest;
 
