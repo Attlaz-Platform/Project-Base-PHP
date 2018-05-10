@@ -22,7 +22,7 @@ class TaskExecutionRequestHelper
         $arguments = self::getArguments();
         $execution = self::getExecution();
 
-        return new TaskExecutionRequest('unknown', $command, $arguments, $execution);
+        return new TaskExecutionRequest($command, $command, $arguments, $execution);
     }
 
     private static function getCommand(): string
@@ -33,7 +33,7 @@ class TaskExecutionRequestHelper
             throw new \Exception('Invalid request: task execution request not defined');
         }
 
-        return $command;
+        return (string)$command;
     }
 
     private static function getArguments(): array
@@ -44,7 +44,10 @@ class TaskExecutionRequestHelper
             return [];
         }
 
-        return \json_decode($arguments);
+        $arguments = \base64_decode($arguments);
+        $arguments = \json_decode($arguments, true);
+
+        return $arguments;
     }
 
     private static function getExecution(): string
@@ -55,20 +58,18 @@ class TaskExecutionRequestHelper
             throw new \Exception('Invalid request: execution not defined');
         }
 
-        return $execution;
+        return (string)$execution;
     }
 
-    private static function getCLIOption(string $short, string $long): ?string
+    private static function getCLIOption(string $short, string $long)
     {
-        $options = getopt($short . ':');
-//        var_dump($options);
-//        var_dump($argv);
+        $options = getopt('c:p:e::');
 
         if (isset($options[$short])) {
-            return (string)$options[$short];
+            return $options[$short];
         }
         if (isset($options[$long])) {
-            return (string)$options[$long];
+            return $options[$long];
         }
 
         return null;

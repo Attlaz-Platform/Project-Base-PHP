@@ -18,20 +18,25 @@ return [
 
         $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
-        $runLocal = false;
-        $jetbrains = \getenv('JETBRAINS_REMOTE_RUN');
-        if ($jetbrains === '1') {
-            $runLocal = true;
-        }
+//        $runLocal = false;
+//        $jetbrains = \getenv('JETBRAINS_REMOTE_RUN');
+//        if ($jetbrains === '1') {
+//            $runLocal = true;
+//        }
 
-        if ($runLocal) {
-            $formatter = new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
-            $formatter->allowInlineLineBreaks(true);
-            $formatter->includeStacktraces(true);
-        } else {
+//        if ($runLocal) {
+//            $formatter = new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
+//            $formatter->allowInlineLineBreaks(true);
+//            $formatter->includeStacktraces(true);
+//        } else {
             $formatter = new \Monolog\Formatter\LineFormatter($format);
             $formatter->allowInlineLineBreaks(false);
-        }
+        $formatter->includeStacktraces(true);
+
+        $introspectionProcessor = new \Monolog\Processor\IntrospectionProcessor(\Monolog\Logger::DEBUG, ['/var/attlaz/project/vendor/attlaz/project/src']);
+        $logger->pushProcessor($introspectionProcessor);
+
+//        }
 
         $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
         $streamHandler->setFormatter($formatter);
