@@ -4,13 +4,13 @@ declare(strict_types=1);
 namespace Attlaz\Project;
 
 use Attlaz\Project\Helper\ExecuteTaskHelper;
+use Attlaz\Project\Helper\TaskExecutionRequestHelper;
 use Attlaz\Project\Model\JobCommand;
-use Attlaz\Project\Model\Log\Processor as LogProcessor;
+use Attlaz\Project\Model\Log\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
 use DI\ContainerBuilder;
-use project\src\Helper\TaskExecutionRequestHelper;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -23,10 +23,6 @@ class Project
     /** @var ContainerInterface */
     private $container;
 
-
-
-    /** @var LogProcessor */
-    private $logProcessor;
     /** @var LoggerInterface */
     private $logger;
 
@@ -124,14 +120,13 @@ class Project
 
     public function handleRequest(TaskExecutionRequest $request = null): void
     {
-        $strTaskResult = '';
         try {
             if (\is_null($request)) {
                 $request = TaskExecutionRequestHelper::getRequest();
             }
 
             /** @var \Attlaz\Project\Model\Log\Processor logProcessor */
-            $logProcessor = new \Attlaz\Project\Model\Log\Processor();
+            $logProcessor = new Processor();
             $logProcessor->setExecutionId($request->getExecutionId());
             $this->logger->pushProcessor($logProcessor);
 
@@ -156,15 +151,13 @@ class Project
 
         // ob_end_flush();
 
-        exit(1);
+//        exit(1);
     }
 
     private function sendResponse(string $result)
     {
         echo \base64_encode('Result') . ':' . base64_encode($result);
     }
-
-
 
     private function executeTask(TaskExecutionRequest $task): TaskExecutionResult
     {
@@ -173,14 +166,14 @@ class Project
         return $cmd->__invoke($task);
     }
 
-    private function runAsLocal(): bool
-    {
-        $jetbrains = \getenv('JETBRAINS_REMOTE_RUN');
-        if ($jetbrains === '1') {
-            return true;
-        }
-
-        //TODO: handle local test run in CLI
-        return false;
-    }
+//    private function runAsLocal(): bool
+//    {
+//        $jetbrains = \getenv('JETBRAINS_REMOTE_RUN');
+//        if ($jetbrains === '1') {
+//            return true;
+//        }
+//
+//        //TODO: handle local test run in CLI
+//        return false;
+//    }
 }
