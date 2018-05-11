@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "da26a4e020808fba0c52b3d302362de4",
+    "content-hash": "1063ae987093fc854e37bd984f34ca02",
     "packages": [
         {
             "name": "attlaz/client",

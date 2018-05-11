@@ -5,7 +5,6 @@ namespace Attlaz\Project;
 
 use Attlaz\Project\Helper\ExecuteTaskHelper;
 use Attlaz\Project\Helper\TaskExecutionRequestHelper;
-use Attlaz\Project\Model\JobCommand;
 use Attlaz\Project\Model\Log\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
@@ -30,9 +29,11 @@ class Project
 
     public const MODE_PRODUCTION = 'production';
     public const MODE_DEVELOP = 'develop';
+    private $startTime;
 
     public function __construct(string $branchCode, string $definitionsFile = null)
     {
+        $this->startTime = \microtime(true);
         if (empty($branchCode)) {
             throw new \InvalidArgumentException('Branch code cannot be empty');
         }
@@ -72,7 +73,21 @@ class Project
 
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
+        //TODO: only enable in production mode
+        $containerBuilder->enableCompilation(__DIR__ . '/var/cache');
         $containerBuilder->addDefinitions(['branchCode' => $this->branchCode]);
+
+        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@Attlaz-storage-1,Attlaz-storage-2,Attlaz-storage-3';
+        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@159.65.56.165';
+        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@178.62.251.16';
+
+        $mongoDBUriOptions = [
+            'readPreference' => 'nearest',
+        ];
+
+        $containerBuilder->addDefinitions(['mongoDBConnectionString' => $mongoDBConnectionString]);
+        $containerBuilder->addDefinitions(['mongoDBUriOptions' => $mongoDBUriOptions]);
+
         $containerBuilder->addDefinitions(__DIR__ . '/di.php');
 //        $containerBuilder->addDefinitions($this->getDefinitions());
 
@@ -90,12 +105,13 @@ class Project
 
     public function registerCommand(string $commandName, string $commandClass)
     {
-        if (isset($this->commands[$commandName])) {
+        if (\key_exists($commandName, $this->commands)) {
             throw new \Exception('Command "' . $commandName . '" already defined');
         }
-        if (!\is_subclass_of($commandClass, JobCommand::class)) {
-            throw new \Exception('Command must extends ' . JobCommand::class . ' class');
-        }
+        //TODO: find "faster" way to to this, or only do it when first running or only when command is executed
+//        if (!\is_subclass_of($commandClass, JobCommand::class)) {
+//            throw new \Exception('Command must extends ' . JobCommand::class . ' class');
+//        }
         $this->commands[$commandName] = $commandClass;
     }
 
@@ -120,6 +136,8 @@ class Project
 
     public function handleRequest(TaskExecutionRequest $request = null): void
     {
+        echo 'Start handle request: ' . number_format(\microtime(true) - $this->startTime, 4) . ' sec.' . \PHP_EOL;
+
         try {
             if (\is_null($request)) {
                 $request = TaskExecutionRequestHelper::getRequest();
@@ -136,7 +154,7 @@ class Project
             $strTaskResult = $cmd->__invoke($taskExecutionResult);
 
             $this->logger->debug('Sending back response: ' . $strTaskResult);
-
+            echo 'Complete: ' . number_format(\microtime(true) - $this->startTime, 4) . ' sec.' . \PHP_EOL;
             $this->sendResponse($strTaskResult);
             if ($taskExecutionResult->getSuccess()) {
                 exit(0);

@@ -1,34 +1,16 @@
 <?php
 declare(strict_types=1);
 
-$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@Attlaz-storage-1,Attlaz-storage-2,Attlaz-storage-3';
-$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@159.65.56.165';
-$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@178.62.251.16';
-
-$mongoDBUriOptions = [
-    'readPreference' => 'nearest',
-];
-
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
 return [
-    \Psr\Log\LoggerInterface::class        => \DI\factory(function (ContainerInterface $c) use ($mongoDBConnectionString, $mongoDBUriOptions) {
+    \Psr\Log\LoggerInterface::class        => \DI\factory(function (ContainerInterface $c) {
         $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $c->get('branchCode'));
 
         $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
-//        $runLocal = false;
-//        $jetbrains = \getenv('JETBRAINS_REMOTE_RUN');
-//        if ($jetbrains === '1') {
-//            $runLocal = true;
-//        }
 
-//        if ($runLocal) {
-//            $formatter = new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
-//            $formatter->allowInlineLineBreaks(true);
-//            $formatter->includeStacktraces(true);
-//        } else {
             $formatter = new \Monolog\Formatter\LineFormatter($format);
             $formatter->allowInlineLineBreaks(false);
         $formatter->includeStacktraces(true);
@@ -36,7 +18,6 @@ return [
         $introspectionProcessor = new \Monolog\Processor\IntrospectionProcessor(\Monolog\Logger::DEBUG, ['/var/attlaz/project/vendor/attlaz/project/src']);
         $logger->pushProcessor($introspectionProcessor);
 
-//        }
 
         $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
         $streamHandler->setFormatter($formatter);
@@ -46,6 +27,8 @@ return [
         /**
          * Log to MongoDB
          */
+        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
+        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
         $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString, $mongoDBUriOptions);
 
         $mongoDBHandler = new \Monolog\Handler\MongoDBHandler($mongoDBClient, 'attlaz', 'log');
@@ -57,7 +40,9 @@ return [
 
         return $logger;
     }),
-    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (ContainerInterface $c, LoggerInterface $logger) use ($mongoDBConnectionString, $mongoDBUriOptions) {
+    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (ContainerInterface $c, LoggerInterface $logger) {
+        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
+        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
         $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
         $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_cache');
@@ -79,7 +64,9 @@ return [
 
         return $cache;
     }),
-    \Echron\IO\Client\Cache::class         => \DI\factory(function (ContainerInterface $c) use ($mongoDBConnectionString, $mongoDBUriOptions) {
+    \Echron\IO\Client\Cache::class         => \DI\factory(function (ContainerInterface $c) {
+        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
+        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
         $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
         $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_storage');
