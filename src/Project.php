@@ -6,6 +6,7 @@ namespace Attlaz\Project;
 use Attlaz\Project\Helper\ExecuteTaskHelper;
 use Attlaz\Project\Helper\TaskExecutionRequestHelper;
 use Attlaz\Project\Model\Log\Processor;
+use Attlaz\Project\Model\ProjectConfig;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
@@ -31,20 +32,23 @@ class Project
     public const MODE_DEVELOP = 'develop';
     private $startTime;
 
-    public function __construct(string $branchCode, string $definitionsFile = null)
+    private $config;
+
+    public function __construct(ProjectConfig $config)
     {
         $this->startTime = \microtime(true);
-        if (empty($branchCode)) {
-            throw new \InvalidArgumentException('Branch code cannot be empty');
-        }
+
+        $this->config = $config;
 
         ini_set('memory_limit', '2G');
         date_default_timezone_set('Europe/Brussels');
 
-        $this->branchCode = $branchCode;
+        $this->branchCode = $config->branchCode;
         $this->commands = [];
 
-        $this->initDI($definitionsFile);
+        $this->setMode($config->mode);
+
+        $this->initDI($config->definitionsFile);
 
         $this->logger = $this->getContainer()
                              ->get(LoggerInterface::class);
@@ -73,8 +77,10 @@ class Project
 
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
-        //TODO: only enable in production mode
+
+        if ($this->mode === self::MODE_PRODUCTION) {
         $containerBuilder->enableCompilation(__DIR__ . '/var/cache');
+        }
         $containerBuilder->addDefinitions(['branchCode' => $this->branchCode]);
 
         $mongoDBConnectionString = 'mongodb://REDACTED';
