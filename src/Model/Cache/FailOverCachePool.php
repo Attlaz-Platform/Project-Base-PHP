@@ -88,9 +88,7 @@ class FailOverCachePool extends AbstractCachePool
 
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        echo 'store in cache' . \PHP_EOL;
         foreach ($this->getCaches() as $cacheKey => $cache) {
-            echo $cacheKey . \PHP_EOL;
             try {
                 $saved = $cache->storeItemInCache($item, $ttl);
                 if ($saved) {
