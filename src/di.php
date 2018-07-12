@@ -45,7 +45,7 @@ return [
         $mongoDBUriOptions = $c->get('mongoDBUriOptions');
         $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
-        $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_cache');
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $c->get('branchCode'), 'default');
 
         $cachePools = [];
 
@@ -64,12 +64,21 @@ return [
 
         return $cache;
     }),
+    \Attlaz\Project\Model\Cache\CacheManager::class => \DI\factory(function (ContainerInterface $c, LoggerInterface $logger) {
+        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
+        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
+        $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
+
+        $cacheManager = new \Attlaz\Project\Model\Cache\CacheManager($manager, 'attlaz_cache_' . $c->get('branchCode'), $logger);
+
+        return $cacheManager;
+    }),
     \Echron\IO\Client\Cache::class         => \DI\factory(function (ContainerInterface $c) {
         $mongoDBConnectionString = $c->get('mongoDBConnectionString');
         $mongoDBUriOptions = $c->get('mongoDBUriOptions');
         $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
 
-        $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_storage');
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $c->get('branchCode'), 'storage');
 
         $pool = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
 
