@@ -84,8 +84,6 @@ class Project
         $containerBuilder->addDefinitions(['branchCode' => $this->branchCode]);
 
         $mongoDBConnectionString = 'mongodb://REDACTED';
-        $mongoDBConnectionString = 'mongodb://REDACTED';
-        $mongoDBConnectionString = 'mongodb://REDACTED';
 
         $mongoDBUriOptions = [
             'readPreference' => 'nearest',
