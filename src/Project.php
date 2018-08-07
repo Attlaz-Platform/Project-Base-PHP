@@ -83,9 +83,7 @@ class Project
         }
         $containerBuilder->addDefinitions(['branchCode' => $this->branchCode]);
 
-        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@Attlaz-storage-1,Attlaz-storage-2,Attlaz-storage-3';
-        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@159.65.56.165';
-        $mongoDBConnectionString = 'mongodb://mongo-admin:UCGJbmQ25Kdx@174.138.6.248';
+        $mongoDBConnectionString = 'mongodb://mongo-admin:UCGJbmQ25Kdx@storage:27017';
 
         $mongoDBUriOptions = [
             'readPreference' => 'nearest',
