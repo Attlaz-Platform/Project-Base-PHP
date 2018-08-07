@@ -7,15 +7,15 @@ use Psr\SimpleCache\CacheInterface;
 
 class CacheManager
 {
-    private $manager;
+    //  private $manager;
     private $logger;
     private $database;
 
     private $pool;
 
-    public function __construct(\MongoDB\Driver\Manager $manager, string $database, LoggerInterface $logger)
+    public function __construct(string $database, LoggerInterface $logger)
     {
-        $this->manager = $manager;
+        //  $this->manager = $manager;
         $this->logger = $logger;
         $this->database = $database;
 
@@ -25,14 +25,14 @@ class CacheManager
     public function getCache(string $name = 'default'): CacheInterface
     {
         if (!isset($this->pool[$name])) {
-            $collection = new \MongoDB\Collection($this->manager, $this->database,  $name);
+//            $collection = new \MongoDB\Collection($this->manager, $this->database,  $name);
 
             $cachePools = [];
 
-            $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
-            $mongoDBCache->setLogger($this->logger);
+//            $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
+//            $mongoDBCache->setLogger($this->logger);
 
-            $cachePools[] = $mongoDBCache;
+            // $cachePools[] = $mongoDBCache;
 
             $fileCache = new \Cache\Adapter\PHPArray\ArrayCachePool(null);
             $cachePools[] = $fileCache;
