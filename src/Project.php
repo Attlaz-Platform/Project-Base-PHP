@@ -54,7 +54,7 @@ class Project
                              ->get(LoggerInterface::class);
     }
 
-    public function setMode(string $mode)
+    private function setMode(string $mode)
     {
         if ($mode !== self::MODE_PRODUCTION && $mode !== self::MODE_DEVELOP) {
             throw new \InvalidArgumentException('Invalid mode "' . $mode . '", must be product or develop');
@@ -83,8 +83,6 @@ class Project
         }
         $containerBuilder->addDefinitions(['branchCode' => $this->branchCode]);
 
-        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@Attlaz-storage-1,Attlaz-storage-2,Attlaz-storage-3';
-        $mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@159.65.56.165';
         $mongoDBConnectionString = 'mongodb://mongo-admin:UCGJbmQ25Kdx@174.138.6.248';
 
         $mongoDBUriOptions = [
