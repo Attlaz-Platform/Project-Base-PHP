@@ -167,4 +167,9 @@ class Project
         return $cmd->__invoke($task);
     }
 
+    /** @deprecated */
+    public function setMode()
+    {
+    }
+
 }
