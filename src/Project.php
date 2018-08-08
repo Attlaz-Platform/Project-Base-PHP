@@ -30,6 +30,11 @@ class Project
     /** @var Config */
     private $config;
 
+    /** @deprecated */
+    public const MODE_PRODUCTION = 'production';
+    /** @deprecated */
+    public const MODE_DEVELOP = 'development';
+
     public function __construct(Config $config = null)
     {
         $this->startTime = \microtime(true);
@@ -72,7 +77,7 @@ class Project
             //$containerBuilder->enableDefinitionCache();
         }
 
-        $containerBuilder->addDefinitions(['config' => $this->config]);
+        $containerBuilder->addDefinitions([Config::class => $this->config]);
 
         $containerBuilder->addDefinitions(__DIR__ . '/di.php');
         if (!\is_null($definitionsFile)) {
