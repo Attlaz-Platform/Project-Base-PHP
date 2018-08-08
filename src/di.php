@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-use Psr\Container\ContainerInterface;
+use Attlaz\Project\App\Config;
 use Psr\Log\LoggerInterface;
 
 return [
-    \Psr\Log\LoggerInterface::class        => \DI\factory(function (ContainerInterface $c) {
-        $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $c->get('branchCode'));
+    \Psr\Log\LoggerInterface::class => \DI\factory(function (Config $config) {
+        $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $config->branch);
 
         $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
@@ -25,27 +25,26 @@ return [
         $logger->pushHandler($streamHandler);
 
         /**
-         * Log to MongoDB
+         * Log to API
          */
-        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
-        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
-        $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString, $mongoDBUriOptions);
 
-        $mongoDBHandler = new \Monolog\Handler\MongoDBHandler($mongoDBClient, 'attlaz', 'log');
-        $mongoDBHandler->setFormatter(new Monolog\Formatter\NormalizerFormatter('Y-m-d\TH:i:s.v\Z'));
-
-        $logger->pushHandler($mongoDBHandler);
+        $apiClient = new \Attlaz\Client($config->api_endpoint, $config->api_client_id, $config->api_client_secret);
+        $apiLogHandler = new \Attlaz\Project\App\ApiHandler($apiClient);
+        $logger->pushHandler($apiLogHandler);
 
         \Monolog\ErrorHandler::register($logger);
 
         return $logger;
     }),
-    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (ContainerInterface $c, LoggerInterface $logger) {
-        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
-        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
-        $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
+    \MongoDB\Driver\Manager::class  => \DI\factory(function (Config $config) {
+        echo 'get manager' . PHP_EOL;
 
-        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $c->get('branchCode'), 'default');
+        return new \MongoDB\Driver\Manager($config->storage, ['readPreference' => 'nearest']);
+    }),
+
+    \Psr\SimpleCache\CacheInterface::class          => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
+        echo 'get cache' . PHP_EOL;
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->branch, 'default');
 
         $cachePools = [];
 
@@ -64,21 +63,15 @@ return [
 
         return $cache;
     }),
-    \Attlaz\Project\Model\Cache\CacheManager::class => \DI\factory(function (ContainerInterface $c, LoggerInterface $logger) {
-        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
-        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
-        $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
-
-        $cacheManager = new \Attlaz\Project\Model\Cache\CacheManager($manager, 'attlaz_cache_' . $c->get('branchCode'), $logger);
+    \Attlaz\Project\Model\Cache\CacheManager::class => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
+        echo 'get cachemanager' . PHP_EOL;
+        $cacheManager = new \Attlaz\Project\Model\Cache\CacheManager($manager, 'attlaz_cache_' . $config->branch, $logger);
 
         return $cacheManager;
     }),
-    \Echron\IO\Client\Cache::class         => \DI\factory(function (ContainerInterface $c) {
-        $mongoDBConnectionString = $c->get('mongoDBConnectionString');
-        $mongoDBUriOptions = $c->get('mongoDBUriOptions');
-        $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
-
-        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $c->get('branchCode'), 'storage');
+    \Echron\IO\Client\Cache::class                  => \DI\factory(function (Config $config, \MongoDB\Driver\Manager $manager) {
+        echo 'get cacheclient' . PHP_EOL;
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->branch, 'storage');
 
         $pool = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
 
