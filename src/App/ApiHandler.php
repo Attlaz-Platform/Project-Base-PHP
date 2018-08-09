@@ -28,10 +28,11 @@ class ApiHandler extends AbstractProcessingHandler
         $logEntry->type = 'taskexecution';
 
         //TODO: combine extra with context?
+        try {
+            $saved = $this->client->saveLog($logEntry);
+        } catch (\Exception $ex) {
+            echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
+        }
 
-        $saved = $this->client->saveLog($logEntry);
-
-//        var_dump($logEntry);
-//        var_dump($saved);
     }
 }
