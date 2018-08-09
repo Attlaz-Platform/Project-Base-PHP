@@ -32,7 +32,8 @@ class ApiHandler extends AbstractProcessingHandler
             $saved = $this->client->saveLog($logEntry);
         } catch (\Exception $ex) {
             echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
-        }
 
+            var_dump($logEntry);
+        }
     }
 }
