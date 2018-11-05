@@ -1,37 +1,23 @@
 <?php
 declare(strict_types=1);
 
-$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@Attlaz-storage-1,Attlaz-storage-2,Attlaz-storage-3';
-$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@159.65.56.165';
-$mongoDBConnectionString = 'mongodb://attlaz:s06X07G2aYh3@178.62.251.16';
-
-$mongoDBUriOptions = [
-    'readPreference' => 'nearest',
-];
-
-use Psr\Container\ContainerInterface;
+use Attlaz\Project\App\Config;
 use Psr\Log\LoggerInterface;
 
 return [
-    \Psr\Log\LoggerInterface::class        => \DI\factory(function (ContainerInterface $c) use ($mongoDBConnectionString, $mongoDBUriOptions) {
-        $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $c->get('branchCode'));
+    \Psr\Log\LoggerInterface::class => \DI\factory(function (Config $config) {
+        $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $config->branch);
 
         $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
-        $runLocal = false;
-        $jetbrains = \getenv('JETBRAINS_REMOTE_RUN');
-        if ($jetbrains === '1') {
-            $runLocal = true;
-        }
 
-        if ($runLocal) {
-            $formatter = new \Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
-            $formatter->allowInlineLineBreaks(true);
-            $formatter->includeStacktraces(true);
-        } else {
             $formatter = new \Monolog\Formatter\LineFormatter($format);
             $formatter->allowInlineLineBreaks(false);
-        }
+        $formatter->includeStacktraces(true);
+
+        $introspectionProcessor = new \Monolog\Processor\IntrospectionProcessor(\Monolog\Logger::DEBUG, ['/var/attlaz/project/vendor/attlaz/project/src']);
+        $logger->pushProcessor($introspectionProcessor);
+
 
         $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
         $streamHandler->setFormatter($formatter);
@@ -39,23 +25,26 @@ return [
         $logger->pushHandler($streamHandler);
 
         /**
-         * Log to MongoDB
+         * Log to API
          */
-        $mongoDBClient = new \MongoDB\Client($mongoDBConnectionString, $mongoDBUriOptions);
 
-        $mongoDBHandler = new \Monolog\Handler\MongoDBHandler($mongoDBClient, 'attlaz', 'log');
-        $mongoDBHandler->setFormatter(new Monolog\Formatter\NormalizerFormatter('Y-m-d\TH:i:s.v\Z'));
-
-        $logger->pushHandler($mongoDBHandler);
+        $apiClient = new \Attlaz\Client($config->api_endpoint, $config->api_client_id, $config->api_client_secret);
+        $apiLogHandler = new \Attlaz\Project\App\ApiHandler($apiClient);
+        $logger->pushHandler($apiLogHandler);
 
         \Monolog\ErrorHandler::register($logger);
 
         return $logger;
     }),
-    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (ContainerInterface $c, LoggerInterface $logger) use ($mongoDBConnectionString, $mongoDBUriOptions) {
-        $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
+    \MongoDB\Driver\Manager::class  => \DI\factory(function (Config $config) {
+        echo 'get manager' . PHP_EOL;
 
-        $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_cache');
+        return new \MongoDB\Driver\Manager($config->storage, ['readPreference' => 'nearest']);
+    }),
+
+    \Psr\SimpleCache\CacheInterface::class          => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
+        echo 'get cache' . PHP_EOL;
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->branch, 'default');
 
         $cachePools = [];
 
@@ -74,10 +63,15 @@ return [
 
         return $cache;
     }),
-    \Echron\IO\Client\Cache::class         => \DI\factory(function (ContainerInterface $c) use ($mongoDBConnectionString, $mongoDBUriOptions) {
-        $manager = new \MongoDB\Driver\Manager($mongoDBConnectionString, $mongoDBUriOptions);
+    \Attlaz\Project\Model\Cache\CacheManager::class => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
+        echo 'get cachemanager' . PHP_EOL;
+        $cacheManager = new \Attlaz\Project\Model\Cache\CacheManager($manager, 'attlaz_cache_' . $config->branch, $logger);
 
-        $collection = new \MongoDB\Collection($manager, 'attlaz', $c->get('branchCode') . '_storage');
+        return $cacheManager;
+    }),
+    \Echron\IO\Client\Cache::class                  => \DI\factory(function (Config $config, \MongoDB\Driver\Manager $manager) {
+        echo 'get cacheclient' . PHP_EOL;
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->branch, 'storage');
 
         $pool = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
 
