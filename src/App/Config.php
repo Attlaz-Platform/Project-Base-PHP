@@ -23,6 +23,7 @@ class Config
 
     public function __construct()
     {
+        //TODO: handle that env file is not readable
         $dotenv = new Dotenv(BP);
         $dotenv->load();
 
