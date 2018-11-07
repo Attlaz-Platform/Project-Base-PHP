@@ -4,23 +4,24 @@ declare(strict_types=1);
 namespace Attlaz\Project;
 
 use Attlaz\Project\App\Config;
-use Attlaz\Project\Helper\ExecuteTaskHelper;
+use Attlaz\Project\Command\CommandDiscovery;
+use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Helper\TaskExecutionRequestHelper;
-use Attlaz\Project\Model\Log\Processor;
+use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
 use DI\ContainerBuilder;
+use Echron\Tools\Time;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
 class Project
 {
-
-    private $commands;
+    /** @var CommandManager */
+    private $commandRegistry;
 
     /** @var ContainerInterface */
-    private $container;
+    private $diContainer;
 
     /** @var LoggerInterface */
     private $logger;
@@ -30,17 +31,15 @@ class Project
     /** @var Config */
     private $config;
 
-    /** @deprecated */
-    public const MODE_PRODUCTION = 'production';
-    /** @deprecated */
-    public const MODE_DEVELOP = 'development';
+    private $projectRootPath;
 
-    public function __construct(Config $config = null)
+    public function __construct(string $projectRootPath, Config $config = null)
     {
         $this->startTime = \microtime(true);
 
+        $this->projectRootPath = $projectRootPath;
         if (\is_null($config)) {
-            $config = new Config();
+            $config = new Config($projectRootPath);
         }
         $this->config = $config;
 
@@ -52,12 +51,27 @@ class Project
             ini_set('display_errors', '1');
         }
 
-        $this->commands = [];
+        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
 
+        $start = \microtime(true);
         $this->initDI($config->definitionsFile);
 
-        $this->logger = $this->getContainer()
+        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+
+        $start = \microtime(true);
+        $this->logger = $this->getDIContainer()
                              ->get(LoggerInterface::class);
+
+        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+        $start = \microtime(true);
+        $discovery = new CommandDiscovery($this->projectRootPath . \DIRECTORY_SEPARATOR . 'src');
+//Pre fetch commands
+        $commands = $discovery->getCommands();
+
+        $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
+
+        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
 
     private function initDI(string $definitionsFile = null)
@@ -72,70 +86,40 @@ class Project
         $containerBuilder = new ContainerBuilder();
 
         if ($this->config->mode === Config::MODE_PRODUCTION) {
-            $containerBuilder->enableCompilation(BP . '/var/cache');
+            $containerBuilder->enableCompilation($this->projectRootPath . \DIRECTORY_SEPARATOR . 'var' . \DIRECTORY_SEPARATOR . 'cache');
             // TODO: this doesn't make sense with PHP CLI
             //$containerBuilder->enableDefinitionCache();
         }
 
         $containerBuilder->addDefinitions([Config::class => $this->config]);
 
-        $containerBuilder->addDefinitions(__DIR__ . '/di.php');
+        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
         if (!\is_null($definitionsFile)) {
             $containerBuilder->addDefinitions($definitionsFile);
         }
 
-        $this->container = $containerBuilder->build();
+        $this->diContainer = $containerBuilder->build();
     }
 
-    public function getContainer(): ContainerInterface
+    public function getDIContainer(): ContainerInterface
     {
-        return $this->container;
+        return $this->diContainer;
     }
 
-    public function registerCommand(string $commandName, string $commandClass)
+    public function handleRequest(TaskExecutionRequest $taskExecutionRequest = null): void
     {
-        if (\key_exists($commandName, $this->commands)) {
-            throw new \Exception('Command "' . $commandName . '" already defined');
-        }
-        //TODO: find "faster" way to to this, or only do it when first running or only when command is executed
-//        if (!\is_subclass_of($commandClass, JobCommand::class)) {
-//            throw new \Exception('Command must extends ' . JobCommand::class . ' class');
-//        }
-        $this->commands[$commandName] = $commandClass;
-    }
-
-    public function getCommandNames(): array
-    {
-        return \array_keys($this->commands);
-    }
-
-    public function hasCommand(string $commandName): bool
-    {
-        return isset($this->commands[$commandName]);
-    }
-
-    public function getCommandClass(string $commandName): string
-    {
-        if (!isset($this->commands[$commandName])) {
-            throw new \Exception('Command "' . $commandName . '" not defined');
-        }
-
-        return $this->commands[$commandName];
-    }
-
-    public function handleRequest(TaskExecutionRequest $request = null): void
-    {
+        echo PHP_EOL . 'Start handle request: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
         try {
-            if (\is_null($request)) {
-                $request = TaskExecutionRequestHelper::getRequest();
+            if (\is_null($taskExecutionRequest)) {
+                $taskExecutionRequest = TaskExecutionRequestHelper::getRequest();
             }
 
-            /** @var \Attlaz\Project\Model\Log\Processor logProcessor */
+            /** @var \Attlaz\Project\Logger\Processor logProcessor */
             $logProcessor = new Processor();
-            $logProcessor->setExecutionId($request->getExecutionId());
+            $logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
             $this->logger->pushProcessor($logProcessor);
 
-            $taskExecutionResult = $this->executeTask($request);
+            $taskExecutionResult = $this->commandRegistry->executeTask($taskExecutionRequest);
 
             $cmd = new SerializeTaskResult();
             $strTaskResult = $cmd->__invoke($taskExecutionResult);
@@ -143,6 +127,9 @@ class Project
             $this->logger->debug('Sending back response: ' . $strTaskResult);
 
             $this->sendResponse($strTaskResult);
+
+            echo PHP_EOL . 'Execution time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+
             if ($taskExecutionResult->getSuccess()) {
                 exit(0);
             } else {
@@ -158,18 +145,6 @@ class Project
     private function sendResponse(string $result)
     {
         echo \base64_encode('Result') . ':' . base64_encode($result);
-    }
-
-    private function executeTask(TaskExecutionRequest $task): TaskExecutionResult
-    {
-        $cmd = new ExecuteTaskHelper($this);
-
-        return $cmd->__invoke($task);
-    }
-
-    /** @deprecated */
-    public function setMode()
-    {
     }
 
 }

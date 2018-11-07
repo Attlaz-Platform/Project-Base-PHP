@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Project\App;
+namespace Attlaz\Project\Logger;
 
 use Psr\Log\LoggerInterface;
 
