@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Project\Model\Log;
+namespace Attlaz\Project\Logger;
 
 class Processor
 {

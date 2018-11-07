@@ -6,18 +6,26 @@ use Psr\Log\LoggerInterface;
 
 return [
     \Psr\Log\LoggerInterface::class => \DI\factory(function (Config $config) {
-        $logger = new \Attlaz\Project\App\Logger("Attlaz Project " . $config->branch);
+        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $config->branch);
+
+        $ignoreDirectories = [
+            '/var/attlaz/',
+            '/var/attlaz/project/vendor/attlaz/project/src',
+        ];
+        $introspectionProcessor = new \Monolog\Processor\IntrospectionProcessor(\Monolog\Logger::DEBUG, $ignoreDirectories);
+        $logger->pushProcessor($introspectionProcessor);
+
+        /**
+         * Log to stream
+         */
 
         $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
 
-
-            $formatter = new \Monolog\Formatter\LineFormatter($format);
-            $formatter->allowInlineLineBreaks(false);
+        //TODO: only show colors when in developer mode AND local mode
+        $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
+        //  $formatter = new \Monolog\Formatter\LineFormatter($format);
+        $formatter->allowInlineLineBreaks(false);
         $formatter->includeStacktraces(true);
-
-        $introspectionProcessor = new \Monolog\Processor\IntrospectionProcessor(\Monolog\Logger::DEBUG, ['/var/attlaz/project/vendor/attlaz/project/src']);
-        $logger->pushProcessor($introspectionProcessor);
-
 
         $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
         $streamHandler->setFormatter($formatter);
@@ -29,9 +37,12 @@ return [
          */
 
         $apiClient = new \Attlaz\Client($config->api_endpoint, $config->api_client_id, $config->api_client_secret);
-        $apiLogHandler = new \Attlaz\Project\App\ApiHandler($apiClient);
+        $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($apiClient);
         $logger->pushHandler($apiLogHandler);
 
+        /**
+         * Log fatal errors
+         */
         \Monolog\ErrorHandler::register($logger);
 
         return $logger;

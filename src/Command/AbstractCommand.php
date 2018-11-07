@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Project\Model;
+namespace Attlaz\Project\Command;
 
+use Attlaz\Project\Model\Task;
+use Attlaz\Project\Model\TaskCollection;
+use Attlaz\Project\Model\TaskExecutionResult;
+use Attlaz\Project\Model\TaskExecutionResultCollection;
 use Attlaz\Project\Serialization\DeserializeTaskResult;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\EachPromise;
@@ -17,7 +21,7 @@ use Psr\Log\LoggerInterface;
  *
  * @method execute()
  */
-abstract class JobCommand implements LoggerAwareInterface
+abstract class AbstractCommand implements LoggerAwareInterface
 {
 
     /** @var  Client */

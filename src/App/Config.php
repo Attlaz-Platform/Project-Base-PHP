@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\App;
 
 use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidPathException;
 
 class Config
 {
@@ -21,13 +22,17 @@ class Config
 
     public $storage;
 
-    public function __construct()
+    public function __construct(string $projectRootPath)
     {
         //TODO: handle that env file is not readable
-        $dotenv = new Dotenv(BP);
-        $dotenv->load();
+        try {
+            $dotenv = new Dotenv($projectRootPath);
+            $dotenv->load();
+        } catch (InvalidPathException $ex) {
+            throw new \Exception('Unable to start project: .env file missing in directory "' . $projectRootPath . '"');
+        }
 
-        $this->branch = $this->getEnvValue('branch');
+        $this->branch = $this->getEnvValue('project');
         $this->mode = $this->getEnvValue('mode');
         if ($this->mode !== Config::MODE_PRODUCTION && $this->mode !== Config::MODE_DEVELOPMENT) {
             throw new \InvalidArgumentException('Invalid mode "' . $this->mode . '", must be "' . Config::MODE_PRODUCTION . '" or "' . Config::MODE_DEVELOPMENT . '"');
