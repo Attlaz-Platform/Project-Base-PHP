@@ -7,7 +7,7 @@ class CommandDefinition
 {
     public $task;
     public $className;
-    private $parameters;
+    private $parameters = [];
 
     public function addParameter(CommandParameterDefinition $parameterDefinition)
     {

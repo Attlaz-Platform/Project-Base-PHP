@@ -4,11 +4,11 @@ declare(strict_types=1);
 namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Project\Command\CommandManager;
+use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +20,7 @@ class ExecuteTask extends Command
     private $commandManager;
     private $logger;
 
-    public function __construct(CommandManager $commandManager, LoggerInterface $logger)
+    public function __construct(CommandManager $commandManager, Logger $logger)
     {
         parent::__construct();
 
@@ -40,6 +40,7 @@ class ExecuteTask extends Command
 //        ->addArgument('execution', InputArgument::REQUIRED, 'Execution id to identify the execution');
     }
 
+    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 //        // outputs multiple lines to the console (adding "\n" at the end of each line)

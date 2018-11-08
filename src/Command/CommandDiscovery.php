@@ -41,6 +41,7 @@ class CommandDiscovery
         $this->annotationReader = new AnnotationReader();
 
         //TODO: this can be removed in Doctrine Annotations v2
+        /** @noinspection PhpDeprecationInspection */
         AnnotationRegistry::registerLoader('class_exists');
     }
 
