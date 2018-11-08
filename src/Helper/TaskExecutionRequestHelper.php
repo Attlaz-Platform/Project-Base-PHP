@@ -5,6 +5,11 @@ namespace Attlaz\Project\Helper;
 
 use Attlaz\Project\Model\TaskExecutionRequest;
 
+/**
+ * Class TaskExecutionRequestHelper
+ * @package Attlaz\Project\Helper
+ * @deprecated
+ */
 class TaskExecutionRequestHelper
 {
     private const COMMAND_PARAM_SHORT = 'c';

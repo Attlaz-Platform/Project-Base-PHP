@@ -125,7 +125,7 @@ class CommandManager
 //        }
     }
 
-    public function getCommandInstance(CommandDefinition $commandDefinition): AbstractCommand
+    private function getCommandInstance(CommandDefinition $commandDefinition): AbstractCommand
     {
 //
 //        $container = $this->project->getDIContainer();
@@ -146,6 +146,15 @@ class CommandManager
 //        }
 //
         return $command;
+    }
+
+    /**
+     * Returns all the commands
+     * @return CommandDefinition[]
+     */
+    public function getCommandDefinitions(): array
+    {
+        return $this->discovery->getCommands();
     }
 
 }
