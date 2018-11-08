@@ -101,9 +101,19 @@ class ExecuteTask extends Command
         if (\is_null($arguments)) {
             return [];
         }
-//TODO: validate if decoding was successfule
-        $arguments = \base64_decode($arguments);
-        $arguments = \json_decode($arguments, true);
+
+        try {
+            $arguments = \base64_decode($arguments);
+            if ($arguments === false) {
+                throw new \Exception('Unable to decode arguments');
+            }
+            $arguments = \json_decode($arguments, true, \JSON_THROW_ON_ERROR);
+            if (\is_null($arguments)) {
+                throw new \Exception('Unable to decode arguments');
+            }
+        } catch (\Exception $ex) {
+            throw new \Exception('Unable to read task arguments: ' . $ex->getMessage());
+        }
 
         return $arguments;
     }
