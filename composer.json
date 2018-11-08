@@ -6,8 +6,7 @@
   "require": {
     "php": "^7.2.0",
     "monolog/monolog": "^1.24.0",
-    "symfony/yaml": "^3.3",
-    "symfony/serializer": "^3.3",
+    "symfony/console": "^4.1.7",
     "echron/tools": "^1.0.8",
     "echron/datatypes": "^1.0.0",
     "echron/io": "^1.0.0",

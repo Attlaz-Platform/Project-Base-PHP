@@ -16,7 +16,7 @@ class CommandDiscovery
     /**
      * @var string
      */
-    private $namespace = 'App';
+    private $namespace = '\App';
 
     /**
      * @var string
@@ -32,6 +32,7 @@ class CommandDiscovery
      * @var AbstractCommand[]
      */
     private $commands = [];
+    private $commandsLoaded = false;
 
     public function __construct(string $sourcePath)
     {
@@ -50,8 +51,9 @@ class CommandDiscovery
     public function getCommands(): array
     {
         //TODO: cache commands
-        if (!$this->commands) {
+        if (!$this->commandsLoaded) {
             $this->discoverCommands();
+            $this->commandsLoaded = true;
         }
 
         return $this->commands;
@@ -59,7 +61,7 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $files = FileSystem::listFiles($this->directory, true);
+        $files = FileSystem::listFiles($this->directory . \DIRECTORY_SEPARATOR . 'Command', true);
 
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {
@@ -83,7 +85,8 @@ class CommandDiscovery
     private function registerCommand(string $className): void
     {
         try {
-            if (!class_exists($className, false)) {
+            //TODO: if the className is actually a file, the file is included by calling "class_exists",  putting "autoload" to false doesn't help and make the function returns false
+            if (!class_exists($className, true)) {
                 return;
             }
 
@@ -121,6 +124,7 @@ class CommandDiscovery
 
             $this->commands[] = $commandDefinition;
         } catch (AnnotationException $ex) {
+            throw new \Exception('Unable to register command "' . $className . '":' . $ex->getMessage());
             //TODO: handle invalid/incomplete annotations, maybe make it possible to validate the project before building it?
         }
     }
