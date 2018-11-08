@@ -21,7 +21,6 @@ class ApiHandler extends AbstractProcessingHandler
 
     protected function write(array $record)
     {
-        return;
         $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
         $logEntry->date = $record['datetime'];
         $logEntry->context = $record['context'];

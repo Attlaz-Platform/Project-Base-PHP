@@ -28,7 +28,7 @@ class FailOverCachePool extends AbstractCachePool
     private $options;
 
     /**
-     * @param array $pools
+     * @param array $caches
      * @param array $options {
      *
      * @type  bool $skip_on_failure If true we will remove a pool form the chain if it fails.
@@ -51,7 +51,7 @@ class FailOverCachePool extends AbstractCachePool
         }
         $this->options = $options;
     }
-
+    /** @noinspection PhpMissingParentCallCommonInspection */
     /**
      * @param LoggerInterface $logger
      */
@@ -59,7 +59,7 @@ class FailOverCachePool extends AbstractCachePool
     {
         $this->logger = $logger;
     }
-
+    /** @noinspection PhpMissingParentCallCommonInspection */
     /**
      * Logs with an arbitrary level if the logger exists.
      *
@@ -103,6 +103,8 @@ class FailOverCachePool extends AbstractCachePool
                 $this->log('error', 'Unable to save: ' . $e->getMessage());
             }
         }
+
+        return false;
     }
 
     protected function fetchObjectFromCache($key)

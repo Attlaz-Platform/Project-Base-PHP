@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpMissingParentCallCommonInspection */
 declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;

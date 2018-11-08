@@ -66,8 +66,8 @@ class Project
         echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
         $start = \microtime(true);
         $discovery = new CommandDiscovery($this->projectRootPath . \DIRECTORY_SEPARATOR . 'src');
-//Pre fetch commands
-        $commands = $discovery->getCommands();
+        //Pre fetch commands
+        $discovery->getCommands();
 
         $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
 
