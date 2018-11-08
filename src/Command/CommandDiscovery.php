@@ -83,11 +83,17 @@ class CommandDiscovery
     private function registerCommand(string $className): void
     {
         try {
+            if (!class_exists($className, false)) {
+                return;
+            }
+
             $reflectionClass = new \ReflectionClass($className);
 
-            //TODO: if not marked as command in annotation, ignore!
             /** @var CommandAnnotation $annotation */
             $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, CommandAnnotation::class);
+            if (is_null($annotation)) {
+                return;
+            }
 
             //Check if class extends AbstractCommand
             if (!$reflectionClass->isSubclassOf(AbstractCommand::class)) {
