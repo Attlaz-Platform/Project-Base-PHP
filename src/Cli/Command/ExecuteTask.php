@@ -34,7 +34,7 @@ class ExecuteTask extends Command
              ->setDescription('Run task.')
              ->setHelp('This command allows you to run a task')
              ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
-             ->addOption('arguments', null, InputOption::VALUE_REQUIRED, 'How many times should the message be printed?', [])
+             ->addOption('arguments', null, InputOption::VALUE_REQUIRED, 'How many times should the message be printed?', null)
              ->addOption('execution', null, InputOption::VALUE_REQUIRED, 'How many times should the message be printed?', 'some random string');
 //        ->addArgument('arguments', InputArgument::REQUIRED, 'Arguments to pass to the command')
 //        ->addArgument('execution', InputArgument::REQUIRED, 'Execution id to identify the execution');

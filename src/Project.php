@@ -52,37 +52,37 @@ class Project
             ini_set('display_errors', '1');
         }
 
-        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
-
-        $start = \microtime(true);
+//        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+//
+//        $start = \microtime(true);
         $this->initDI($config->definitionsFile);
 
-        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-
-        $start = \microtime(true);
+//        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+//
+//        $start = \microtime(true);
         $this->logger = $this->getDIContainer()
                              ->get(LoggerInterface::class);
 
-        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-        $start = \microtime(true);
+//        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+//        $start = \microtime(true);
         $discovery = new CommandDiscovery($this->projectRootPath . \DIRECTORY_SEPARATOR . 'src');
         //Pre fetch commands
         $discovery->getCommands();
 
         $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
 
-        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-
-        $start = \microtime(true);
+//        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+//
+//        $start = \microtime(true);
         $this->application = new Application();
         $this->application->setAutoExit(false);
 
         $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
         $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
 
-        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-
-        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+//        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+//
+//        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
 
     private function initDI(string $definitionsFile = null)
