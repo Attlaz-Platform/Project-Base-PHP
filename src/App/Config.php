@@ -43,6 +43,10 @@ class Config
         $this->api_client_secret = $this->getEnvValue('api_client_secret');
 
         $this->storage = $this->getEnvValue('storage');
+
+        if (\file_exists($projectRootPath . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php')) {
+            $this->definitionsFile = $projectRootPath . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php';
+        }
     }
 
     private function getEnvValue(string $key)

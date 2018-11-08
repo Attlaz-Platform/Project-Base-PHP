@@ -62,7 +62,7 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $files = FileSystem::listFiles($this->directory . \DIRECTORY_SEPARATOR . 'Command', true);
+        $files = FileSystem::listFiles($this->directory . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'Command', true);
 
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {
@@ -78,7 +78,9 @@ class CommandDiscovery
         $path = $file->getPath();
         $path = \str_replace($this->directory, '', $path);
 
-        $class = $this->namespace . \str_replace('/', '\\', $path) . '\\' . $file->getBasename('.php');
+        $class = \str_replace('/', '\\', $path) . '\\' . $file->getBasename('.php');
+
+        $class = '\\' . \ltrim($class, '\\');
 
         return $class;
     }
