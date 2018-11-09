@@ -44,8 +44,9 @@ class Config
 
         $this->storage = $this->getEnvValue('storage');
 
-        if (\file_exists($projectRootPath . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php')) {
-            $this->definitionsFile = $projectRootPath . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php';
+        $diFile = $projectRootPath . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php';
+        if (\file_exists($diFile)) {
+            $this->definitionsFile = $diFile;
         }
     }
 
