@@ -60,4 +60,9 @@ class Config
         return (string)$value;
     }
 
+    public function getBranchNameSafe():string
+    {
+        return \strtolower(\str_replace([' '], '_', $this->branch));
+    }
+
 }
