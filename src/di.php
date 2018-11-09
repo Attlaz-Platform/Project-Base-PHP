@@ -55,7 +55,7 @@ return [
 
     \Psr\SimpleCache\CacheInterface::class          => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
         echo 'get cache' . PHP_EOL;
-        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->branch, 'default');
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->getBranchNameSafe(), 'default');
 
         $cachePools = [];
 
@@ -76,13 +76,13 @@ return [
     }),
     \Attlaz\Project\Model\Cache\CacheManager::class => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
         echo 'get cachemanager' . PHP_EOL;
-        $cacheManager = new \Attlaz\Project\Model\Cache\CacheManager($manager, 'attlaz_cache_' . $config->branch, $logger);
+        $cacheManager = new \Attlaz\Project\Model\Cache\CacheManager($manager, 'attlaz_cache_' . $config->getBranchNameSafe(), $logger);
 
         return $cacheManager;
     }),
     \Echron\IO\Client\Cache::class                  => \DI\factory(function (Config $config, \MongoDB\Driver\Manager $manager) {
         echo 'get cacheclient' . PHP_EOL;
-        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->branch, 'storage');
+        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->getBranchNameSafe(), 'storage');
 
         $pool = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
 
