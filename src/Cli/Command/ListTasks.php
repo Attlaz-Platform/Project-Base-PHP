@@ -36,7 +36,7 @@ class ListTasks extends Command
         $output->writeln('Available commands (' . count($commands) . '):');
 
         foreach ($commands as $command) {
-            $output->writeln($command->task);
+            $output->writeln('[' . $command->task . '] ' . $command->className . '');
             //TODO: add parameter information
         }
     }
