@@ -107,8 +107,9 @@ class ExecuteTask extends Command
             if ($arguments === false) {
                 throw new \Exception('Unable to decode arguments');
             }
-            $arguments = \json_decode($arguments, true, \JSON_THROW_ON_ERROR);
-            if (\is_null($arguments)) {
+            //PHP 7.3 \JSON_THROW_ON_ERROR
+            $arguments = \json_decode($arguments, true);
+            if ($arguments === false || \is_null($arguments)) {
                 throw new \Exception('Unable to decode arguments');
             }
         } catch (\Exception $ex) {
