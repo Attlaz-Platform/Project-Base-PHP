@@ -17,8 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ExecuteTask extends Command
 {
-    private $commandManager;
-    private $logger;
+    protected $commandManager;
+    protected $logger;
 
     public function __construct(CommandManager $commandManager, Logger $logger)
     {
@@ -64,23 +64,11 @@ class ExecuteTask extends Command
         try {
             $taskExecutionRequest = $this->getRequestFromInput($input);
 
-            $logProcessor = new Processor();
-            $logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
-            $this->logger->pushProcessor($logProcessor);
-
-            $taskExecutionResult = $this->commandManager->executeTask($taskExecutionRequest);
-
-            $this->sendResponse($taskExecutionResult);
-
-//            if ($taskExecutionResult->getSuccess()) {
-//                exit(0);
-//            } else {
-//                //TODO: change exit code based on exception type
-//                exit(1);
-//            }
+            return $this->executeTaskExecutionRequest($taskExecutionRequest);
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
-            //exit(1);
+
+            return 1;
         }
     }
 
@@ -119,6 +107,24 @@ class ExecuteTask extends Command
         return $arguments;
     }
 
+    protected function executeTaskExecutionRequest(TaskExecutionRequest $taskExecutionRequest): int
+    {
+        $logProcessor = new Processor();
+        $logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
+        $this->logger->pushProcessor($logProcessor);
+
+        $taskExecutionResult = $this->commandManager->executeTask($taskExecutionRequest);
+
+        $this->sendResponse($taskExecutionResult);
+
+        if ($taskExecutionResult->getSuccess()) {
+            return 0;
+        } else {
+            //TODO: change exit code based on exception type
+            return 1;
+        }
+    }
+
     private function sendResponse(TaskExecutionResult $taskExecutionResult)
     {
         $cmd = new SerializeTaskResult();
@@ -127,4 +133,5 @@ class ExecuteTask extends Command
         $this->logger->debug('Sending back response: ' . $strTaskResult);
         echo \base64_encode('Result') . ':' . base64_encode($strTaskResult);
     }
+
 }

@@ -14,6 +14,9 @@ class CommandDefinition
         $this->parameters[] = $parameterDefinition;
     }
 
+    /**
+     * @return CommandParameterDefinition[]
+     */
     public function getParameters(): array
     {
         return $this->parameters;

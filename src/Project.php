@@ -5,6 +5,7 @@ namespace Attlaz\Project;
 
 use Attlaz\Project\App\Config;
 use Attlaz\Project\Cli\Command\ExecuteTask;
+use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
 use Attlaz\Project\Cli\Command\ListTasks;
 use Attlaz\Project\Command\CommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
@@ -77,8 +78,10 @@ class Project
         $this->application = new Application();
         $this->application->setAutoExit(false);
 
-        $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
+       
         $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
+        $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
+        $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
 
 //        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 //
