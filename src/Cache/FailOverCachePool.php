@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Project\Model\Cache;
+namespace Attlaz\Project\Cache;
 
 use Cache\Adapter\Chain\Exception\NoPoolAvailableException;
 use Cache\Adapter\Common\AbstractCachePool;
@@ -9,7 +9,6 @@ use Cache\Adapter\Common\Exception\CachePoolException;
 use Cache\Adapter\Common\PhpCacheItem;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
-use Psr\SimpleCache\CacheInterface;
 
 class FailOverCachePool extends AbstractCachePool
 {
@@ -19,7 +18,7 @@ class FailOverCachePool extends AbstractCachePool
      */
     private $logger;
     /**
-     * @type CacheInterface[]
+     * @type AbstractCachePool[]
      */
     private $caches;
     /**
@@ -34,15 +33,8 @@ class FailOverCachePool extends AbstractCachePool
      * @type  bool $skip_on_failure If true we will remove a pool form the chain if it fails.
      * }
      */
-    public function __construct(array $caches, array $options = [])
+    public function __construct(array $options = [])
     {
-        foreach ($caches as $cache) {
-            if (!$cache instanceof AbstractCachePool) {
-                throw new \InvalidArgumentException('Cache  must implements AbstractCachePool interface');
-            }
-        }
-
-        $this->caches = $caches;
         if (!isset($options['skip_on_failure'])) {
             $options['skip_on_failure'] = false;
         }
@@ -50,6 +42,11 @@ class FailOverCachePool extends AbstractCachePool
             $options['remove_pool_on_failure'] = false;
         }
         $this->options = $options;
+    }
+
+    public function addCachePool(string $name, AbstractCachePool $cachePool)
+    {
+        $this->caches[$name] = $cachePool;
     }
     /** @noinspection PhpMissingParentCallCommonInspection */
     /**
@@ -88,19 +85,25 @@ class FailOverCachePool extends AbstractCachePool
 
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        foreach ($this->getCaches() as $cacheKey => $cache) {
+        /**
+         * @var string $cacheName
+         * @var AbstractCachePool $cachePool
+         */
+        foreach ($this->getCaches() as $cacheName => $cachePool) {
             try {
-                $saved = $cache->storeItemInCache($item, $ttl);
+                $saved = $cachePool->storeItemInCache($item, $ttl);
                 if ($saved) {
                     return true;
                     //[isHit, value, tags[], expirationTimestamp]
 
+                } else {
+                    $this->logger->warning('Unable to save entry to log, trying next log storage');
                 }
             } catch (CachePoolException $e) {
-                $this->log('error', 'Unable to save: ' . $e->getMessage());
+                $this->log('error', 'Unable to save to ' . $cacheName . ': ' . $e->getMessage());
                 // $this->handleException($poolKey, __FUNCTION__, $e);
             } catch (\Exception $e) {
-                $this->log('error', 'Unable to save: ' . $e->getMessage());
+                $this->log('error', 'Unable to save to ' . $cacheName . ': ' . $e->getMessage());
             }
         }
 

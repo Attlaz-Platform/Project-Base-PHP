@@ -32,6 +32,8 @@ class CommandManager
 
             $commandInstance = $this->getCommandInstance($commandDefinition);
 
+            $commandInstance->init();
+
             $result = call_user_func_array([
                 $commandInstance,
                 AbstractCommand::INVOKE_METHOD,
@@ -127,24 +129,16 @@ class CommandManager
 
     private function getCommandInstance(CommandDefinition $commandDefinition): AbstractCommand
     {
-//
-//        $container = $this->project->getDIContainer();
         if (!$this->diContainer->has($commandDefinition->className)) {
             throw new \Exception('Unable to execute command "' . $commandDefinition->className . '": class not found');
         }
-//
+        /** @var AbstractCommand $command */
         $command = $this->diContainer->get($commandDefinition->className);
-//
-//        if (!$command instanceof AbstractCommand) {
-//            throw new \Exception('Unable to execute command "' . $commandName . '": must be ' . AbstractCommand::class);
-//        }
-//
         $command->setLogger($this->logger);
-//
-//        if (!method_exists($command, AbstractCommand::INVOKE_METHOD)) {
-//            throw new \Exception('Unable to execute command "' . $commandName . '": execute method does not exist');
-//        }
-//
+
+        $cacheManager = $this->diContainer->get(\Attlaz\Project\Cache\CacheManager::class);
+        $command->setCacheManager($cacheManager);
+
         return $command;
     }
 

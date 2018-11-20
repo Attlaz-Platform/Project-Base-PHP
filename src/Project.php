@@ -66,7 +66,7 @@ class Project
 
 //        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 //        $start = \microtime(true);
-        $discovery = new CommandDiscovery($this->projectRootPath . \DIRECTORY_SEPARATOR . 'src');
+        $discovery = new CommandDiscovery($this->projectRootPath);
         //Pre fetch commands
         $discovery->getCommands();
 
@@ -78,7 +78,6 @@ class Project
         $this->application = new Application();
         $this->application->setAutoExit(false);
 
-       
         $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
         $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
         $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));

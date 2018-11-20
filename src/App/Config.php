@@ -5,6 +5,7 @@ namespace Attlaz\Project\App;
 
 use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidPathException;
+use Echron\Tools\Normalize\Normalizer;
 
 class Config
 {
@@ -20,10 +21,19 @@ class Config
     public $api_client_id;
     public $api_client_secret;
 
-    public $storage;
+    public $mongoDBConnectionString;
+
+    private $projectRootPath;
+
+    public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
+    public const DI_FILE_LOCATION = self::SOURCE_LOCATION . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php';
+    public const COMMANDS_LOCATION = self::SOURCE_LOCATION . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'Command';
 
     public function __construct(string $projectRootPath)
     {
+        //TODO: validate root path;
+        $this->projectRootPath = $projectRootPath;
+
         //TODO: handle that env file is not readable
         try {
             $dotenv = new Dotenv($projectRootPath);
@@ -42,9 +52,10 @@ class Config
         $this->api_client_id = $this->getEnvValue('api_client_id');
         $this->api_client_secret = $this->getEnvValue('api_client_secret');
 
-        $this->storage = $this->getEnvValue('storage');
+        $this->mongoDBConnectionString = $this->getEnvValue('storage');
 
-        $diFile = $projectRootPath . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php';
+        $diFile = $projectRootPath . self::DI_FILE_LOCATION;
+
         if (\file_exists($diFile)) {
             $this->definitionsFile = $diFile;
         }
@@ -60,9 +71,14 @@ class Config
         return (string)$value;
     }
 
-    public function getBranchNameSafe():string
+    public function getCacheName(): string
     {
-        return \strtolower(\str_replace([' '], '_', $this->branch));
+        return \strtolower(Normalizer::normalize($this->branch));
+    }
+
+    public function getProjectRootPath(): string
+    {
+        return $this->projectRootPath;
     }
 
 }

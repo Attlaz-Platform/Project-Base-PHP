@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskCollection;
 use Attlaz\Project\Model\TaskExecutionResult;
@@ -30,6 +31,16 @@ abstract class AbstractCommand implements LoggerAwareInterface
     protected $logger;
 
     const INVOKE_METHOD = 'execute';
+
+    /** @var CacheManager */
+    protected $cacheManager;
+
+    /**
+     * Place code here to initialize that doesn't belong in the constructor. For instance stuff handling the logger which is not available in the constructor
+     */
+    public function init()
+    {
+    }
 
     protected final function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
@@ -199,5 +210,10 @@ abstract class AbstractCommand implements LoggerAwareInterface
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+    }
+
+    public function setCacheManager(CacheManager $cacheManager): void
+    {
+        $this->cacheManager = $cacheManager;
     }
 }
