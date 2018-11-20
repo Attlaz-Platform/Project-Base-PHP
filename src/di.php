@@ -19,12 +19,13 @@ return [
          * Log to stream
          */
 
-        $format = 'LOG_%level_name%: %message% %context% %extra% [%datetime%]' . \PHP_EOL;
+        $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
 
         //TODO: only show colors when in developer mode AND local mode
+        //TODO: add "verbose" and "non-verbose" mode
         $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
         //  $formatter = new \Monolog\Formatter\LineFormatter($format);
-        $formatter->allowInlineLineBreaks(false);
+        $formatter->allowInlineLineBreaks(true);
         $formatter->includeStacktraces(true);
 
         $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
@@ -47,48 +48,19 @@ return [
 
         return $logger;
     }),
-    \MongoDB\Driver\Manager::class  => \DI\factory(function (Config $config) {
-        echo 'get manager' . PHP_EOL;
 
-        return new \MongoDB\Driver\Manager($config->storage, ['readPreference' => 'nearest']);
+    \MongoDB\Driver\Manager::class => \DI\factory(function (LoggerInterface $logger, Config $config) {
+        return $manager = new \MongoDB\Driver\Manager($config->mongoDBConnectionString, ['readPreference' => 'nearest']);
     }),
 
-    \Psr\SimpleCache\CacheInterface::class          => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
-        echo 'get cache' . PHP_EOL;
-        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->getBranchNameSafe(), 'default');
-
-        $cachePools = [];
-
-        $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
-        $mongoDBCache->setLogger($logger);
-        $cachePools[] = $mongoDBCache;
-
-        $fileCache = new Cache\Adapter\PHPArray\ArrayCachePool(null);
-        $cachePools[] = $fileCache;
-
-        $cache = new Attlaz\Project\Model\Cache\FailOverCachePool($cachePools, [
-            'skip_on_failure'        => true,
-            'remove_pool_on_failure' => true,
-        ]);
-        $cache->setLogger($logger);
-
-        return $cache;
+    \Psr\SimpleCache\CacheInterface::class    => \DI\factory(function (LoggerInterface $logger, Config $config, \Attlaz\Project\Cache\CacheManager $cacheManager) {
+        return $cacheManager->getCache();
     }),
-    \Attlaz\Project\Model\Cache\CacheManager::class => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $manager) {
-        echo 'get cachemanager' . PHP_EOL;
-        $cacheManager = new \Attlaz\Project\Model\Cache\CacheManager($manager, 'attlaz_cache_' . $config->getBranchNameSafe(), $logger);
+    \Attlaz\Project\Cache\CacheManager::class => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $mongoDBManager) {
+        $fileCachePath = $config->getProjectRootPath() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache';
+        $cacheManager = new \Attlaz\Project\Cache\CacheManager($mongoDBManager, $config->getCacheName(), $fileCachePath, $logger);
 
         return $cacheManager;
-    }),
-    \Echron\IO\Client\Cache::class                  => \DI\factory(function (Config $config, \MongoDB\Driver\Manager $manager) {
-        echo 'get cacheclient' . PHP_EOL;
-        $collection = new \MongoDB\Collection($manager, 'attlaz_cache_' . $config->getBranchNameSafe(), 'storage');
-
-        $pool = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
-
-        $cacheClient = new \Echron\IO\Client\Cache($pool);
-
-        return $cacheClient;
     }),
 
 ];

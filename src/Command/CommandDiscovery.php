@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\App\Config;
 use Attlaz\Project\Command\Annotation\Command as CommandAnnotation;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -62,7 +63,7 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $files = FileSystem::listFiles($this->directory . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'Command', true);
+        $files = FileSystem::listFiles($this->directory . Config::COMMANDS_LOCATION, true);
 
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {
@@ -76,7 +77,7 @@ class CommandDiscovery
     private function getClassName(\SplFileInfo $file): string
     {
         $path = $file->getPath();
-        $path = \str_replace($this->directory, '', $path);
+        $path = \str_replace($this->directory . Config::SOURCE_LOCATION, '', $path);
 
         $class = \str_replace('/', '\\', $path) . '\\' . $file->getBasename('.php');
 
