@@ -36,7 +36,8 @@ abstract class AbstractCommand implements LoggerAwareInterface
     protected $cacheManager;
 
     /**
-     * Place code here to initialize that doesn't belong in the constructor. For instance stuff handling the logger which is not available in the constructor
+     * Place code here to initialize that doesn't belong in the constructor.
+     * For instance stuff handling the logger which is not available in the constructor
      */
     public function init()
     {
@@ -47,7 +48,7 @@ abstract class AbstractCommand implements LoggerAwareInterface
         $request = $this->createRequest($task, $branch);
         /** @var ResponseInterface $response */
         $response = $this->getHTTPClient()
-                         ->send($request, true);
+                         ->send($request, []);
 
         $strTaskResult = $response->getBody()
                                   ->getContents();

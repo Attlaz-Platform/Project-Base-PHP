@@ -30,7 +30,7 @@ class CommandDiscovery
     private $annotationReader;
 
     /**
-     * @var AbstractCommand[]
+     * @var CommandDefinition[]
      */
     private $commands = [];
     private $commandsLoaded = false;
@@ -63,7 +63,7 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $files = FileSystem::listFiles($this->directory . Config::COMMANDS_LOCATION, true);
+        $files = FileSystem::listFiles( Config::getCommandDirectoryPath($this->directory), true);
 
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {
@@ -89,14 +89,15 @@ class CommandDiscovery
     private function registerCommand(string $className): void
     {
         try {
-            //TODO: if the className is actually a file, the file is included by calling "class_exists",  putting "autoload" to false doesn't help and make the function returns false
+            //TODO: if the className is actually a file, the file is included by calling "class_exists",
+            //  putting "autoload" to false doesn't help and make the function returns false
             if (!class_exists($className, true)) {
                 return;
             }
 
             $reflectionClass = new \ReflectionClass($className);
 
-            /** @var CommandAnnotation $annotation */
+            /** @var CommandAnnotation|null $annotation */
             $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, CommandAnnotation::class);
             if (is_null($annotation)) {
                 return;

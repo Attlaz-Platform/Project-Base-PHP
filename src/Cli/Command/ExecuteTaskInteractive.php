@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\Model\TaskExecutionResult;
-use Attlaz\Project\Serialization\SerializeTaskResult;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,16 +12,12 @@ use Symfony\Component\Console\Question\Question;
 
 class ExecuteTaskInteractive extends ExecuteTask
 {
-   
+
     protected function configure()
     {
         $this->setName('task:execute:interactive')
              ->setDescription('Run task.')
              ->setHelp('This command allows you to run a task interactively');
-        //     ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
-//             ->addOption('arguments', null, InputOption::VALUE_REQUIRED, 'How many times should the message be printed?', null)
-//             ->addOption('execution', null, InputOption::VALUE_REQUIRED, 'How many times should the message be printed?', 'some random string');
-
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -94,6 +88,4 @@ class ExecuteTaskInteractive extends ExecuteTask
             return 1;
         }
     }
-
-  
 }

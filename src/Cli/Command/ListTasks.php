@@ -40,5 +40,4 @@ class ListTasks extends Command
             //TODO: add parameter information
         }
     }
-
 }

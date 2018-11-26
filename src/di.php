@@ -18,15 +18,23 @@ return [
         /**
          * Log to stream
          */
+        $verbose = true;
 
-        $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
+        if ($verbose) {
+            $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
+        } else {
+            $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . \PHP_EOL . \PHP_EOL;
+        }
 
         //TODO: only show colors when in developer mode AND local mode
         //TODO: add "verbose" and "non-verbose" mode
         $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
         //  $formatter = new \Monolog\Formatter\LineFormatter($format);
         $formatter->allowInlineLineBreaks(true);
-        $formatter->includeStacktraces(true);
+
+        if ($verbose) {
+            $formatter->includeStacktraces(true);
+        }
 
         $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
         $streamHandler->setFormatter($formatter);
