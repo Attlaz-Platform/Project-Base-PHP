@@ -23,8 +23,12 @@ class CacheManager
 
     public const DEFAULT_NAMESPACE = 'default';
 
-    public function __construct(MongoDBManager $manager, string $database, string $fileCachePath, LoggerInterface $logger)
-    {
+    public function __construct(
+        MongoDBManager $manager,
+        string $database,
+        string $fileCachePath,
+        LoggerInterface $logger
+    ) {
         $this->manager = $manager;
         $this->database = $database;
 
@@ -77,5 +81,4 @@ class CacheManager
 
         $this->pool[$name] = $failOverCachePool;
     }
-
 }

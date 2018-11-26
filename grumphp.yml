@@ -1,0 +1,11 @@
+parameters:
+    git_dir: .
+    bin_dir: vendor/bin
+    tasks:
+        phpstan:
+            level: 5
+            ignore_patterns: ["tests/*"]
+
+        phpcs:
+            standard: PSR2
+            ignore_patterns: ["./tests/*"]

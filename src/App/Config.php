@@ -26,8 +26,8 @@ class Config
     private $projectRootPath;
 
     public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
-    public const DI_FILE_LOCATION = self::SOURCE_LOCATION . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'etc' . \DIRECTORY_SEPARATOR . 'di.php';
-    public const COMMANDS_LOCATION = self::SOURCE_LOCATION . \DIRECTORY_SEPARATOR . 'App' . \DIRECTORY_SEPARATOR . 'Command';
+    private const DI_FILE_LOCATION = '/App/etc/di.php';
+    private const COMMANDS_LOCATION = '/App/Command';
 
     public function __construct(string $projectRootPath)
     {
@@ -54,7 +54,7 @@ class Config
 
         $this->mongoDBConnectionString = $this->getEnvValue('storage');
 
-        $diFile = $projectRootPath . self::DI_FILE_LOCATION;
+        $diFile = $this->getDIFileLocation($projectRootPath);
 
         if (\file_exists($diFile)) {
             $this->definitionsFile = $diFile;
@@ -68,7 +68,11 @@ class Config
             throw new \Exception('Config variable "' . $key . '" not defined');
         }
 
-        return (string)$value;
+        if (!\is_string($value)) {
+            $value = strval($value);
+        }
+
+        return $value;
     }
 
     public function getCacheName(): string
@@ -79,6 +83,16 @@ class Config
     public function getProjectRootPath(): string
     {
         return $this->projectRootPath;
+    }
+
+    private function getDIFileLocation(string $projectRootPath): string
+    {
+        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::DI_FILE_LOCATION);
+    }
+
+    public static function getCommandDirectoryPath(string $projectRootPath): string
+    {
+        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
     }
 
 }

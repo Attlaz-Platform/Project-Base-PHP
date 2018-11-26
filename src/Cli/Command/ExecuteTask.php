@@ -34,8 +34,8 @@ class ExecuteTask extends Command
              ->setDescription('Run task.')
              ->setHelp('This command allows you to run a task')
              ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
-             ->addOption('arguments', null, InputOption::VALUE_REQUIRED, 'How many times should the message be printed?', null)
-             ->addOption('execution', null, InputOption::VALUE_REQUIRED, 'How many times should the message be printed?', 'some random string');
+             ->addOption('arguments', null, InputOption::VALUE_REQUIRED, '', null)
+             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', 'x');
 //        ->addArgument('arguments', InputArgument::REQUIRED, 'Arguments to pass to the command')
 //        ->addArgument('execution', InputArgument::REQUIRED, 'Execution id to identify the execution');
     }
@@ -133,5 +133,4 @@ class ExecuteTask extends Command
         $this->logger->debug('Sending back response: ' . $strTaskResult);
         echo \base64_encode('Result') . ':' . base64_encode($strTaskResult);
     }
-
 }

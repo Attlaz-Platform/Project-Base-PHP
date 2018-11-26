@@ -23,7 +23,7 @@ final class Command
      * @Required
      */
     public $task;
- 
+
     /**
      * @param array $values
      */
@@ -52,5 +52,4 @@ final class Command
     {
         return $this->task;
     }
-
 }

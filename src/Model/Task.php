@@ -23,14 +23,14 @@ class Task implements \JsonSerializable
         return $this->command;
     }
 
-    function jsonSerialize()
+    public function jsonSerialize()
     {
         return [
             'command' => $this->command,
         ];
     }
 
-    function __toString()
+    public function __toString()
     {
         return json_encode($this->jsonSerialize());
     }

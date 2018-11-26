@@ -27,7 +27,6 @@ class FailOverCachePool extends AbstractCachePool
     private $options;
 
     /**
-     * @param array $caches
      * @param array $options {
      *
      * @type  bool $skip_on_failure If true we will remove a pool form the chain if it fails.
@@ -95,7 +94,6 @@ class FailOverCachePool extends AbstractCachePool
                 if ($saved) {
                     return true;
                     //[isHit, value, tags[], expirationTimestamp]
-
                 } else {
                     $this->logger->warning('Unable to save entry to log, trying next log storage');
                 }
@@ -118,7 +116,6 @@ class FailOverCachePool extends AbstractCachePool
                 if ($item[0] === true) {
                     return $item;
                     //[isHit, value, tags[], expirationTimestamp]
-
                 }
             } catch (CachePoolException $e) {
                 $this->logger->error('Unable to fetch', $e);
@@ -143,7 +140,6 @@ class FailOverCachePool extends AbstractCachePool
                     $this->logger->error('Unable to clear all objects from cache "' . $cacheKey . '"');
                     //return $item;
                     //[isHit, value, tags[], expirationTimestamp]
-
                 }
             } catch (CachePoolException $e) {
                 $this->logger->error('Unable to clear all objects from cache', $e);
@@ -161,7 +157,6 @@ class FailOverCachePool extends AbstractCachePool
                     $this->logger->error('Unable to clear one objects from cache "' . $cacheKey . '"');
                     //return $item;
                     //[isHit, value, tags[], expirationTimestamp]
-
                 }
             } catch (CachePoolException $e) {
                 $this->logger->error('Unable to clear one objects from cache', $e);

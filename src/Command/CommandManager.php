@@ -150,5 +150,4 @@ class CommandManager
     {
         return $this->discovery->getCommands();
     }
-
 }
