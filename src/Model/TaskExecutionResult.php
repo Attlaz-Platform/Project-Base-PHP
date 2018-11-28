@@ -5,7 +5,6 @@ namespace Attlaz\Project\Model;
 
 class TaskExecutionResult implements \JsonSerializable
 {
-    /** @var Task */
     private $task;
     private $data;
     /** @var bool */
@@ -23,7 +22,7 @@ class TaskExecutionResult implements \JsonSerializable
         $this->success = $success;
     }
 
-    public function getTask(): Task
+    public function getTaskId(): string
     {
         return $this->task;
     }
@@ -58,7 +57,7 @@ class TaskExecutionResult implements \JsonSerializable
         $this->responded = $responded;
     }
 
-    function jsonSerialize()
+    public function jsonSerialize()
     {
         return [
             'task'      => $this->task,

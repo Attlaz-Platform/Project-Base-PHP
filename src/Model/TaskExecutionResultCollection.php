@@ -17,5 +17,4 @@ class TaskExecutionResultCollection extends BasicCollection
     {
         return parent::current();
     }
-
 }

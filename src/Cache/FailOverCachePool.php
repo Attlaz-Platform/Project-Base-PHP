@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Project\Model\Cache;
+namespace Attlaz\Project\Cache;
 
 use Cache\Adapter\Chain\Exception\NoPoolAvailableException;
 use Cache\Adapter\Common\AbstractCachePool;
@@ -9,7 +9,6 @@ use Cache\Adapter\Common\Exception\CachePoolException;
 use Cache\Adapter\Common\PhpCacheItem;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
-use Psr\SimpleCache\CacheInterface;
 
 class FailOverCachePool extends AbstractCachePool
 {
@@ -19,7 +18,7 @@ class FailOverCachePool extends AbstractCachePool
      */
     private $logger;
     /**
-     * @type CacheInterface[]
+     * @type AbstractCachePool[]
      */
     private $caches;
     /**
@@ -28,21 +27,13 @@ class FailOverCachePool extends AbstractCachePool
     private $options;
 
     /**
-     * @param array $pools
      * @param array $options {
      *
      * @type  bool $skip_on_failure If true we will remove a pool form the chain if it fails.
      * }
      */
-    public function __construct(array $caches, array $options = [])
+    public function __construct(array $options = [])
     {
-        foreach ($caches as $cache) {
-            if (!$cache instanceof AbstractCachePool) {
-                throw new \InvalidArgumentException('Cache  must implements AbstractCachePool interface');
-            }
-        }
-
-        $this->caches = $caches;
         if (!isset($options['skip_on_failure'])) {
             $options['skip_on_failure'] = false;
         }
@@ -52,6 +43,11 @@ class FailOverCachePool extends AbstractCachePool
         $this->options = $options;
     }
 
+    public function addCachePool(string $name, AbstractCachePool $cachePool)
+    {
+        $this->caches[$name] = $cachePool;
+    }
+    /** @noinspection PhpMissingParentCallCommonInspection */
     /**
      * @param LoggerInterface $logger
      */
@@ -59,7 +55,7 @@ class FailOverCachePool extends AbstractCachePool
     {
         $this->logger = $logger;
     }
-
+    /** @noinspection PhpMissingParentCallCommonInspection */
     /**
      * Logs with an arbitrary level if the logger exists.
      *
@@ -88,21 +84,28 @@ class FailOverCachePool extends AbstractCachePool
 
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        foreach ($this->getCaches() as $cacheKey => $cache) {
+        /**
+         * @var string $cacheName
+         * @var AbstractCachePool $cachePool
+         */
+        foreach ($this->getCaches() as $cacheName => $cachePool) {
             try {
-                $saved = $cache->storeItemInCache($item, $ttl);
+                $saved = $cachePool->storeItemInCache($item, $ttl);
                 if ($saved) {
                     return true;
                     //[isHit, value, tags[], expirationTimestamp]
-
+                } else {
+                    $this->logger->warning('Unable to save entry to log, trying next log storage');
                 }
             } catch (CachePoolException $e) {
-                $this->log('error', 'Unable to save: ' . $e->getMessage());
+                $this->log('error', 'Unable to save to ' . $cacheName . ': ' . $e->getMessage());
                 // $this->handleException($poolKey, __FUNCTION__, $e);
             } catch (\Exception $e) {
-                $this->log('error', 'Unable to save: ' . $e->getMessage());
+                $this->log('error', 'Unable to save to ' . $cacheName . ': ' . $e->getMessage());
             }
         }
+
+        return false;
     }
 
     protected function fetchObjectFromCache($key)
@@ -113,7 +116,6 @@ class FailOverCachePool extends AbstractCachePool
                 if ($item[0] === true) {
                     return $item;
                     //[isHit, value, tags[], expirationTimestamp]
-
                 }
             } catch (CachePoolException $e) {
                 $this->logger->error('Unable to fetch', $e);
@@ -138,7 +140,6 @@ class FailOverCachePool extends AbstractCachePool
                     $this->logger->error('Unable to clear all objects from cache "' . $cacheKey . '"');
                     //return $item;
                     //[isHit, value, tags[], expirationTimestamp]
-
                 }
             } catch (CachePoolException $e) {
                 $this->logger->error('Unable to clear all objects from cache', $e);
@@ -156,7 +157,6 @@ class FailOverCachePool extends AbstractCachePool
                     $this->logger->error('Unable to clear one objects from cache "' . $cacheKey . '"');
                     //return $item;
                     //[isHit, value, tags[], expirationTimestamp]
-
                 }
             } catch (CachePoolException $e) {
                 $this->logger->error('Unable to clear one objects from cache', $e);

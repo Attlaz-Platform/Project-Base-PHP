@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Project\App;
+namespace Attlaz\Project\Logger;
 
 use Attlaz\Client;
 use Attlaz\Model\LogEntry;
@@ -24,8 +24,11 @@ class ApiHandler extends AbstractProcessingHandler
         $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
         $logEntry->date = $record['datetime'];
         $logEntry->context = $record['context'];
-        $logEntry->context['taskexecution'] = $record['extra']['execution'];
-        $logEntry->type = 'taskexecution';
+        if (isset($record['extra']['execution'])) {
+            //TODO: what is the log entry type when no task execution is defined?
+            $logEntry->context['taskexecution'] = $record['extra']['execution'];
+            $logEntry->type = 'taskexecution';
+        }
 
         //TODO: combine extra with context?
         try {
