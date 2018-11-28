@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Attlaz\Project\App;
 
 use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidPathException;
+use Echron\Tools\Normalize\Normalizer;
 
 class Config
 {
@@ -19,15 +21,28 @@ class Config
     public $api_client_id;
     public $api_client_secret;
 
-    public $storage;
+    public $mongoDBConnectionString;
 
-    public function __construct()
+    private $projectRootPath;
+
+    public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
+    private const DI_FILE_LOCATION = '/App/etc/di.php';
+    private const COMMANDS_LOCATION = '/App/Command';
+
+    public function __construct(string $projectRootPath)
     {
-        //TODO: handle that env file is not readable
-        $dotenv = new Dotenv(BP);
-        $dotenv->load();
+        //TODO: validate root path;
+        $this->projectRootPath = $projectRootPath;
 
-        $this->branch = $this->getEnvValue('branch');
+        //TODO: handle that env file is not readable
+        try {
+            $dotenv = new Dotenv($projectRootPath);
+            $dotenv->load();
+        } catch (InvalidPathException $ex) {
+            throw new \Exception('Unable to start project: .env file missing in directory "' . $projectRootPath . '"');
+        }
+
+        $this->branch = $this->getEnvValue('project');
         $this->mode = $this->getEnvValue('mode');
         if ($this->mode !== Config::MODE_PRODUCTION && $this->mode !== Config::MODE_DEVELOPMENT) {
             throw new \InvalidArgumentException('Invalid mode "' . $this->mode . '", must be "' . Config::MODE_PRODUCTION . '" or "' . Config::MODE_DEVELOPMENT . '"');
@@ -37,7 +52,13 @@ class Config
         $this->api_client_id = $this->getEnvValue('api_client_id');
         $this->api_client_secret = $this->getEnvValue('api_client_secret');
 
-        $this->storage = $this->getEnvValue('storage');
+        $this->mongoDBConnectionString = $this->getEnvValue('storage');
+
+        $diFile = $this->getDIFileLocation($projectRootPath);
+
+        if (\file_exists($diFile)) {
+            $this->definitionsFile = $diFile;
+        }
     }
 
     private function getEnvValue(string $key)
@@ -47,7 +68,31 @@ class Config
             throw new \Exception('Config variable "' . $key . '" not defined');
         }
 
-        return (string)$value;
+        if (!\is_string($value)) {
+            $value = strval($value);
+        }
+
+        return $value;
+    }
+
+    public function getCacheName(): string
+    {
+        return \strtolower(Normalizer::normalize($this->branch));
+    }
+
+    public function getProjectRootPath(): string
+    {
+        return $this->projectRootPath;
+    }
+
+    private function getDIFileLocation(string $projectRootPath): string
+    {
+        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::DI_FILE_LOCATION);
+    }
+
+    public static function getCommandDirectoryPath(string $projectRootPath): string
+    {
+        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
     }
 
 }

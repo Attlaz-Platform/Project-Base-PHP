@@ -6,21 +6,17 @@ namespace Attlaz\Project\Model;
 class TaskExecutionRequest
 {
     private $task;
-    private $command;
+
     private $arguments;
     private $executionId;
 
-    public function __construct(string $task, string $command, array $arguments = [], string $executionId = null)
+    public function __construct(string $task, array $arguments = [], string $executionId = null)
     {
         if (\is_null($task)) {
             throw new \InvalidArgumentException('Task cannot be empty');
         }
-        if (\is_null($command) || empty($command)) {
-            throw new \InvalidArgumentException('Command cannot be empty');
-        }
 
         $this->task = $task;
-        $this->command = $command;
         $this->arguments = $arguments;
         $this->executionId = $executionId;
     }
@@ -28,11 +24,6 @@ class TaskExecutionRequest
     public function getTask(): string
     {
         return $this->task;
-    }
-
-    public function getCommand(): string
-    {
-        return $this->command;
     }
 
     public function getArguments(): array
@@ -53,7 +44,7 @@ class TaskExecutionRequest
     public function getExecutionId(): string
     {
         return $this->executionId;
-        }
+    }
 
 //    public static function fromArray(array $input): self
 //    {

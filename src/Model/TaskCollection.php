@@ -17,5 +17,4 @@ class TaskCollection extends BasicCollection
     {
         return parent::current();
     }
-
 }

@@ -1,8 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Attlaz\Project\Model;
+namespace Attlaz\Project\Command;
 
+use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Model\Task;
+use Attlaz\Project\Model\TaskCollection;
+use Attlaz\Project\Model\TaskExecutionResult;
+use Attlaz\Project\Model\TaskExecutionResultCollection;
 use Attlaz\Project\Serialization\DeserializeTaskResult;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\EachPromise;
@@ -17,7 +22,7 @@ use Psr\Log\LoggerInterface;
  *
  * @method execute()
  */
-abstract class JobCommand implements LoggerAwareInterface
+abstract class AbstractCommand implements LoggerAwareInterface
 {
 
     /** @var  Client */
@@ -27,12 +32,23 @@ abstract class JobCommand implements LoggerAwareInterface
 
     const INVOKE_METHOD = 'execute';
 
+    /** @var CacheManager */
+    protected $cacheManager;
+
+    /**
+     * Place code here to initialize that doesn't belong in the constructor.
+     * For instance stuff handling the logger which is not available in the constructor
+     */
+    public function init()
+    {
+    }
+
     protected final function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
         $request = $this->createRequest($task, $branch);
         /** @var ResponseInterface $response */
         $response = $this->getHTTPClient()
-                         ->send($request, true);
+                         ->send($request, []);
 
         $strTaskResult = $response->getBody()
                                   ->getContents();
@@ -195,5 +211,10 @@ abstract class JobCommand implements LoggerAwareInterface
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+    }
+
+    public function setCacheManager(CacheManager $cacheManager): void
+    {
+        $this->cacheManager = $cacheManager;
     }
 }
