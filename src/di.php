@@ -70,5 +70,7 @@ return [
 
         return $cacheManager;
     }),
+    \Attlaz\Project\Command\CommandContext::class => \DI\autowire(\Attlaz\Project\Command\CommandContext::class),
+    \Attlaz\Project\Helper\HelperContext::class   => \DI\autowire(\Attlaz\Project\Helper\HelperContext::class),
 
 ];

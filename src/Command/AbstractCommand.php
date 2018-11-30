@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskCollection;
 use Attlaz\Project\Model\TaskExecutionResult;
@@ -14,26 +13,45 @@ use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * show off @method
  *
  * @method execute()
  */
-abstract class AbstractCommand implements LoggerAwareInterface
+abstract class AbstractCommand
 {
 
     /** @var  Client */
     private $client;
-    /** @var  LoggerInterface */
-    protected $logger;
 
     const INVOKE_METHOD = 'execute';
 
-    /** @var CacheManager */
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+    /**
+     * @var \Attlaz\Project\App\Config
+     */
+    protected $config;
+    /**
+     * @var \Attlaz\Project\Cache\CacheManager
+     */
     protected $cacheManager;
+
+    /**
+     * @var \DI\Container
+     */
+    protected $dependencyManager;
+
+    public function __construct(CommandContext $context)
+    {
+        $this->logger = $context->getLogger();
+        $this->config = $context->getConfig();
+        $this->cacheManager = $context->getCacheManager();
+        $this->dependencyManager = $context->getDependencyManager();
+    }
 
     /**
      * Place code here to initialize that doesn't belong in the constructor.
@@ -208,13 +226,4 @@ abstract class AbstractCommand implements LoggerAwareInterface
         return $request;
     }
 
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
-
-    public function setCacheManager(CacheManager $cacheManager): void
-    {
-        $this->cacheManager = $cacheManager;
-    }
 }

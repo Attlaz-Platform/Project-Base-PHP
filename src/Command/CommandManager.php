@@ -134,11 +134,8 @@ class CommandManager
         }
         /** @var AbstractCommand $command */
         $command = $this->diContainer->get($commandDefinition->className);
-        $command->setLogger($this->logger);
 
-        $cacheManager = $this->diContainer->get(\Attlaz\Project\Cache\CacheManager::class);
-        $command->setCacheManager($cacheManager);
-
+        //TODO: should we do any validation on this?
         return $command;
     }
 
