@@ -63,7 +63,7 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $files = FileSystem::listFiles( Config::getCommandDirectoryPath($this->directory), true);
+        $files = FileSystem::listFiles(Config::getCommandDirectoryPath($this->directory), true);
 
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {

@@ -72,8 +72,9 @@ class ExecuteTaskInteractive extends ExecuteTask
 
                 $question = new Question('Please enter a value for parameter ' . $parameterString . ':', $parameter->getDefault());
 
+
                 $parameterValue = $questionHelper->ask($input, $output, $question);
-//TODO: validate input
+                //TODO: validate input
                 $output->writeln('You have just selected: ' . $parameterValue);
 
                 $parameterValues[$parameter->getName()] = $parameterValue;

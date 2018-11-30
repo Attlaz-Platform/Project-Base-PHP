@@ -29,6 +29,9 @@ class Config
     private const DI_FILE_LOCATION = '/App/etc/di.php';
     private const COMMANDS_LOCATION = '/App/Command';
 
+    public $compileDi = false;
+    public $logVerbose = true;
+
     public function __construct(string $projectRootPath)
     {
         //TODO: validate root path;
@@ -43,10 +46,6 @@ class Config
         }
 
         $this->branch = $this->getEnvValue('project');
-        $this->mode = $this->getEnvValue('mode');
-        if ($this->mode !== Config::MODE_PRODUCTION && $this->mode !== Config::MODE_DEVELOPMENT) {
-            throw new \InvalidArgumentException('Invalid mode "' . $this->mode . '", must be "' . Config::MODE_PRODUCTION . '" or "' . Config::MODE_DEVELOPMENT . '"');
-        }
 
         $this->api_endpoint = $this->getEnvValue('api_endpoint');
         $this->api_client_id = $this->getEnvValue('api_client_id');
@@ -94,5 +93,4 @@ class Config
     {
         return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
     }
-
 }
