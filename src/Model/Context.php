@@ -28,8 +28,12 @@ class Context
      */
     protected $dependencyManager;
 
-    public function __construct(LoggerInterface $logger, Config $config, CacheManager $cacheManager, Container $dependencyManager)
-    {
+    public function __construct(
+        LoggerInterface $logger,
+        Config $config,
+        CacheManager $cacheManager,
+        Container $dependencyManager
+    ) {
         $this->logger = $logger;
         $this->config = $config;
         $this->cacheManager = $cacheManager;

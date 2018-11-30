@@ -18,9 +18,9 @@ return [
         /**
          * Log to stream
          */
-        $verbose = true;
 
-        if ($verbose) {
+
+        if ($config->logVerbose) {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
         } else {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . \PHP_EOL . \PHP_EOL;
@@ -32,7 +32,7 @@ return [
         //  $formatter = new \Monolog\Formatter\LineFormatter($format);
         $formatter->allowInlineLineBreaks(true);
 
-        if ($verbose) {
+        if ($config->logVerbose) {
             $formatter->includeStacktraces(true);
         }
 

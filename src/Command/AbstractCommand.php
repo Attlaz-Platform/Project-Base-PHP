@@ -22,7 +22,9 @@ use Psr\Http\Message\ResponseInterface;
 abstract class AbstractCommand
 {
 
-    /** @var  Client */
+    /**
+     * @var Client|null
+     */
     private $client;
 
     const INVOKE_METHOD = 'execute';
@@ -61,7 +63,7 @@ abstract class AbstractCommand
     {
     }
 
-    protected final function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
+    final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
         $request = $this->createRequest($task, $branch);
         /** @var ResponseInterface $response */
@@ -76,7 +78,7 @@ abstract class AbstractCommand
         return $taskResult;
     }
 
-    protected final function sendTaskWithoutResult(Task $task, string $branch): void
+    final  protected function sendTaskWithoutResult(Task $task, string $branch): void
     {
         $request = $this->createRequest($task, $branch);
 
@@ -84,41 +86,41 @@ abstract class AbstractCommand
         $this->getHTTPClient()
              ->send($request);
     }
-//
-//    protected final function executeMultiple(array $tasks): array
-//    {
-//        $results = [];
-//        foreach ($tasks as $task) {
-//            if ($task instanceof Task) {
-//                $results[] = $this->execute($task);
-//            }
-//        }
-//
-//        return $results;
-//    }
-//
-//    protected final function executeAsync(Task $task): PromiseInterface
-//    {
-//
-//        return $this->manager->executeAsync($task);
-////        $deferred = new \React\Promise\Deferred();
-////
-////        $result = $this->execute($task);
-////        $deferred->resolve($result);
-//
-//        // Execute a Node.js-style function using the callback pattern
-////        computeAwesomeResultAsynchronously(function ($error, $result) use ($deferred) {
-////            if ($error) {
-////                $deferred->reject($error);
-////            } else {
-////                $deferred->resolve($result);
-////            }
-////        });
-//
-//        // Return the promise
-//        //  return $deferred->promise();
-//    }
-//
+    //
+    //    protected final function executeMultiple(array $tasks): array
+    //    {
+    //        $results = [];
+    //        foreach ($tasks as $task) {
+    //            if ($task instanceof Task) {
+    //                $results[] = $this->execute($task);
+    //            }
+    //        }
+    //
+    //        return $results;
+    //    }
+    //
+    //    protected final function executeAsync(Task $task): PromiseInterface
+    //    {
+    //
+    //        return $this->manager->executeAsync($task);
+    ////        $deferred = new \React\Promise\Deferred();
+    ////
+    ////        $result = $this->execute($task);
+    ////        $deferred->resolve($result);
+    //
+    //        // Execute a Node.js-style function using the callback pattern
+    ////        computeAwesomeResultAsynchronously(function ($error, $result) use ($deferred) {
+    ////            if ($error) {
+    ////                $deferred->reject($error);
+    ////            } else {
+    ////                $deferred->resolve($result);
+    ////            }
+    ////        });
+    //
+    //        // Return the promise
+    //        //  return $deferred->promise();
+    //    }
+    //
     private function getHTTPClient(): Client
     {
         if (\is_null($this->client)) {
@@ -135,18 +137,18 @@ abstract class AbstractCommand
         return $this->client;
     }
 
-//    private $curlMultiHandler;
-//
-//    private function getMultiHandler()
-//    {
-//        if (\is_null($this->curlMultiHandler)) {
-//            $this->curlMultiHandler = new CurlMultiHandler;
-//        }
-//
-//        return $this->curlMultiHandler;
-//    }
+    //    private $curlMultiHandler;
+    //
+    //    private function getMultiHandler()
+    //    {
+    //        if (\is_null($this->curlMultiHandler)) {
+    //            $this->curlMultiHandler = new CurlMultiHandler;
+    //        }
+    //
+    //        return $this->curlMultiHandler;
+    //    }
 
-    protected final function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
+    final  protected function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
     {
         $results = new TaskExecutionResultCollection();
 
@@ -159,21 +161,22 @@ abstract class AbstractCommand
                            ->sendAsync($request)
                            ->then(function (ResponseInterface $response) use ($task) {
                                // echo $task->getArgument('input') . \PHP_EOL;
-//                               $strTaskResult = $response->getBody()
-//                                                         ->getContents();
-//
-//                               $cmd = new DeserializeTaskResult();
-//                               $taskResult = $cmd->__invoke($strTaskResult);
-//
-//                               return [
-//                                   'task'   => $task,
-//                                   'result' => $taskResult,
-//                               ];
+                               $strTaskResult = $response->getBody()
+                                                         ->getContents();
+                               //
+                               //                               $cmd = new DeserializeTaskResult();
+                               //                               $taskResult = $cmd->__invoke($strTaskResult);
+                               //
+                               return [
+                                   'task'   => $task,
+                                   'result' => $strTaskResult,
+                               ];
+
                                return true;
                            }, function (\Exception $ex) use ($task) {
                                //TODO: retry
-                               echo 'Ex: ' . $ex->getMessage() . \PHP_EOL;
-
+                               $this->logger->error('Unable to execute task: ' . $task->name . ': ' . $ex->getMessage());
+                              
                                return false;
                            });
             }
@@ -195,13 +198,13 @@ abstract class AbstractCommand
         $each->promise()
              ->wait();
 
-//        echo 'State: ' . $each->promise()
-//                              ->getState() . \PHP_EOL;
-//        while ($each->promise()
-//                    ->getState() === 'pending') {
-//            $this->getMultiHandler()
-//                 ->tick();
-//        }
+        //        echo 'State: ' . $each->promise()
+        //                              ->getState() . \PHP_EOL;
+        //        while ($each->promise()
+        //                    ->getState() === 'pending') {
+        //            $this->getMultiHandler()
+        //                 ->tick();
+        //        }
 
         return $results;
     }
@@ -225,5 +228,4 @@ abstract class AbstractCommand
 
         return $request;
     }
-
 }

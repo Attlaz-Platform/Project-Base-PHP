@@ -98,7 +98,7 @@ class Project
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
 
-        if ($this->config->mode === Config::MODE_PRODUCTION) {
+        if ($this->config->compileDi) {
             $containerBuilder->enableCompilation($this->projectRootPath . \DIRECTORY_SEPARATOR . 'var' . \DIRECTORY_SEPARATOR . 'cache');
             // TODO: this doesn't make sense with PHP CLI
             //$containerBuilder->enableDefinitionCache();
