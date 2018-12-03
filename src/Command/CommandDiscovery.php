@@ -63,7 +63,12 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $files = FileSystem::listFiles(Config::getCommandDirectoryPath($this->directory), true);
+        $commandDirectoryPath = Config::getCommandDirectoryPath($this->directory);
+        if (is_null($commandDirectoryPath)) {
+            throw new \Exception('Unable to discover commands: command directory does not exist');
+        }
+
+        $files = FileSystem::listFiles($commandDirectoryPath, true);
 
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {

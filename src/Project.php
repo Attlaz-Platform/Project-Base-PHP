@@ -53,6 +53,7 @@ class Project
             ini_set('display_errors', '1');
         }
 
+        try {
 //        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
 //
 //        $start = \microtime(true);
@@ -81,7 +82,9 @@ class Project
         $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
         $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
         $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
-
+        } catch (\Exception $ex) {
+            throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
+        }
 //        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 //
 //        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
@@ -133,46 +136,4 @@ class Project
             exit(1);
         }
     }
-
-//    public function handleRequest(TaskExecutionRequest $taskExecutionRequest = null): void
-//    {
-//        echo PHP_EOL . 'Start handle request: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
-//
-//        try {
-//            if (\is_null($taskExecutionRequest)) {
-//                $taskExecutionRequest = TaskExecutionRequestHelper::getRequest();
-//            }
-//
-//            /** @var \Attlaz\Project\Logger\Processor logProcessor */
-//            $logProcessor = new Processor();
-//            $logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
-//            $this->logger->pushProcessor($logProcessor);
-//
-//            $taskExecutionResult = $this->commandRegistry->executeTask($taskExecutionRequest);
-//
-//            $cmd = new SerializeTaskResult();
-//            $strTaskResult = $cmd->__invoke($taskExecutionResult);
-//
-//            $this->logger->debug('Sending back response: ' . $strTaskResult);
-//
-//            $this->sendResponse($strTaskResult);
-//
-//            echo PHP_EOL . 'Execution time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
-//
-//            if ($taskExecutionResult->getSuccess()) {
-//                exit(0);
-//            } else {
-//                //TODO: change exit code based on exception type
-//                exit(1);
-//            }
-//        } catch (\Throwable $ex) {
-//            $this->logger->error($ex->getMessage());
-//            exit(1);
-//        }
-//    }
-
-//    private function sendResponse(string $result)
-//    {
-//        echo \base64_encode('Result') . ':' . base64_encode($result);
-//    }
 }
