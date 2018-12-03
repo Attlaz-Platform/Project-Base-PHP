@@ -34,7 +34,6 @@ class Config
 
     public function __construct(string $projectRootPath)
     {
-        //TODO: validate root path;
         $this->projectRootPath = $projectRootPath;
 
         //TODO: handle that env file is not readable
@@ -55,7 +54,7 @@ class Config
 
         $diFile = $this->getDIFileLocation($projectRootPath);
 
-        if (\file_exists($diFile)) {
+        if (!is_null($diFile) && \file_exists($diFile)) {
             $this->definitionsFile = $diFile;
         }
     }
@@ -84,13 +83,25 @@ class Config
         return $this->projectRootPath;
     }
 
-    private function getDIFileLocation(string $projectRootPath): string
+    private function getDIFileLocation(string $projectRootPath): ?string
     {
-        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::DI_FILE_LOCATION);
+
+        $diFileLocation =  realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::DI_FILE_LOCATION);
+        if($diFileLocation === false)
+    {
+            return null;
+        }
+        return $diFileLocation;
     }
 
-    public static function getCommandDirectoryPath(string $projectRootPath): string
+
+    public static function getCommandDirectoryPath(string $projectRootPath): ?string
     {
-        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
+        $commandDirectoryPath = realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
+        if ($commandDirectoryPath === false) {
+            return null;
+        }
+
+        return $commandDirectoryPath;
     }
 }
