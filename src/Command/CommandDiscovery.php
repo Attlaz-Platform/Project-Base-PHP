@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
-use Attlaz\Project\App\Config;
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\Annotation\Command as CommandAnnotation;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -14,10 +14,7 @@ use Echron\Tools\FileSystem;
 class CommandDiscovery
 {
 
-    /**
-     * @var string
-     */
-    private $namespace = '\App';
+
 
     /**
      * @var string
@@ -63,7 +60,7 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $commandDirectoryPath = Config::getCommandDirectoryPath($this->directory);
+        $commandDirectoryPath = Environment::getCommandDirectoryPath($this->directory);
         if (is_null($commandDirectoryPath)) {
             throw new \Exception('Unable to discover commands: command directory does not exist');
         }
@@ -91,7 +88,7 @@ class CommandDiscovery
     private function getClassName(\SplFileInfo $file): string
     {
         $path = $file->getPath();
-        $path = \str_replace($this->directory . Config::SOURCE_LOCATION, '', $path);
+        $path = \str_replace($this->directory . Environment::SOURCE_LOCATION, '', $path);
 
         $class = \str_replace('/', '\\', $path) . '\\' . $file->getBasename('.php');
 
