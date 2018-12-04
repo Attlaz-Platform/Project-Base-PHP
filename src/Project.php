@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace Attlaz\Project;
 
 use Attlaz\Project\App\Config;
+use Attlaz\Project\App\Environment;
+use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Cli\Command\CacheClean;
 use Attlaz\Project\Cli\Command\ConfigList;
 use Attlaz\Project\Cli\Command\ExecuteTask;
 use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
@@ -29,64 +32,60 @@ class Project
 
     private $startTime;
 
-    /** @var Config */
-    private $config;
+    /** @var Environment */
+    private $environment;
 
     private $projectRootPath;
 
     private $application;
 
-    public function __construct(string $projectRootPath, Config $config = null)
+    public function __construct(string $projectRootPath, Environment $environment = null)
     {
         $this->startTime = \microtime(true);
 
         $this->projectRootPath = $projectRootPath;
-        if (\is_null($config)) {
-            $config = new Config($projectRootPath);
+        if (\is_null($environment)) {
+            $environment = new Environment($projectRootPath);
         }
-        $this->config = $config;
+        $this->environment = $environment;
 
-        ini_set('memory_limit', '2G');
-        date_default_timezone_set('Europe/Brussels');
+        //  try {
+        //        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+        //
+        //        $start = \microtime(true);
+        $this->initDI($environment->definitionsFile);
 
-        if ($this->config->mode === Config::MODE_DEVELOPMENT) {
-            error_reporting(E_ALL);
-            ini_set('display_errors', '1');
-        }
+        //        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+        //
+        //        $start = \microtime(true);
+        $container = $this->getDIContainer();
+        $this->logger = $container->get(LoggerInterface::class);
 
-        try {
-            //        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
-            //
-            //        $start = \microtime(true);
-            $this->initDI($config->definitionsFile);
+        $config = $container->get(Config::class);
+        $config->loadConfig();
 
-            //        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            //
-            //        $start = \microtime(true);
-            $this->logger = $this->getDIContainer()
-                                 ->get(LoggerInterface::class);
+        //        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+        //        $start = \microtime(true);
+        $discovery = new CommandDiscovery($this->projectRootPath);
+        //Pre fetch commands
+        $discovery->getCommands();
 
-            //        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            //        $start = \microtime(true);
-            $discovery = new CommandDiscovery($this->projectRootPath);
-            //Pre fetch commands
-            $discovery->getCommands();
+        $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
 
-            $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
+        //        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+        //
+        //        $start = \microtime(true);
+        $this->application = new Application();
+        $this->application->setAutoExit(false);
 
-            //        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            //
-            //        $start = \microtime(true);
-            $this->application = new Application();
-            $this->application->setAutoExit(false);
-
-            $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
-            $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
-            $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
-            $this->application->add(new ConfigList($this->config, $this->logger));
-        } catch (\Exception $ex) {
-            throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
-        }
+        $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
+        $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
+        $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
+        $this->application->add(new ConfigList($config, $this->logger));
+        $this->application->add(new CacheClean($config, $container->get(CacheManager::class), $this->logger));
+        //        } catch (\Exception $ex) {
+        //            throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
+        //        }
         //        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
         //
         //        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
@@ -103,13 +102,16 @@ class Project
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
 
-        if ($this->config->compileDi) {
+        if ($this->environment->compileDi) {
             $containerBuilder->enableCompilation($this->projectRootPath . \DIRECTORY_SEPARATOR . 'var' . \DIRECTORY_SEPARATOR . 'cache');
             // TODO: this doesn't make sense with PHP CLI
             //$containerBuilder->enableDefinitionCache();
         }
 
-        $containerBuilder->addDefinitions([Config::class => $this->config]);
+        $containerBuilder->addDefinitions([Environment::class => $this->environment]);
+
+        //        $config = new Config($container->get(CacheManager::class), $this->environment, $this->logger);
+        //        $containerBuilder->addDefinitions([Config::class => $config]);
 
         $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
         if (!\is_null($definitionsFile)) {

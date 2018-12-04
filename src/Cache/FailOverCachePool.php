@@ -133,6 +133,7 @@ class FailOverCachePool extends AbstractCachePool
 
     protected function clearAllObjectsFromCache()
     {
+        $c = 0;
         foreach ($this->getCaches() as $cacheKey => $cache) {
             try {
                 $cleared = $cache->clearAllObjectsFromCache();
@@ -140,12 +141,16 @@ class FailOverCachePool extends AbstractCachePool
                     $this->logger->error('Unable to clear all objects from cache "' . $cacheKey . '"');
                     //return $item;
                     //[isHit, value, tags[], expirationTimestamp]
+                } else {
+                    $c++;
                 }
             } catch (CachePoolException $e) {
                 $this->logger->error('Unable to clear all objects from cache', $e);
                 // $this->handleException($poolKey, __FUNCTION__, $e);
             }
         }
+
+        return $c === count($this->getCaches());
     }
 
     protected function clearOneObjectFromCache($key)

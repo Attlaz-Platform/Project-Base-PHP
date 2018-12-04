@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
-use Attlaz\Project\App\Config;
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
 use DI\Container;
 use Psr\Log\LoggerInterface;
@@ -15,7 +15,7 @@ class Context
      */
     protected $logger;
     /**
-     * @var \Attlaz\Project\App\Config
+     * @var \Attlaz\Project\App\Environment
      */
     protected $config;
     /**
@@ -30,7 +30,7 @@ class Context
 
     public function __construct(
         LoggerInterface $logger,
-        Config $config,
+        Environment $config,
         CacheManager $cacheManager,
         Container $dependencyManager
     ) {
@@ -45,7 +45,7 @@ class Context
         return $this->logger;
     }
 
-    public function getConfig(): Config
+    public function getConfig(): Environment
     {
         return $this->config;
     }

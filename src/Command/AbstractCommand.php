@@ -34,7 +34,7 @@ abstract class AbstractCommand
      */
     protected $logger;
     /**
-     * @var \Attlaz\Project\App\Config
+     * @var \Attlaz\Project\App\Environment
      */
     protected $config;
     /**

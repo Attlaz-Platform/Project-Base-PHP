@@ -1,11 +1,10 @@
 <?php
 declare(strict_types=1);
 
-use Attlaz\Project\App\Config;
-use Psr\Log\LoggerInterface;
+use Attlaz\Project\App\Environment;
 
 return [
-    \Psr\Log\LoggerInterface::class => \DI\factory(function (Config $config) {
+    \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $config) {
         $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $config->branch);
 
         $ignoreDirectories = [
@@ -18,7 +17,6 @@ return [
         /**
          * Log to stream
          */
-
 
         if ($config->logVerbose) {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
@@ -57,20 +55,10 @@ return [
         return $logger;
     }),
 
-    \MongoDB\Driver\Manager::class => \DI\factory(function (LoggerInterface $logger, Config $config) {
-        return $manager = new \MongoDB\Driver\Manager($config->mongoDBConnectionString, ['readPreference' => 'nearest']);
-    }),
-
-    \Psr\SimpleCache\CacheInterface::class    => \DI\factory(function (LoggerInterface $logger, Config $config, \Attlaz\Project\Cache\CacheManager $cacheManager) {
+    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (
+        \Attlaz\Project\Cache\CacheManager $cacheManager
+    ) {
         return $cacheManager->getCache();
     }),
-    \Attlaz\Project\Cache\CacheManager::class => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $mongoDBManager) {
-        $fileCachePath = $config->getProjectRootPath() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache';
-        $cacheManager = new \Attlaz\Project\Cache\CacheManager($mongoDBManager, $config->getCacheName(), $fileCachePath, $logger);
-
-        return $cacheManager;
-    }),
-    \Attlaz\Project\Command\CommandContext::class => \DI\autowire(\Attlaz\Project\Command\CommandContext::class),
-    \Attlaz\Project\Helper\HelperContext::class   => \DI\autowire(\Attlaz\Project\Helper\HelperContext::class),
 
 ];

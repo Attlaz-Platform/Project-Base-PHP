@@ -60,7 +60,7 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
 
     public function __toString()
     {
-        return $this->key;
+        return 'Config: ' . $this->key;
     }
 
     /**
@@ -71,6 +71,7 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         string $key,
         ContainerInterface $container
     ) {
+        echo 'Resolve ' . $key . PHP_EOL;
         $config = $container->get(Config::class);
 
         return $config->get($key);

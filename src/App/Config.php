@@ -1,73 +1,41 @@
 <?php
-declare(strict_types=1);
 
 namespace Attlaz\Project\App;
 
-use Dotenv\Dotenv;
-use Dotenv\Exception\InvalidPathException;
-use Echron\Tools\Normalize\Normalizer;
+use Attlaz\Project\Cache\CacheManager;
+use Echron\Tools\FileSystem;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 class Config
 {
-
-    public const MODE_PRODUCTION = 'production';
-    public const MODE_DEVELOPMENT = 'development';
-
-    public $branch;
-    public $mode;
-    public $definitionsFile;
-
-    public $api_endpoint;
-    public $api_client_id;
-    public $api_client_secret;
-
-    public $mongoDBConnectionString;
-
-    private $projectRootPath;
-
-    public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
-    private const DI_FILE_LOCATION = '/App/etc/di.php';
-    private const CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
-    private const COMMANDS_LOCATION = '/App/Command';
-
-    public $compileDi = false;
-    public $logVerbose = true;
+    private $cacheManager;
+    private $environment;
+    private $logger;
 
     private $configuration = [];
 
-    public function __construct(string $projectRootPath)
+    public function __construct(CacheManager $cacheManager, Environment $environment, LoggerInterface $logger)
     {
-        $this->projectRootPath = realpath($projectRootPath);
+        $this->cacheManager = $cacheManager;
+        $this->environment = $environment;
+        $this->logger = $logger;
+    }
 
-        //TODO: handle that env file is not readable
-        try {
-            $dotenv = new Dotenv($this->projectRootPath);
-            $dotenv->load();
-        } catch (InvalidPathException $ex) {
-            throw new \Exception('Unable to start project: .env file missing in directory "' . $this->projectRootPath . '"');
-        }
-
-        $this->branch = $this->getEnvValue('project');
-
-        $this->api_endpoint = $this->getEnvValue('api_endpoint');
-        $this->api_client_id = $this->getEnvValue('api_client_id');
-        $this->api_client_secret = $this->getEnvValue('api_client_secret');
-
-        $this->mongoDBConnectionString = $this->getEnvValue('storage');
-
-        $diFile = $this->getDIFileLocation($projectRootPath);
-
-        if (!is_null($diFile) && \file_exists($diFile)) {
-            $this->definitionsFile = $diFile;
-        }
-
+    public function loadConfig(): void
+    {
         $this->configuration = $this->parseConfig();
     }
 
     private function parseConfig(): array
     {
+        //For speed this should only be saved to local cache?
+        $cache = $this->cacheManager->getCache('config');
+
+        if ($this->environment->cacheConfig && $cache->has('config')) {
+            return $cache->get('config');
+        }
         $result = [];
         //TODO: read from cache if possible
         //TODO: when to flush cache (new build?)
@@ -84,11 +52,14 @@ class Config
                 if ($apiConfigValues[$key]['allowoverride']) {
                     $result[$key] = $localConfigValue;
                 } else {
-                    echo 'Ignore local config value "' . $key . '": not allowed to override' . \PHP_EOL;
+                    $this->logger->warning('Ignore local config value "' . $key . '": not allowed to override');
                 }
             } else {
                 $result[$key] = $localConfigValue;
             }
+        }
+        if ($this->environment->cacheConfig) {
+            $cache->set('config', $result);
         }
 
         return $result;
@@ -108,24 +79,28 @@ class Config
         return $result;
     }
 
-    private function fetchLocalConfigValues()
+    private function fetchLocalConfigValues(): array
     {
-        $configFilePath = $this->getConfigFilePath();
-        if (\is_null($configFilePath)) {
-            throw new \Exception('Config file not found');
+        $configFilePath = $this->environment->getConfigFilePath();
+        $result = [];
+        if (!FileSystem::fileExists($configFilePath)) {
+            $this->logger->debug('No local configuration defined');
         } else {
             try {
                 $values = Yaml::parseFile($configFilePath);
+                if (!\is_array($values)) {
+                    $this->logger->debug('No valid local configuration');
+                    // TODO: throw an exception or just ignore this?
+                    //throw new \Exception('Invalid config file: No values');
+                } else {
+                    $configValues = $this->flatten($values);
 
-                $configValues = $this->flatten($values);
-
-                $result = [];
-
-                foreach ($configValues as $key => $value) {
-                    $result[$key] = [
-                        'value'  => $value,
-                        'source' => 'local',
-                    ];
+                    foreach ($configValues as $key => $value) {
+                        $result[$key] = [
+                            'value'  => $value,
+                            'source' => 'local',
+                        ];
+                    }
                 }
 
                 return $result;
@@ -157,60 +132,6 @@ class Config
         }
 
         return $result;
-    }
-
-    private function getEnvValue(string $key)
-    {
-        $value = \getenv($key);
-        if ($value === false) {
-            throw new \Exception('Config variable "' . $key . '" not defined');
-        }
-
-        if (!\is_string($value)) {
-            $value = strval($value);
-        }
-
-        return $value;
-    }
-
-    public function getCacheName(): string
-    {
-        return \strtolower(Normalizer::normalize($this->branch));
-    }
-
-    public function getProjectRootPath(): string
-    {
-        return $this->projectRootPath;
-    }
-
-    private function getDIFileLocation(string $projectRootPath): ?string
-    {
-        $diFileLocation = realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::DI_FILE_LOCATION);
-        if ($diFileLocation === false) {
-            return null;
-        }
-
-        return $diFileLocation;
-    }
-
-    private function getConfigFilePath(): ?string
-    {
-        $configFilePath = realpath($this->projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::CONFIG_FILE_LOCATION);
-        if ($configFilePath === false) {
-            return null;
-        }
-
-        return $configFilePath;
-    }
-
-    public static function getCommandDirectoryPath(string $projectRootPath): ?string
-    {
-        $commandDirectoryPath = realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
-        if ($commandDirectoryPath === false) {
-            return null;
-        }
-
-        return $commandDirectoryPath;
     }
 
     public function has(string $key): bool
