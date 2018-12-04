@@ -75,7 +75,7 @@ class CommandDiscovery
             if ($file->getExtension() === 'php') {
                 $className = $this->getClassName($file);
 
-                $commandDefinition = $this->detectCommandDefinitionForClass($className);
+                $commandDefinition = $this->registerCommand($className);
                 if (!\is_null($commandDefinition)) {
                     if (isset($commands[$commandDefinition->task])) {
                         throw new \Exception('Unable to register command: there is already a command defined for task "' . $commandDefinition->task . '"');
@@ -100,7 +100,7 @@ class CommandDiscovery
         return $class;
     }
 
-    private function detectCommandDefinitionForClass(string $className): ?CommandDefinition
+    private function registerCommand(string $className): ?CommandDefinition
     {
         try {
             //TODO: if the className is actually a file, the file is included by calling "class_exists",

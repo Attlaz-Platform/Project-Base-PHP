@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Attlaz\Project;
 
 use Attlaz\Project\App\Config;
+use Attlaz\Project\Cli\Command\ConfigList;
 use Attlaz\Project\Cli\Command\ExecuteTask;
 use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
 use Attlaz\Project\Cli\Command\ListTasks;
@@ -54,40 +55,41 @@ class Project
         }
 
         try {
-//        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
-//
-//        $start = \microtime(true);
-        $this->initDI($config->definitionsFile);
+            //        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+            //
+            //        $start = \microtime(true);
+            $this->initDI($config->definitionsFile);
 
-//        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-//
-//        $start = \microtime(true);
-        $this->logger = $this->getDIContainer()
-                             ->get(LoggerInterface::class);
+            //        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            //
+            //        $start = \microtime(true);
+            $this->logger = $this->getDIContainer()
+                                 ->get(LoggerInterface::class);
 
-//        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-//        $start = \microtime(true);
-        $discovery = new CommandDiscovery($this->projectRootPath);
-        //Pre fetch commands
-        $discovery->getCommands();
+            //        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            //        $start = \microtime(true);
+            $discovery = new CommandDiscovery($this->projectRootPath);
+            //Pre fetch commands
+            $discovery->getCommands();
 
-        $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
+            $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
 
-//        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-//
-//        $start = \microtime(true);
-        $this->application = new Application();
-        $this->application->setAutoExit(false);
+            //        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            //
+            //        $start = \microtime(true);
+            $this->application = new Application();
+            $this->application->setAutoExit(false);
 
-        $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
-        $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
-        $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
+            $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
+            $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
+            $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
+            $this->application->add(new ConfigList($this->config, $this->logger));
         } catch (\Exception $ex) {
             throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
         }
-//        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-//
-//        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+        //        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+        //
+        //        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
 
     private function initDI(string $definitionsFile = null)
@@ -113,6 +115,8 @@ class Project
         if (!\is_null($definitionsFile)) {
             $containerBuilder->addDefinitions($definitionsFile);
         }
+
+        $containerBuilder->useAutowiring(true);
 
         $this->diContainer = $containerBuilder->build();
     }
