@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
+use Attlaz\Project\Command\CommandParameterDefinition;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -57,25 +58,22 @@ class ExecuteTaskInteractive extends ExecuteTask
             $parameters = $selectedCommand->getParameters();
 
             foreach ($parameters as $parameter) {
-                $parameterString = '\'' . $parameter->getName() . '\'';
-                if ($parameter->hasType()) {
-                    $parameterString .= ' (' . $parameter->getType() . ')';
-                } else {
-                    $parameterString .= ' (No type specified)';
+                $parameterString = $parameter->__toString();
+
+                $question = new Question('Please enter a value for: ' . $parameterString . ':', $parameter->getDefault());
+
+                $valid = false;
+                while (!$valid) {
+                    $parameterValue = $questionHelper->ask($input, $output, $question);
+                    $parameterValue = $this->formatValue($parameterValue, $parameter);
+                    $valid = CommandParameterDefinition::isCorrectType($parameterValue, $parameter);
+                    if (!$valid) {
+                        $output->writeln('<error>Invalid value</error>');
+                    }
                 }
 
-                if ($parameter->isRequired()) {
-                    $parameterString .= ' [required]';
-                } else {
-                    $parameterString .= ' [default: ' . $parameter->getDefault() . ']';
-                }
-
-                $question = new Question('Please enter a value for parameter ' . $parameterString . ':', $parameter->getDefault());
-
-
-                $parameterValue = $questionHelper->ask($input, $output, $question);
                 //TODO: validate input
-                $output->writeln('You have just selected: ' . $parameterValue);
+                // $output->writeln('You have just selected: ' . $parameterValue);
 
                 $parameterValues[$parameter->getName()] = $parameterValue;
             }
@@ -88,5 +86,45 @@ class ExecuteTaskInteractive extends ExecuteTask
 
             return 1;
         }
+    }
+
+    private function formatValue($value, CommandParameterDefinition $parameter)
+    {
+        if ($parameter->hasType()) {
+            if ($parameter->getType() === 'int') {
+                if (\is_numeric($value)) {
+                    $value = intval($value);
+                }
+            } elseif ($parameter->getType() === 'bool') {
+                $true = [
+                    true,
+                    'true',
+                    'yes',
+                    'y',
+                    '1',
+                    1,
+                ];
+                $false = [
+                    false,
+                    'false',
+                    'no',
+                    'n',
+                    '0',
+                    0,
+                ];
+                $matchValue = $value;
+                if (\is_string($matchValue)) {
+                    $matchValue = \strtolower($matchValue);
+                }
+
+                if (\in_array($matchValue, $true)) {
+                    $value = true;
+                } elseif (\in_array($matchValue, $false)) {
+                    $value = false;
+                }
+            }
+        }
+
+        return $value;
     }
 }
