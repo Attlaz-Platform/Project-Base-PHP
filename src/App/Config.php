@@ -16,6 +16,9 @@ class Config
 
     private $configuration = [];
 
+    private const CONFIG_CACHE_POOL = 'config';
+    private const CONFIG_CACHE_KEY = 'config';
+
     public function __construct(CacheManager $cacheManager, Environment $environment, LoggerInterface $logger)
     {
         $this->cacheManager = $cacheManager;
@@ -30,11 +33,10 @@ class Config
 
     private function parseConfig(): array
     {
-        //For speed this should only be saved to local cache?
-        $cache = $this->cacheManager->getCache('config');
+        $cache = $this->cacheManager->getCache(self::CONFIG_CACHE_POOL);
 
-        if ($this->environment->cacheConfig && $cache->has('config')) {
-            return $cache->get('config');
+        if ($this->environment->cacheConfig && $cache->has(self::CONFIG_CACHE_KEY)) {
+            return $cache->get(self::CONFIG_CACHE_KEY);
         }
         $result = [];
         //TODO: read from cache if possible
@@ -59,7 +61,7 @@ class Config
             }
         }
         if ($this->environment->cacheConfig) {
-            $cache->set('config', $result);
+            $cache->set(self::CONFIG_CACHE_KEY, $result);
         }
 
         return $result;

@@ -49,54 +49,54 @@ class Project
         }
         $this->environment = $environment;
 
-        //  try {
-        //        echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
-        //
-        //        $start = \microtime(true);
-        $this->initDI($environment->definitionsFile);
+        try {
+            echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
 
-        //        echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-        //
-        //        $start = \microtime(true);
-        $container = $this->getDIContainer();
-        $this->logger = $container->get(LoggerInterface::class);
+            $start = \microtime(true);
+            $this->initDI($environment->definitionsFile);
 
-        $config = $container->get(Config::class);
-        $config->loadConfig();
+            echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
-        //        echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-        //        $start = \microtime(true);
-        $discovery = new CommandDiscovery($this->projectRootPath);
-        //Pre fetch commands
-        $discovery->getCommands();
+            $start = \microtime(true);
+            $container = $this->getDIContainer();
+            $this->logger = $container->get(LoggerInterface::class);
 
-        $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
+            echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            $start = \microtime(true);
+            $config = $container->get(Config::class);
+            $config->loadConfig();
 
-        //        echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-        //
-        //        $start = \microtime(true);
-        $this->application = new Application();
-        $this->application->setAutoExit(false);
+            echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            $start = \microtime(true);
+            $discovery = new CommandDiscovery($this->projectRootPath);
+            //Pre fetch commands
+            $discovery->getCommands();
 
-        $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
-        $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
-        $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
-        $this->application->add(new ConfigList($config, $this->logger));
-        $this->application->add(new CacheClean($config, $container->get(CacheManager::class), $this->logger));
-        //        } catch (\Exception $ex) {
-        //            throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
-        //        }
-        //        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-        //
-        //        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+            $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
+
+            echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+
+            $start = \microtime(true);
+            $this->application = new Application();
+            $this->application->setAutoExit(false);
+
+            $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
+            $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
+            $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
+            $this->application->add(new ConfigList($config, $this->logger));
+            $this->application->add(new CacheClean($config, $container->get(CacheManager::class), $this->logger));
+        } catch (\Exception $ex) {
+            throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
+        }
+        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+
+        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
 
     private function initDI(string $definitionsFile = null)
     {
-        if (!\is_null($definitionsFile)) {
-            if (!\file_exists($definitionsFile) && !\is_readable($definitionsFile)) {
-                throw new \Exception('Unable to add definitions, file "' . $definitionsFile . '" is not readable or does not exist');
-            }
+        if (!\is_null($definitionsFile) && !\file_exists($definitionsFile) && !\is_readable($definitionsFile)) {
+            throw new \Exception('Unable to add definitions, file "' . $definitionsFile . '" is not readable or does not exist');
         }
 
         /** @var \DI\ContainerBuilder $containerBuilder */
@@ -132,7 +132,6 @@ class Project
     {
         $output = $this->application->run();
 
-        // var_dump($output);
         echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
 
         if ($output === 0) {

@@ -32,9 +32,9 @@ class Environment
     private const CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
     private const COMMANDS_LOCATION = '/App/Command';
 
-    public $compileDi = false;
+    public $compileDi = true;
     public $logVerbose = true;
-    public $cacheConfig = false;
+    public $cacheConfig = true;
 
     public function __construct(string $projectRootPath)
     {

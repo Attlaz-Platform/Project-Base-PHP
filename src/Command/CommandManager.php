@@ -96,35 +96,10 @@ class CommandManager
 
     private function validateParameterValueType($value, CommandParameterDefinition $parameter): void
     {
-        $valueType = \gettype($value);
-        if ($valueType !== $parameter->getType()) {
-            throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type "' . $valueType . '", type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
-        }
-
-//        switch ($parameter->getType()) {
-//            case 'int':
-//                if (!\is_int($value)) {
-//                    throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type, type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
-//                }
-//                break;
-//            case 'string':
-//                if (!\is_string($value)) {
-//                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
-//                }
-//                break;
-//            case 'array':
-//                if (!\is_array($value)) {
-//                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
-//                }
-//                break;
-//            case 'bool':
-//                if (!\is_bool($value)) {
-//                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
-//                }
-//                break;
-//            default:
-//                $this->logger->warning('Unknown parameter type "' . $type . '"');
-//        }
+       if(!CommandParameterDefinition::isCorrectType($value,$parameter))
+       {
+           throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
+       }
     }
 
     private function getCommandInstance(CommandDefinition $commandDefinition): AbstractCommand
