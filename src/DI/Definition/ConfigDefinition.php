@@ -71,7 +71,6 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         string $key,
         ContainerInterface $container
     ) {
-        echo 'Resolve ' . $key . PHP_EOL;
         $config = $container->get(Config::class);
 
         return $config->get($key);

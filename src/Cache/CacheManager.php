@@ -14,9 +14,8 @@ use Psr\SimpleCache\CacheInterface;
 class CacheManager
 {
 
-    private $logger;
-
     private $environment;
+    protected $logger;
 
     private $fileCachePath;
 
@@ -28,10 +27,10 @@ class CacheManager
         Environment $environment,
         LoggerInterface $logger
     ) {
-        $this->fileCachePath = $environment->getFileCachePath();
-
         $this->environment = $environment;
         $this->logger = $logger;
+
+        $this->fileCachePath = $environment->getFileCachePath();
 
         $this->pool = [];
     }
@@ -59,6 +58,7 @@ class CacheManager
             'skip_on_failure'        => true,
             'remove_pool_on_failure' => true,
         ]);
+
         $failOverCachePool->setLogger($this->logger);
 
         /**
@@ -68,7 +68,9 @@ class CacheManager
             $mongoDBManager = new \MongoDB\Driver\Manager($this->environment->mongoDBConnectionString, ['readPreference' => 'nearest']);
             $collection = new \MongoDB\Collection($mongoDBManager, 'cache_' . $this->environment->getCacheName(), $name);
             $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
+
             $mongoDBCache->setLogger($this->logger);
+            
             $failOverCachePool->addCachePool('mongodb', $mongoDBCache);
         }
 

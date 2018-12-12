@@ -3,27 +3,27 @@
 namespace Attlaz\Project\App;
 
 use Attlaz\Project\Cache\CacheManager;
-use Echron\Tools\FileSystem;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-class Config
+class Config implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private $cacheManager;
     private $environment;
-    private $logger;
+    private $configHelper;
 
     private $configuration = [];
 
     private const CONFIG_CACHE_POOL = 'config';
     private const CONFIG_CACHE_KEY = 'config';
 
-    public function __construct(CacheManager $cacheManager, Environment $environment, LoggerInterface $logger)
+    public function __construct(CacheManager $cacheManager, Environment $environment, ConfigHelper $configHelper)
     {
         $this->cacheManager = $cacheManager;
         $this->environment = $environment;
-        $this->logger = $logger;
+        $this->configHelper = $configHelper;
     }
 
     public function loadConfig(): void
@@ -47,14 +47,17 @@ class Config
         $result = $apiConfigValues;
 
         //TODO: what can override the rest?
-        $localConfigValues = $this->fetchLocalConfigValues();
+        $configFilePath = $this->environment->getConfigFilePath();
+        $localConfigValues = $this->configHelper->fetchLocalConfigValues($configFilePath);
 
         foreach ($localConfigValues as $key => $localConfigValue) {
             if (isset($apiConfigValues[$key])) {
                 if ($apiConfigValues[$key]['allowoverride']) {
                     $result[$key] = $localConfigValue;
                 } else {
-                    $this->logger->warning('Ignore local config value "' . $key . '": not allowed to override');
+                    if ($this->logger) {
+                        $this->logger->warning('Ignore local config value "' . $key . '": not allowed to override');
+                    }
                 }
             } else {
                 $result[$key] = $localConfigValue;
@@ -81,61 +84,6 @@ class Config
         return $result;
     }
 
-    private function fetchLocalConfigValues(): array
-    {
-        $configFilePath = $this->environment->getConfigFilePath();
-        $result = [];
-        if (!FileSystem::fileExists($configFilePath)) {
-            $this->logger->debug('No local configuration defined');
-        } else {
-            try {
-                $values = Yaml::parseFile($configFilePath);
-                if (!\is_array($values)) {
-                    $this->logger->debug('No valid local configuration');
-                    // TODO: throw an exception or just ignore this?
-                    //throw new \Exception('Invalid config file: No values');
-                } else {
-                    $configValues = $this->flatten($values);
-
-                    foreach ($configValues as $key => $value) {
-                        $result[$key] = [
-                            'value'  => $value,
-                            'source' => 'local',
-                        ];
-                    }
-                }
-
-                return $result;
-            } catch (ParseException $ex) {
-                throw new \Exception('Invalid config file: ' . $ex->getMessage());
-            }
-        }
-    }
-
-    private function flatten(array $values): array
-    {
-        //TODO: this can better!
-        $result = [];
-        foreach ($values as $key => $value) {
-            if (\is_array($value)) {
-                foreach ($value as $subKey => $subValue) {
-                    if (\is_array($subValue)) {
-                        foreach ($subValue as $subSubKey => $subSubValue) {
-                            $result[$key . '_' . $subKey . '_' . $subSubKey] = $subSubValue;
-                            //TODO: make recursive
-                        }
-                    } else {
-                        $result[$key . '_' . $subKey] = $subValue;
-                    }
-                }
-            } else {
-                $result[$key] = $value;
-            }
-        }
-
-        return $result;
-    }
-
     public function has(string $key): bool
     {
         return isset($this->configuration[$key]);
@@ -147,7 +95,7 @@ class Config
             return $this->configuration[$key]['value'];
         }
 
-        return null;
+        throw new \Exception('Unable to resolve config value for "' . $key . '"');
     }
 
     public function getConfigValues(): array

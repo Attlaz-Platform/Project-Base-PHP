@@ -50,23 +50,24 @@ class Project
         $this->environment = $environment;
 
         try {
-            echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+            // echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) .
+            //   \PHP_EOL;
 
             $start = \microtime(true);
             $this->initDI($environment->definitionsFile);
 
-            echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            //   echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
             $start = \microtime(true);
             $container = $this->getDIContainer();
             $this->logger = $container->get(LoggerInterface::class);
 
-            echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             $start = \microtime(true);
             $config = $container->get(Config::class);
             $config->loadConfig();
 
-            echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             $start = \microtime(true);
             $discovery = new CommandDiscovery($this->projectRootPath);
             //Pre fetch commands
@@ -74,7 +75,7 @@ class Project
 
             $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
 
-            echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+            // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
             $start = \microtime(true);
             $this->application = new Application();
@@ -88,7 +89,7 @@ class Project
         } catch (\Exception $ex) {
             throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
         }
-        echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
+        //   echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
         echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
