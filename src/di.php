@@ -4,8 +4,8 @@ declare(strict_types=1);
 use Attlaz\Project\App\Environment;
 
 return [
-    \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $config) {
-        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $config->branch);
+    \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment) {
+        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->branch);
 
         $ignoreDirectories = [
             '/var/attlaz/',
@@ -18,7 +18,7 @@ return [
          * Log to stream
          */
 
-        if ($config->logVerbose) {
+        if ($environment->cli_log_verbose) {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
         } else {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . \PHP_EOL . \PHP_EOL;
@@ -30,11 +30,11 @@ return [
         //  $formatter = new \Monolog\Formatter\LineFormatter($format);
         $formatter->allowInlineLineBreaks(true);
 
-        if ($config->logVerbose) {
+        if ($environment->cli_log_stacktrace) {
             $formatter->includeStacktraces(true);
         }
 
-        $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
+        $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, $environment->cli_log_level);
         $streamHandler->setFormatter($formatter);
 
         $logger->pushHandler($streamHandler);
@@ -43,7 +43,7 @@ return [
          * Log to API
          */
 
-        $apiClient = new \Attlaz\Client($config->api_endpoint, $config->api_client_id, $config->api_client_secret);
+        $apiClient = new \Attlaz\Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
         $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($apiClient);
         $logger->pushHandler($apiLogHandler);
 

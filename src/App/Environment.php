@@ -14,16 +14,6 @@ class Environment
     public const MODE_PRODUCTION = 'production';
     public const MODE_DEVELOPMENT = 'development';
 
-    public $branch;
-    public $mode;
-    public $definitionsFile;
-
-    public $api_endpoint;
-    public $api_client_id;
-    public $api_client_secret;
-
-    public $mongoDBConnectionString;
-
     private $projectRootPath;
 
     public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
@@ -32,29 +22,42 @@ class Environment
     private const CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
     private const COMMANDS_LOCATION = '/App/Command';
 
-    public $compileDi = true;
-    public $logVerbose = true;
-    public $cacheConfig = true;
+    /**
+     * Config values
+     */
+    public $compileDi = false;
+    public $cacheConfig = false;
+
+    public $branch;
+    public $mode;
+    public $definitionsFile;
+
+    public $api_endpoint;
+    public $api_client_id;
+    public $api_client_secret;
+
+    public $sys_memory_limit = '2G';
+    public $sys_timezone = 'Europe/Brussels';
+
+    public $cli_log_verbose = true;
+    public $cli_log_level = \Monolog\Logger::NOTICE;
+    public $cli_log_stacktrace = false;
+
+    public $mongoDBConnectionString;
 
     public function __construct(string $projectRootPath)
     {
         $this->projectRootPath = realpath($projectRootPath);
 
-        ini_set('memory_limit', '2G');
-        date_default_timezone_set('Europe/Brussels');
+        ini_set('memory_limit', $this->sys_memory_limit);
+        date_default_timezone_set($this->sys_timezone);
 
-        if ($this->mode === Environment::MODE_DEVELOPMENT) {
-            error_reporting(E_ALL);
-            ini_set('display_errors', '1');
-        }
+        //if ($this->mode === Environment::MODE_DEVELOPMENT) {
+        error_reporting(E_ALL);
+        ini_set('display_errors', '1');
+        //}
 
-        //TODO: handle that env file is not readable
-        try {
-            $dotenv = new Dotenv($this->projectRootPath);
-            $dotenv->load();
-        } catch (InvalidPathException $ex) {
-            throw new \Exception('Unable to start project: .env file missing in directory "' . $this->projectRootPath . '"');
-        }
+        $this->loadSettings();
 
         $this->branch = $this->getEnvValue('project');
 
@@ -68,6 +71,17 @@ class Environment
 
         if (!is_null($diFile) && \file_exists($diFile)) {
             $this->definitionsFile = $diFile;
+        }
+    }
+
+    private function loadSettings(): void
+    {
+        //TODO: handle that env file is not readable
+        try {
+            $dotenv = new Dotenv($this->projectRootPath);
+            $dotenv->load();
+        } catch (InvalidPathException $ex) {
+            throw new \Exception('Unable to start project: .env file missing in directory "' . $this->projectRootPath . '"');
         }
     }
 
