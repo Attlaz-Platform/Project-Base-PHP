@@ -3,8 +3,11 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
+use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\CommandParameterDefinition;
+use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\TaskExecution\CLI;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,6 +16,13 @@ use Symfony\Component\Console\Question\Question;
 
 class ExecuteTaskInteractive extends ExecuteTask
 {
+    private $commandManager;
+
+    public function __construct(CLI $taskExecutor, CommandManager $commandManager, Logger $logger)
+    {
+        parent::__construct($taskExecutor, $logger);
+        $this->commandManager = $commandManager;
+    }
 
     protected function configure()
     {
@@ -80,7 +90,7 @@ class ExecuteTaskInteractive extends ExecuteTask
 
             $taskExecutionRequest = new TaskExecutionRequest($taskId, $parameterValues, 'soe');
 
-            return $this->executeTaskExecutionRequest($taskExecutionRequest);
+            return $this->taskExecutor->execute($taskExecutionRequest);
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 

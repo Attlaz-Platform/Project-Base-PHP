@@ -13,6 +13,9 @@ use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
 use Attlaz\Project\Cli\Command\ListTasks;
 use Attlaz\Project\Command\CommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
+use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\TaskExecution\CLI;
+use Attlaz\Project\TaskExecution\FPM;
 use DI\ContainerBuilder;
 use Echron\Tools\Time;
 use Psr\Container\ContainerInterface;
@@ -22,7 +25,7 @@ use Symfony\Component\Console\Application;
 class Project
 {
     /** @var CommandManager */
-    private $commandRegistry;
+    private $commandManager;
 
     /** @var ContainerInterface */
     private $diContainer;
@@ -36,8 +39,6 @@ class Project
     private $environment;
 
     private $projectRootPath;
-
-    private $application;
 
     public function __construct(string $projectRootPath, Environment $environment = null)
     {
@@ -73,19 +74,11 @@ class Project
             //Pre fetch commands
             $discovery->getCommands();
 
-            $this->commandRegistry = new CommandManager($discovery, $this->diContainer, $this->logger);
+            $this->commandManager = new CommandManager($discovery, $this->diContainer, $this->logger);
 
             // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
             $start = \microtime(true);
-            $this->application = new Application();
-            $this->application->setAutoExit(false);
-
-            $this->application->add(new ListTasks($this->commandRegistry, $this->logger));
-            $this->application->add(new ExecuteTask($this->commandRegistry, $this->logger));
-            $this->application->add(new ExecuteTaskInteractive($this->commandRegistry, $this->logger));
-            $this->application->add(new ConfigList($config, $this->logger));
-            $this->application->add(new CacheClean($config, $container->get(CacheManager::class), $this->logger));
         } catch (\Exception $ex) {
             throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
         }
@@ -106,7 +99,7 @@ class Project
         if ($this->environment->compileDi) {
             $containerBuilder->enableCompilation($this->projectRootPath . \DIRECTORY_SEPARATOR . 'var' . \DIRECTORY_SEPARATOR . 'cache');
             // TODO: this doesn't make sense with PHP CLI
-            //$containerBuilder->enableDefinitionCache();
+            $containerBuilder->enableDefinitionCache();
         }
 
         $containerBuilder->addDefinitions([Environment::class => $this->environment]);
@@ -131,15 +124,46 @@ class Project
 
     public function run()
     {
-        $output = $this->application->run();
+        if (PHP_SAPI === 'cli') {
+            $config = $this->diContainer->get(Config::class);
 
-        echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+            $cliApplication = new Application();
+            $cliApplication->setAutoExit(false);
 
-        if ($output === 0) {
-            exit(0);
+            $cli = new CLI($this->commandManager, $this->logger);
+
+            $cliApplication->add(new ListTasks($this->commandManager, $this->logger));
+            $cliApplication->add(new ExecuteTask($cli, $this->logger));
+            $cliApplication->add(new ExecuteTaskInteractive($cli, $this->commandManager, $this->logger));
+            $cliApplication->add(new ConfigList($config, $this->logger));
+            $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
+            $output = $cliApplication->run();
+
+            echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+
+            if ($output === 0) {
+                exit(0);
+            } else {
+                //TODO: change exit code based on exception type
+                exit(1);
+            }
+        } else {
+            $fpm = new FPM($this->commandManager, $this->logger);
+            $fpm->run();
+        }
+    }
+
+    protected function executeTaskExecutionRequest(TaskExecutionRequest $taskExecutionRequest): int
+    {
+        $taskExecutionResult = $this->commandManager->executeTask($taskExecutionRequest);
+
+        //$this->sendResponse($taskExecutionResult);
+
+        if ($taskExecutionResult->getSuccess()) {
+            return 0;
         } else {
             //TODO: change exit code based on exception type
-            exit(1);
+            return 1;
         }
     }
 }

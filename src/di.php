@@ -3,6 +3,19 @@ declare(strict_types=1);
 
 use Attlaz\Project\App\Environment;
 
+//if (!defined('STDIN')) {
+//    define('STDIN', fopen('php://stdin', 'rb'));
+//}
+//if (!defined('STDOUT')) {
+//    define('STDOUT', fopen('php://stdout', 'wb'));
+//}
+//if (!defined('STDERR')) {
+//    define('STDERR', fopen('php://stderr', 'wb'));
+//}
+if (!defined('STDOUT')) {
+    define('STDOUT', fopen('php://output', 'wb'));
+}
+
 return [
     \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment) {
         $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->branch);
@@ -24,20 +37,24 @@ return [
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . \PHP_EOL . \PHP_EOL;
         }
 
-        //TODO: only show colors when in developer mode AND local mode
-        //TODO: add "verbose" and "non-verbose" mode
-        $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
-        //  $formatter = new \Monolog\Formatter\LineFormatter($format);
-        $formatter->allowInlineLineBreaks(true);
-
-        if ($environment->cli_log_stacktrace) {
-            $formatter->includeStacktraces(true);
-        }
-
         $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, $environment->cli_log_level);
-        $streamHandler->setFormatter($formatter);
-
         $logger->pushHandler($streamHandler);
+
+        /**
+         * Color mode for local development
+         */
+        if (PHP_SAPI === 'cli') {
+            //TODO: only show colors when in developer mode AND local mode
+            //TODO: add "verbose" and "non-verbose" mode
+            $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
+            //  $formatter = new \Monolog\Formatter\LineFormatter($format);
+            $formatter->allowInlineLineBreaks(true);
+
+            if ($environment->cli_log_stacktrace) {
+                $formatter->includeStacktraces(true);
+            }
+            $streamHandler->setFormatter($formatter);
+        }
 
         /**
          * Log to API
