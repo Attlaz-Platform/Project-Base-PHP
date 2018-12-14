@@ -21,6 +21,7 @@ class ApiHandler extends AbstractProcessingHandler
 
     protected function write(array $record)
     {
+        //TODO: check message length, if its to long, break the message in parts or skip
         $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
         $logEntry->date = $record['datetime'];
         $logEntry->context = $record['context'];
@@ -33,10 +34,11 @@ class ApiHandler extends AbstractProcessingHandler
         //TODO: combine extra with context?
         try {
             $saved = $this->client->saveLog($logEntry);
-        } catch (\Exception $ex) {
+        } catch (\Throwable $ex) {
             echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
+            var_dump(\substr($logEntry->message, 0, 500));
 
-            var_dump($logEntry);
+            echo $ex->getTraceAsString() . \PHP_EOL;
         }
     }
 }

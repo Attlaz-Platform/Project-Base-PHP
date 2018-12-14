@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\Logger\Logger;
+use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Psr\Container\ContainerInterface;
@@ -23,6 +25,12 @@ class CommandManager
 
     public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
     {
+        if ($this->logger instanceof Logger) {
+            $logProcessor = new Processor();
+            $logProcessor->setExecutionId($request->getExecutionId());
+            $this->logger->pushProcessor($logProcessor);
+        }
+
         $this->logger->info('Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ')');
 
         try {
@@ -96,10 +104,9 @@ class CommandManager
 
     private function validateParameterValueType($value, CommandParameterDefinition $parameter): void
     {
-       if(!CommandParameterDefinition::isCorrectType($value,$parameter))
-       {
-           throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
-       }
+        if (!CommandParameterDefinition::isCorrectType($value, $parameter)) {
+            throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
+        }
     }
 
     private function getCommandInstance(CommandDefinition $commandDefinition): AbstractCommand

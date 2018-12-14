@@ -4,28 +4,33 @@ declare(strict_types=1);
 namespace Attlaz\Project\App;
 
 use Echron\Tools\FileSystem;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
-class ConfigHelper implements LoggerAwareInterface
+class ConfigHelper
 {
-    use LoggerAwareTrait;
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
     public function fetchLocalConfigValues(string $configFilePath): array
     {
         $result = [];
         if (!FileSystem::fileExists($configFilePath)) {
-            if ($this->logger) {
-                $this->logger->debug('No local configuration defined');
-            }
+            //            if ($this->logger) {
+            $this->logger->debug('No local configuration defined');
+            //            }
         } else {
             try {
                 $values = Yaml::parseFile($configFilePath);
                 if (!\is_array($values)) {
-                    if ($this->logger) {
-                        $this->logger->debug('No valid local configuration');
-                    }
+                    //                    if ($this->logger) {
+                    $this->logger->debug('No valid local configuration');
+                    //                    }
                     // TODO: throw an exception or just ignore this?
                     //throw new \Exception('Invalid config file: No values');
                 } else {
@@ -38,12 +43,12 @@ class ConfigHelper implements LoggerAwareInterface
                         ];
                     }
                 }
-
-                return $result;
             } catch (ParseException $ex) {
                 throw new \Exception('Invalid config file: ' . $ex->getMessage());
             }
         }
+
+        return $result;
     }
 
     private function flatten(array $values): array

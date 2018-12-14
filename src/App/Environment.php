@@ -40,8 +40,8 @@ class Environment
     public $sys_timezone = 'Europe/Brussels';
 
     public $cli_log_verbose = true;
-    public $cli_log_level = \Monolog\Logger::NOTICE;
-    public $cli_log_stacktrace = false;
+    public $cli_log_level = \Monolog\Logger::INFO;
+    public $cli_log_stacktrace = true;
 
     public $mongoDBConnectionString;
 
