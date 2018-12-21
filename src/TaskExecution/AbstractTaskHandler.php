@@ -40,7 +40,23 @@ class AbstractTaskHandler
         $cmd = new SerializeTaskResult();
         $strTaskResult = $cmd->__invoke($taskExecutionResult);
 
-        $this->logger->debug('Sending back response: ' . $strTaskResult);
-        echo \base64_encode('Result') . ':' . base64_encode($strTaskResult);
+        $this->logger->debug('Sending back response: ' . \substr($strTaskResult, 0, 5000));
+
+        // echo \base64_encode('<result>') . ':' . base64_encode($strTaskResult) . \base64_encode('</result>');
+        $response = base64_encode($strTaskResult);
+
+        $responseParts = \str_split($response, 50000);
+
+        $this->output('<response>');
+        foreach ($responseParts as $responsePart) {
+            $this->output($responsePart);
+        }
+        $this->output('</response>');
     }
+
+    private function output(string $output): void
+    {
+        \fwrite(\STDOUT, $output . \PHP_EOL);
+}
+
 }
