@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Attlaz\Project\App;
 
@@ -63,11 +64,25 @@ class Config implements LoggerAwareInterface
                 $result[$key] = $localConfigValue;
             }
         }
+
+        $result = $this->patchConfigVariables($result);
         if ($this->environment->cacheConfig) {
             $cache->set(self::CONFIG_CACHE_KEY, $result);
         }
 
         return $result;
+    }
+
+    private function patchConfigVariables(array $config): array
+    {
+        foreach ($config as $key => $value) {
+            //TODO: use regex to replace config variables
+            $value = \str_replace('{{project_dir}}', $this->environment->getProjectRootPath(), $value);
+
+            $config[$key] = $value;
+        }
+
+        return $config;
     }
 
     private function fetchApiConfigValues(): array

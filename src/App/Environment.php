@@ -47,7 +47,7 @@ class Environment
 
     public function __construct(string $projectRootPath)
     {
-        $this->projectRootPath = realpath($projectRootPath);
+        $this->projectRootPath = realpath($projectRootPath) . \DIRECTORY_SEPARATOR;
 
         ini_set('memory_limit', $this->sys_memory_limit);
         date_default_timezone_set($this->sys_timezone);
