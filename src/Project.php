@@ -11,6 +11,7 @@ use Attlaz\Project\Cli\Command\ConfigList;
 use Attlaz\Project\Cli\Command\ExecuteTask;
 use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
 use Attlaz\Project\Cli\Command\ListTasks;
+use Attlaz\Project\Cli\Command\RunTests;
 use Attlaz\Project\Command\CommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Model\TaskExecutionRequest;
@@ -137,6 +138,7 @@ class Project
             $cliApplication->add(new ExecuteTaskInteractive($cli, $this->commandManager, $this->logger));
             $cliApplication->add(new ConfigList($config, $this->logger));
             $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
+            $cliApplication->add(new RunTests( $this->logger));
             $output = $cliApplication->run();
 
             echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
