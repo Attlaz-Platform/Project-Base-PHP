@@ -17,8 +17,8 @@ if (!defined('STDOUT')) {
 }
 
 return [
-    \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment) {
-        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->branch);
+    \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment, \DI\Container $container) {
+        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->project);
 
         $ignoreDirectories = [
             '/var/attlaz/',
@@ -60,8 +60,8 @@ return [
          * Log to API
          */
 
-        $apiClient = new \Attlaz\Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
-        $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($apiClient);
+        //        $apiClient = new \Attlaz\Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
+        $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($container->get(\Attlaz\Client::class));
         $logger->pushHandler($apiLogHandler);
 
         /**
@@ -70,6 +70,9 @@ return [
         \Monolog\ErrorHandler::register($logger);
 
         return $logger;
+    }),
+    \Attlaz\Client::class           => \DI\factory(function (Environment $environment) {
+        return new \Attlaz\Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
     }),
 
     \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (

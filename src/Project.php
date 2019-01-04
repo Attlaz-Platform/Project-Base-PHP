@@ -127,6 +127,7 @@ class Project
     {
         if (PHP_SAPI === 'cli') {
             $config = $this->diContainer->get(Config::class);
+            $attlazClient = $this->diContainer->get(\Attlaz\Client::class);
 
             $cliApplication = new Application();
             $cliApplication->setAutoExit(false);
@@ -134,8 +135,8 @@ class Project
             $cli = new CLI($this->commandManager, $this->logger);
 
             $cliApplication->add(new ListTasks($this->commandManager, $this->logger));
-            $cliApplication->add(new ExecuteTask($cli, $this->logger));
-            $cliApplication->add(new ExecuteTaskInteractive($cli, $this->commandManager, $this->logger));
+            $cliApplication->add(new ExecuteTask($cli, $attlazClient, $this->environment, $this->logger));
+            $cliApplication->add(new ExecuteTaskInteractive($cli, $attlazClient, $this->commandManager, $this->environment, $this->logger));
             $cliApplication->add(new ConfigList($config, $this->logger));
             $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
             $cliApplication->add(new RunTests( $this->logger));
