@@ -51,7 +51,16 @@ class CommandManager
 
             $this->logger->info('Task: ' . $request->getTask() . ' execution complete (' . \json_encode($request->getArguments()) . ')');
         } catch (\Throwable $ex) {
-            $this->logger->error('Unable to complete task: ' . $ex->getMessage(), ['exception' => $ex]);
+            $context = [
+                'exception' => [
+                    'message' => $ex->getMessage(),
+                    'file'    => $ex->getFile(),
+                    'line'    => $ex->getLine(),
+                ],
+
+            ];
+
+            $this->logger->error('Unable to complete task: ' . $ex->getMessage(), $context);
 
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
         }
