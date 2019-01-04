@@ -58,12 +58,16 @@ class ConfigList extends Command
         }
     }
 
-    private function formatConfigValue(string $key, array $value): array
+    private function formatConfigValue(string $key, array $configValue): array
     {
+        $source = $configValue['source'];
+        $value = $configValue['value'];
+        $value = $configValue['value'] . ' (' . \gettype($value) . ')';
+
         return [
             $key,
-            $value['value'],
-            $value['source'],
+            $value,
+            $source,
         ];
     }
 
