@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
+use Attlaz\Client;
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\CommandParameterDefinition;
 use Attlaz\Project\Logger\Logger;
@@ -18,9 +20,15 @@ class ExecuteTaskInteractive extends ExecuteTask
 {
     private $commandManager;
 
-    public function __construct(CLI $taskExecutor, CommandManager $commandManager, Logger $logger)
-    {
-        parent::__construct($taskExecutor, $logger);
+
+    public function __construct(
+        CLI $taskExecutor,
+        Client $client,
+        CommandManager $commandManager,
+        Environment $environment,
+        Logger $logger
+    ) {
+        parent::__construct($taskExecutor, $client,$environment, $logger);
         $this->commandManager = $commandManager;
     }
 

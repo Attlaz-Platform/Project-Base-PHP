@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
+use Attlaz\Client;
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\CLI;
@@ -15,13 +17,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ExecuteTask extends Command
 {
     protected $taskExecutor;
+    protected $environment;
     protected $logger;
 
-    public function __construct(CLI $taskExecutor, Logger $logger)
+    public function __construct(CLI $taskExecutor, Client $client, Environment $environment, Logger $logger)
     {
         parent::__construct();
 
         $this->taskExecutor = $taskExecutor;
+        $this->client = $client;
+        $this->environment = $environment;
         $this->logger = $logger;
     }
 
@@ -32,7 +37,7 @@ class ExecuteTask extends Command
              ->setHelp('This command allows you to run a task')
              ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
              ->addOption('arguments', null, InputOption::VALUE_REQUIRED, '', null)
-             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', 'x');
+             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', '[undefined]');
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -55,6 +60,11 @@ class ExecuteTask extends Command
         $arguments = $this->getArguments($input);
 
         $executionId = $input->getOption('execution');
+
+        if ($this->environment->environment === 'local') {
+            //TODO: only when local and no execution is given
+            $executionId = $this->client->createTaskExecution($task);
+        }
 
         return new TaskExecutionRequest($task, $arguments, $executionId);
     }

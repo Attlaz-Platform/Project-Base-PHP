@@ -28,7 +28,8 @@ class Environment
     public $compileDi = false;
     public $cacheConfig = false;
 
-    public $branch;
+    public $project;
+    public $environment;
     public $mode;
     public $definitionsFile;
 
@@ -59,7 +60,9 @@ class Environment
 
         $this->loadSettings();
 
-        $this->branch = $this->getEnvValue('project');
+        $this->project = $this->getEnvValue('project');
+
+        $this->environment = $this->getEnvValue('environment');
 
         $this->api_endpoint = $this->getEnvValue('api_endpoint');
         $this->api_client_id = $this->getEnvValue('api_client_id');
@@ -101,7 +104,7 @@ class Environment
 
     public function getCacheName(): string
     {
-        return \strtolower(Normalizer::normalize($this->branch));
+        return \strtolower(Normalizer::normalize($this->project));
     }
 
     public function getProjectRootPath(): string
