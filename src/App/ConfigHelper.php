@@ -74,4 +74,22 @@ class ConfigHelper
 
         return $result;
     }
+
+    public function patchConfigVariables(array $config, array $variables): array
+    {
+        foreach ($config as $key => $configValue) {
+            $value = $configValue['value'];
+            if (\is_string($value)) {
+                //TODO: use regex to replace config variables
+
+                foreach ($variables as $variableKey => $variableValue) {
+                    $value = \str_replace('{{' . $variableKey . '}}', $variableValue, $value);
+                }
+            }
+
+            $config[$key]['value'] = $value;
+        }
+
+        return $config;
+}
 }

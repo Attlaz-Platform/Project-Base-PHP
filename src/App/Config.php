@@ -65,24 +65,15 @@ class Config implements LoggerAwareInterface
             }
         }
 
-        $result = $this->patchConfigVariables($result);
+        $configVariables = [
+            'project_dir' => $this->environment->getProjectRootPath(),
+        ];
+        $result = $this->configHelper->patchConfigVariables($result, $configVariables);
         if ($this->environment->cacheConfig) {
             $cache->set(self::CONFIG_CACHE_KEY, $result);
         }
 
         return $result;
-    }
-
-    private function patchConfigVariables(array $config): array
-    {
-        foreach ($config as $key => $value) {
-            //TODO: use regex to replace config variables
-            $value = \str_replace('{{project_dir}}', $this->environment->getProjectRootPath(), $value);
-
-            $config[$key] = $value;
-        }
-
-        return $config;
     }
 
     private function fetchApiConfigValues(): array
