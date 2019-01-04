@@ -12,6 +12,7 @@ class ApiHandler extends AbstractProcessingHandler
 {
 
     private $client;
+    private $maxLogMessageLength = 5000;
 
     public function __construct(Client $client, int $level = Logger::DEBUG, bool $bubble = true)
     {
@@ -31,12 +32,15 @@ class ApiHandler extends AbstractProcessingHandler
             $logEntry->type = 'taskexecution';
         }
 
+        if (\strlen($logEntry->message) > $this->maxLogMessageLength) {
+            $logEntry->message = \substr($logEntry->message, 0, $this->maxLogMessageLength);
+        }
         //TODO: combine extra with context?
         try {
             $saved = $this->client->saveLog($logEntry);
         } catch (\Throwable $ex) {
             echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
-            var_dump(\substr($logEntry->message, 0, 500));
+            // var_dump(\substr($logEntry->message, 0, 500));
 
             echo $ex->getTraceAsString() . \PHP_EOL;
         }
