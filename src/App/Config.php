@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\App;
 
+use Attlaz\Client;
 use Attlaz\Project\Cache\CacheManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -12,6 +13,7 @@ class Config implements LoggerAwareInterface
     use LoggerAwareTrait;
 
     private $cacheManager;
+    private $client;
     private $environment;
     private $configHelper;
 
@@ -20,9 +22,14 @@ class Config implements LoggerAwareInterface
     private const CONFIG_CACHE_POOL = 'config';
     private const CONFIG_CACHE_KEY = 'config';
 
-    public function __construct(CacheManager $cacheManager, Environment $environment, ConfigHelper $configHelper)
-    {
+    public function __construct(
+        CacheManager $cacheManager,
+        Client $client,
+        Environment $environment,
+        ConfigHelper $configHelper
+    ) {
         $this->cacheManager = $cacheManager;
+        $this->client = $client;
         $this->environment = $environment;
         $this->configHelper = $configHelper;
     }
@@ -80,12 +87,24 @@ class Config implements LoggerAwareInterface
     {
         $result = [];
 
-        $result['testkey'] = [
-            'value'         => 'testvalue',
+//        $result['testkey'] = [
+//            'value'         => 'testvalue',
+//            'allowoverride' => false,
+//            'source'        => 'api',
+//
+//        ];
+
+        $configValues = $this->client->getConfigByProject($this->environment->project);
+
+        foreach($configValues as $configValue)
+        {
+            $result[$configValue['key']] = [
+                'value'         => $configValue['value'],
             'allowoverride' => false,
             'source'        => 'api',
 
         ];
+        }
 
         return $result;
     }
