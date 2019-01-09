@@ -140,6 +140,10 @@ class ExecuteTaskInteractive extends ExecuteTask
                 } elseif (\in_array($matchValue, $false)) {
                     $value = false;
                 }
+            } elseif ($parameter->getType() === 'array') {
+                if (!\is_null($value)) {
+                    $value = \explode(',', $value);
+                }
             }
         }
 
