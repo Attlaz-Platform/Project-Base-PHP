@@ -22,6 +22,10 @@ class ApiHandler extends AbstractProcessingHandler
 
     protected function write(array $record)
     {
+        if (isset($record['formatted'])) {
+            $record = $record['formatted'];
+        }
+
         //TODO: check message length, if its to long, break the message in parts or skip
         $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
         $logEntry->date = $record['datetime'];

@@ -15,6 +15,12 @@ class Logger extends \Monolog\Logger implements LoggerInterface
             $context['glob'] = $this->globalContext;
         }
 
+        if ($message instanceof \Throwable) {
+            $throwable = $message;
+            $message = $throwable->getMessage();
+            $context['exception'] = $throwable;
+        }
+
         return parent::addRecord($level, $message, $context);
     }
 
