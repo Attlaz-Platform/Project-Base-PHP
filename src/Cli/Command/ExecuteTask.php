@@ -17,6 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ExecuteTask extends Command
 {
     protected $taskExecutor;
+    protected $client;
     protected $environment;
     protected $logger;
 
@@ -37,7 +38,7 @@ class ExecuteTask extends Command
              ->setHelp('This command allows you to run a task')
              ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
              ->addOption('arguments', null, InputOption::VALUE_REQUIRED, '', null)
-             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', '[undefined]');
+             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', null);
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -61,9 +62,13 @@ class ExecuteTask extends Command
 
         $executionId = $input->getOption('execution');
 
-        if ($this->environment->environment === 'local') {
-            //TODO: only when local and no execution is given
-            $executionId = $this->client->createTaskExecution($task);
+        if (\is_null($executionId)) {
+            if ($this->environment->environment === 'local') {
+                //TODO: only when local and no execution is given
+                $executionId = $this->client->createTaskExecution($task);
+            } else {
+                throw new \Exception('Execution must be defined or environment should be local');
+            }
         }
 
         return new TaskExecutionRequest($task, $arguments, $executionId);
