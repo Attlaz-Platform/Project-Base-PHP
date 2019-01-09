@@ -58,7 +58,7 @@ class Environment
         ini_set('display_errors', '1');
         //}
 
-        $this->loadSettings();
+        $this->loadEnvironmentFromFile();
 
         $this->project = $this->getEnvValue('project');
 
@@ -77,14 +77,13 @@ class Environment
         }
     }
 
-    private function loadSettings(): void
+    private function loadEnvironmentFromFile(): void
     {
-        //TODO: handle that env file is not readable
         try {
             $dotenv = new Dotenv($this->projectRootPath);
             $dotenv->load();
         } catch (InvalidPathException $ex) {
-            throw new \Exception('Unable to start project: .env file missing in directory "' . $this->projectRootPath . '"');
+            //                throw new \Exception('Unable to start project: .env file missing in directory "' . $this->projectRootPath . '"');
         }
     }
 
@@ -92,7 +91,7 @@ class Environment
     {
         $value = \getenv($key);
         if ($value === false) {
-            throw new \Exception('Config variable "' . $key . '" not defined');
+            throw new \Exception('Environment variable "' . $key . '" not defined');
         }
 
         if (!\is_string($value)) {
