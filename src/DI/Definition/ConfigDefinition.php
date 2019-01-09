@@ -20,10 +20,12 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
      * @var string
      */
     private $key;
+    private $datatype;
 
-    public function __construct(string $key)
+    public function __construct(string $key, string $datatype = null)
     {
         $this->key = $key;
+        $this->datatype = $datatype;
     }
 
     public function getName(): string
@@ -43,7 +45,7 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
 
     public function resolve(ContainerInterface $container)
     {
-        return self::resolveExpression($this->name, $this->key, $container);
+        return self::resolveExpression($this->name, $this->key, $container, $this->datatype);
     }
 
     public function isResolvable(ContainerInterface $container): bool
@@ -69,10 +71,26 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
     public static function resolveExpression(
         string $entryName,
         string $key,
-        ContainerInterface $container
+        ContainerInterface $container,
+        string $datatype = null
     ) {
         $config = $container->get(Config::class);
 
-        return $config->get($key);
+        $value = $config->get($key);
+
+        if (!\is_null($datatype)) {
+            switch ($datatype) {
+                case 'string':
+                    break;
+                case 'int':
+                case 'integer':
+                    $value = \intval($value);
+                    break;
+                default:
+                    throw new \Exception('Unable to cast config value to "' . $datatype . '": unknown type');
+            }
+        }
+
+        return $value;
     }
 }
