@@ -60,8 +60,9 @@ return [
          * Log to API
          */
 
-        //        $apiClient = new \Attlaz\Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
         $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($container->get(\Attlaz\Client::class));
+        $formatter = new \Attlaz\Project\Logger\Formatter();
+        $apiLogHandler->setFormatter($formatter);
         $logger->pushHandler($apiLogHandler);
 
         /**

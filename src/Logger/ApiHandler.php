@@ -22,25 +22,26 @@ class ApiHandler extends AbstractProcessingHandler
 
     protected function write(array $record)
     {
-        if (isset($record['formatted'])) {
-            $record = $record['formatted'];
-        }
-
-        //TODO: check message length, if its to long, break the message in parts or skip
-        $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
-        $logEntry->date = $record['datetime'];
-        $logEntry->context = $record['context'];
-        if (isset($record['extra']['execution'])) {
-            //TODO: what is the log entry type when no task execution is defined?
-            $logEntry->context['taskexecution'] = $record['extra']['execution'];
-            $logEntry->type = 'taskexecution';
-        }
-
-        if (\strlen($logEntry->message) > $this->maxLogMessageLength) {
-            $logEntry->message = \substr($logEntry->message, 0, $this->maxLogMessageLength);
-        }
-        //TODO: combine extra with context?
         try {
+            if (isset($record['formatted'])) {
+                $record = $record['formatted'];
+            }
+
+            //TODO: check message length, if its to long, break the message in parts or skip
+            $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
+            $logEntry->date = $record['datetime'];
+            $logEntry->context = $record['context'];
+            if (isset($record['extra']['execution'])) {
+                //TODO: what is the log entry type when no task execution is defined?
+                $logEntry->context['taskexecution'] = $record['extra']['execution'];
+                $logEntry->type = 'taskexecution';
+            }
+
+            if (\strlen($logEntry->message) > $this->maxLogMessageLength) {
+                $logEntry->message = \substr($logEntry->message, 0, $this->maxLogMessageLength);
+            }
+            //TODO: combine extra with context?
+
             $saved = $this->client->saveLog($logEntry);
         } catch (\Throwable $ex) {
             echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
