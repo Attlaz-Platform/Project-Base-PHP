@@ -19,7 +19,8 @@ class CacheManager
 
     private $fileCachePath;
 
-    private $pool;
+    /** @var FailOverCachePool[] */
+    private $pools;
 
     public const DEFAULT_NAMESPACE = 'default';
 
@@ -32,26 +33,29 @@ class CacheManager
 
         $this->fileCachePath = $environment->getFileCachePath();
 
-        $this->pool = [];
+        $this->pools = [];
     }
 
-    public function getCache(string $name = self::DEFAULT_NAMESPACE): CacheInterface
+    public function getCache(string $key = self::DEFAULT_NAMESPACE): CacheInterface
     {
-        $name = Normalizer::normalize($name);
+        $key = Normalizer::normalize($key);
 
-        if (!isset($this->pool[$name])) {
-            $this->pool[$name] = $this->createCachePool($name);
+        if (!isset($this->pools[$key])) {
+            $this->pools[$key] = $this->createCachePool($key);
         }
 
-        return $this->pool[$name];
+        return $this->pools[$key];
     }
 
-    public function getCachePools(): array
+    /**
+     * @return string[]
+     */
+    public function getCachePoolKeys(): array
     {
-        return \array_keys($this->pool);
+        return \array_keys($this->pools);
     }
 
-    private function createCachePool(string $name): FailOverCachePool
+    private function createCachePool(string $key): FailOverCachePool
     {
         //TODO: is it possible to instantiate this trought the DI?
         $failOverCachePool = new FailOverCachePool([
@@ -66,11 +70,11 @@ class CacheManager
          */
         if (extension_loaded("mongodb")) {
             $mongoDBManager = new \MongoDB\Driver\Manager($this->environment->mongoDBConnectionString, ['readPreference' => 'nearest']);
-            $collection = new \MongoDB\Collection($mongoDBManager, 'cache_' . $this->environment->getCacheName(), $name);
+            $collection = new \MongoDB\Collection($mongoDBManager, 'cache_' . $this->environment->getCacheName(), $key);
             $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
 
             $mongoDBCache->setLogger($this->logger);
-            
+
             $failOverCachePool->addCachePool('mongodb', $mongoDBCache);
         }
 
@@ -80,7 +84,7 @@ class CacheManager
         $filesystemAdapter = new Local($this->fileCachePath);
         $filesystem = new Filesystem($filesystemAdapter);
 
-        $fileCachePool = new FilesystemCachePool($filesystem, $this->environment->getCacheName() . \DIRECTORY_SEPARATOR . $name);
+        $fileCachePool = new FilesystemCachePool($filesystem, $this->environment->getCacheName() . \DIRECTORY_SEPARATOR . $key);
         $failOverCachePool->addCachePool('file', $fileCachePool);
         /**
          * Memory
