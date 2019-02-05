@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\App;
 
+use Attlaz\Model\Project as ProjectModel;
+use Attlaz\Model\ProjectEnvironment;
 use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidPathException;
 use Echron\Tools\FileSystem;
@@ -28,8 +30,9 @@ class Environment
     public $compileDi = false;
     public $cacheConfig = false;
 
-    public $project;
-    public $environment;
+    private $project;
+    private $projectEnvironment;
+
     public $mode;
     public $definitionsFile;
 
@@ -58,11 +61,7 @@ class Environment
         ini_set('display_errors', '1');
         //}
 
-        $this->loadEnvironmentFromFile();
-
-        $this->project = $this->getEnvValue('project');
-
-        $this->environment = $this->getEnvValue('environment');
+        $this->loadEnvSettings();
 
         $this->api_endpoint = $this->getEnvValue('api_endpoint');
         $this->api_client_id = $this->getEnvValue('api_client_id');
@@ -77,7 +76,7 @@ class Environment
         }
     }
 
-    private function loadEnvironmentFromFile(): void
+    private function loadEnvSettings(): void
     {
         try {
             $dotenv = new Dotenv($this->projectRootPath);
@@ -87,7 +86,7 @@ class Environment
         }
     }
 
-    private function getEnvValue(string $key)
+    private function getEnvValue(string $key): string
     {
         $value = \getenv($key);
         if ($value === false) {
@@ -101,9 +100,16 @@ class Environment
         return $value;
     }
 
+    private function getNumEnvValue(string $key): int
+    {
+        $value = $this->getEnvValue($key);
+
+        return \intval($value);
+    }
+
     public function getCacheName(): string
     {
-        return \strtolower(Normalizer::normalize($this->project));
+        return \strtolower(Normalizer::normalize($this->getProject()->key . '_' . $this->getProjectEnvironment()->key));
     }
 
     public function getProjectRootPath(): string
@@ -145,5 +151,27 @@ class Environment
         }
 
         return $cachePath;
+    }
+
+    public function getProject(): ProjectModel
+    {
+        return $this->project;
+    }
+
+    public function getProjectEnvironment(): ProjectEnvironment
+    {
+        return $this->projectEnvironment;
+    }
+
+    public function init(): void
+    {
+        //TODO: load this from DI
+        $client = new \Attlaz\Client($this->api_endpoint, $this->api_client_id, $this->api_client_secret);
+
+        $projectId = $this->getEnvValue('project');
+        $this->project = $client->getProjectById($projectId);
+
+        $projectEnvironmentId = $this->getNumEnvValue('project_environment');
+        $this->projectEnvironment = $client->getProjectEnvironmentById($projectEnvironmentId);
     }
 }

@@ -36,7 +36,7 @@ class CacheClean extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $cachePools = $this->cacheManager->getCachePools();
+            $cachePools = $this->cacheManager->getCachePoolKeys();
             foreach ($cachePools as $cachePool) {
                 $output->write('Clean "' . $cachePool . '": ');
                 $cache = $this->cacheManager->getCache($cachePool);

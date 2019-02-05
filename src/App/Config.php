@@ -94,7 +94,7 @@ class Config implements LoggerAwareInterface
 //
 //        ];
 
-        $configValues = $this->client->getConfigByProject($this->environment->project);
+        $configValues = $this->client->getConfigByProject($this->environment->getProject()->id, $this->environment->getProjectEnvironment()->id);
 
         foreach($configValues as $configValue)
         {
