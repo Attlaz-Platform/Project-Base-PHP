@@ -63,7 +63,7 @@ class ExecuteTask extends Command
         $executionId = $input->getOption('execution');
 
         if (\is_null($executionId)) {
-            if ($this->environment->environment === 'local') {
+            if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
                 $executionId = $this->client->createTaskExecution($task);
             } else {

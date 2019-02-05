@@ -18,7 +18,7 @@ if (!defined('STDOUT')) {
 
 return [
     \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment, \DI\Container $container) {
-        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->project);
+        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->getProject()->name . ' (' . $environment->getProjectEnvironment()->name . ')');
 
         $ignoreDirectories = [
             '/var/attlaz/',

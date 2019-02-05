@@ -52,6 +52,7 @@ class Project
         $this->environment = $environment;
 
         try {
+            $this->environment->init();
             // echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) .
             //   \PHP_EOL;
 
@@ -139,7 +140,7 @@ class Project
             $cliApplication->add(new ExecuteTaskInteractive($cli, $attlazClient, $this->commandManager, $this->environment, $this->logger));
             $cliApplication->add(new ConfigList($config, $this->logger));
             $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
-            $cliApplication->add(new RunTests( $this->logger));
+            $cliApplication->add(new RunTests($this->logger));
             $output = $cliApplication->run();
 
             echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
