@@ -7,21 +7,21 @@ use Throwable;
 
 class RuntimeException extends \Exception
 {
-    private $tags;
+    private $context;
 
-    public function __construct(string $message = "", array $tags = [], int $code = 0, Throwable $previous = null)
+    public function __construct(string $message = "", array $context = [], int $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-        $this->tags = $tags;
+        $this->context = $context;
     }
 
-    public function setTags(array $tags): void
+    public function setContext(array $context): void
     {
-        $this->tags = $tags;
+        $this->context = $context;
     }
 
-    public function getTags(): array
+    public function getContext(): array
     {
-        return $this->tags;
+        return $this->context;
     }
 }

@@ -14,7 +14,6 @@ class Formatter extends NormalizerFormatter implements FormatterInterface
         if (isset($record['context'])) {
             $record['context'] = $this->formatContext($record['context']);
         }
-        $record['context']['a'] = 'bla';
 
         return $record;
     }

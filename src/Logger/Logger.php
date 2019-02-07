@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Logger;
 
+use Attlaz\Project\Exception\RuntimeException;
 use Psr\Log\LoggerInterface;
 
 class Logger extends \Monolog\Logger implements LoggerInterface
@@ -15,7 +16,13 @@ class Logger extends \Monolog\Logger implements LoggerInterface
             $context['glob'] = $this->globalContext;
         }
 
-        if ($message instanceof \Throwable) {
+        if ($message instanceof RuntimeException) {
+            $exception = $message;
+            $message = $exception->getMessage();
+            $context['exception'] = $exception;
+
+            $context = \array_merge($context, $exception->getContext());
+        } elseif ($message instanceof \Throwable) {
             $throwable = $message;
             $message = $throwable->getMessage();
             $context['exception'] = $throwable;
