@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\Exception\RuntimeException;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
@@ -50,17 +51,34 @@ class CommandManager
             $result = new TaskExecutionResult($request->getTask(), $result, true);
 
             $this->logger->info('Task: ' . $request->getTask() . ' execution complete (' . \json_encode($request->getArguments()) . ')');
-        } catch (\Throwable $ex) {
+        } catch (RuntimeException $ex) {
             $context = [
                 'exception' => [
                     'message' => $ex->getMessage(),
                     'file'    => $ex->getFile(),
                     'line'    => $ex->getLine(),
+                    'tags'    => $ex->getContext(),
                 ],
 
             ];
 
-            $this->logger->error('Unable to complete task: ' . $ex->getMessage(), $context);
+            $this->logger->error($ex);
+            //$this->logger->error('Unable to complete task: ' . $ex->getMessage(), $context);
+
+            $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
+        } catch (\Throwable $ex) {
+
+            $this->logger->error($ex);
+//            $context = [
+            //                'exception' => [
+            //                    'message' => $ex->getMessage(),
+            //                    'file'    => $ex->getFile(),
+            //                    'line'    => $ex->getLine(),
+            //                ],
+            //
+            //            ];
+            //
+            //            $this->logger->error('Unable to complete task: ' . $ex->getMessage(), $context);
 
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
         }

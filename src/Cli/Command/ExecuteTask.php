@@ -65,7 +65,7 @@ class ExecuteTask extends Command
         if (\is_null($executionId)) {
             if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
-                $executionId = $this->client->createTaskExecution($task);
+                $executionId = $this->client->createTaskExecution($task, $this->environment->getProjectEnvironment()->id);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
