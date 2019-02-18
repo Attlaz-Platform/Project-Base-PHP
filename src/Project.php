@@ -11,6 +11,7 @@ use Attlaz\Project\Cli\Command\ConfigList;
 use Attlaz\Project\Cli\Command\ExecuteTask;
 use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
 use Attlaz\Project\Cli\Command\ListTasks;
+use Attlaz\Project\Cli\Command\RequestDeploy;
 use Attlaz\Project\Cli\Command\RunTests;
 use Attlaz\Project\Command\CommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
@@ -140,6 +141,7 @@ class Project
             $cliApplication->add(new ExecuteTaskInteractive($cli, $attlazClient, $this->commandManager, $this->environment, $this->logger));
             $cliApplication->add(new ConfigList($config, $this->logger));
             $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
+            $cliApplication->add(new RequestDeploy($this->environment, $attlazClient, $this->logger));
             $cliApplication->add(new RunTests($this->logger));
             $output = $cliApplication->run();
 
