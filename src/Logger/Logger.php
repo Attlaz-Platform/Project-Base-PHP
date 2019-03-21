@@ -10,6 +10,8 @@ class Logger extends \Monolog\Logger implements LoggerInterface
 {
     private $globalContext = [];
 
+    private const CONTEXT_EXCEPTION_PREFIX = 'exception';
+
     public function addRecord($level, $message, array $context = [])
     {
         if (count($this->globalContext) > 0) {
@@ -19,7 +21,10 @@ class Logger extends \Monolog\Logger implements LoggerInterface
         if ($message instanceof RuntimeException) {
             $exception = $message;
             $message = $exception->getMessage();
-            $context['exception'] = $exception;
+
+            $context = $exception->getContext();
+
+            $context = [self::CONTEXT_EXCEPTION_PREFIX => $exception];
 
             $context = \array_merge($context, $exception->getContext());
         } elseif ($message instanceof \Throwable) {
