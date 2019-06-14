@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\Logger\Logger;
+use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Psr\Container\ContainerInterface;
@@ -23,6 +25,12 @@ class CommandManager
 
     public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
     {
+        if ($this->logger instanceof Logger) {
+            $logProcessor = new Processor();
+            $logProcessor->setExecutionId($request->getExecutionId());
+            $this->logger->pushProcessor($logProcessor);
+        }
+
         $this->logger->info('Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ')');
 
         try {
@@ -43,8 +51,7 @@ class CommandManager
 
             $this->logger->info('Task: ' . $request->getTask() . ' execution complete (' . \json_encode($request->getArguments()) . ')');
         } catch (\Throwable $ex) {
-            $this->logger->error('Unable to complete task: ' . $ex->getMessage(), ['exception' => $ex]);
-
+            $this->logger->error($ex);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
         }
 
@@ -96,35 +103,9 @@ class CommandManager
 
     private function validateParameterValueType($value, CommandParameterDefinition $parameter): void
     {
-        $valueType = \gettype($value);
-        if ($valueType !== $parameter->getType()) {
-            throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type "' . $valueType . '", type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
+        if (!CommandParameterDefinition::isCorrectType($value, $parameter)) {
+            throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
         }
-
-//        switch ($parameter->getType()) {
-//            case 'int':
-//                if (!\is_int($value)) {
-//                    throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type, type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
-//                }
-//                break;
-//            case 'string':
-//                if (!\is_string($value)) {
-//                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
-//                }
-//                break;
-//            case 'array':
-//                if (!\is_array($value)) {
-//                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
-//                }
-//                break;
-//            case 'bool':
-//                if (!\is_bool($value)) {
-//                    throw new \Exception('Invalid parameter type, "' . $type . '" expected');
-//                }
-//                break;
-//            default:
-//                $this->logger->warning('Unknown parameter type "' . $type . '"');
-//        }
     }
 
     private function getCommandInstance(CommandDefinition $commandDefinition): AbstractCommand
@@ -134,11 +115,8 @@ class CommandManager
         }
         /** @var AbstractCommand $command */
         $command = $this->diContainer->get($commandDefinition->className);
-        $command->setLogger($this->logger);
 
-        $cacheManager = $this->diContainer->get(\Attlaz\Project\Cache\CacheManager::class);
-        $command->setCacheManager($cacheManager);
-
+        //TODO: should we do any validation on this?
         return $command;
     }
 

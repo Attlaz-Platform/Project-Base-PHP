@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
-use Attlaz\Project\App\Config;
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\Annotation\Command as CommandAnnotation;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -14,10 +14,7 @@ use Echron\Tools\FileSystem;
 class CommandDiscovery
 {
 
-    /**
-     * @var string
-     */
-    private $namespace = '\App';
+
 
     /**
      * @var string
@@ -63,21 +60,35 @@ class CommandDiscovery
 
     private function discoverCommands(): void
     {
-        $files = FileSystem::listFiles( Config::getCommandDirectoryPath($this->directory), true);
+        $commandDirectoryPath = Environment::getCommandDirectoryPath($this->directory);
+        if (is_null($commandDirectoryPath)) {
+            throw new \Exception('Unable to discover commands: command directory does not exist');
+        }
+
+        $commands = [];
+        $files = FileSystem::listFiles($commandDirectoryPath, true);
 
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {
                 $className = $this->getClassName($file);
 
-                $this->registerCommand($className);
+                $commandDefinition = $this->registerCommand($className);
+                if (!\is_null($commandDefinition)) {
+                    if (isset($commands[$commandDefinition->task])) {
+                        throw new \Exception('Unable to register command: there is already a command defined for task "' . $commandDefinition->task . '"');
+                    }
+                    $commands[$commandDefinition->task] = $commandDefinition;
+                }
             }
         }
+
+        $this->commands = \array_values($commands);
     }
 
     private function getClassName(\SplFileInfo $file): string
     {
         $path = $file->getPath();
-        $path = \str_replace($this->directory . Config::SOURCE_LOCATION, '', $path);
+        $path = \str_replace($this->directory . Environment::SOURCE_LOCATION, '', $path);
 
         $class = \str_replace('/', '\\', $path) . '\\' . $file->getBasename('.php');
 
@@ -86,13 +97,13 @@ class CommandDiscovery
         return $class;
     }
 
-    private function registerCommand(string $className): void
+    private function registerCommand(string $className): ?CommandDefinition
     {
         try {
             //TODO: if the className is actually a file, the file is included by calling "class_exists",
             //  putting "autoload" to false doesn't help and make the function returns false
             if (!class_exists($className, true)) {
-                return;
+                return null;
             }
 
             $reflectionClass = new \ReflectionClass($className);
@@ -100,7 +111,7 @@ class CommandDiscovery
             /** @var CommandAnnotation|null $annotation */
             $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, CommandAnnotation::class);
             if (is_null($annotation)) {
-                return;
+                return null;
             }
 
             //Check if class extends AbstractCommand
@@ -127,7 +138,7 @@ class CommandDiscovery
                 $commandDefinition->addParameter($commandParameter);
             }
 
-            $this->commands[] = $commandDefinition;
+            return $commandDefinition;
         } catch (AnnotationException $ex) {
             throw new \Exception('Unable to register command "' . $className . '":' . $ex->getMessage());
             //TODO: handle invalid/incomplete annotations, maybe make it possible to validate the project before building it?
