@@ -3,7 +3,13 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
+use Attlaz\Client;
+use Attlaz\Project\App\Environment;
+use Attlaz\Project\Command\CommandManager;
+use Attlaz\Project\Command\CommandParameterDefinition;
+use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\TaskExecution\CLI;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -12,6 +18,19 @@ use Symfony\Component\Console\Question\Question;
 
 class ExecuteTaskInteractive extends ExecuteTask
 {
+    private $commandManager;
+
+
+    public function __construct(
+        CLI $taskExecutor,
+        Client $client,
+        CommandManager $commandManager,
+        Environment $environment,
+        Logger $logger
+    ) {
+        parent::__construct($taskExecutor, $client,$environment, $logger);
+        $this->commandManager = $commandManager;
+    }
 
     protected function configure()
     {
@@ -57,35 +76,77 @@ class ExecuteTaskInteractive extends ExecuteTask
             $parameters = $selectedCommand->getParameters();
 
             foreach ($parameters as $parameter) {
-                $parameterString = '\'' . $parameter->getName() . '\'';
-                if ($parameter->hasType()) {
-                    $parameterString .= ' (' . $parameter->getType() . ')';
-                } else {
-                    $parameterString .= ' (No type specified)';
+                $parameterString = $parameter->__toString();
+
+                $question = new Question('Please enter a value for: ' . $parameterString . ':', $parameter->getDefault());
+
+                $valid = false;
+                while (!$valid) {
+                    $parameterValue = $questionHelper->ask($input, $output, $question);
+                    $parameterValue = $this->formatValue($parameterValue, $parameter);
+                    $valid = CommandParameterDefinition::isCorrectType($parameterValue, $parameter);
+                    if (!$valid) {
+                        $output->writeln('<error>Invalid value</error>');
+                    }
                 }
 
-                if ($parameter->isRequired()) {
-                    $parameterString .= ' [required]';
-                } else {
-                    $parameterString .= ' [default: ' . $parameter->getDefault() . ']';
-                }
-
-                $question = new Question('Please enter a value for parameter ' . $parameterString . ':', $parameter->getDefault());
-
-                $parameterValue = $questionHelper->ask($input, $output, $question);
-//TODO: validate input
-                $output->writeln('You have just selected: ' . $parameterValue);
+                //TODO: validate input
+                // $output->writeln('You have just selected: ' . $parameterValue);
 
                 $parameterValues[$parameter->getName()] = $parameterValue;
             }
 
             $taskExecutionRequest = new TaskExecutionRequest($taskId, $parameterValues, 'soe');
 
-            return $this->executeTaskExecutionRequest($taskExecutionRequest);
+            return $this->taskExecutor->execute($taskExecutionRequest);
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 
             return 1;
         }
+    }
+
+    private function formatValue($value, CommandParameterDefinition $parameter)
+    {
+        if ($parameter->hasType()) {
+            if ($parameter->getType() === 'int') {
+                if (\is_numeric($value)) {
+                    $value = intval($value);
+                }
+            } elseif ($parameter->getType() === 'bool') {
+                $true = [
+                    true,
+                    'true',
+                    'yes',
+                    'y',
+                    '1',
+                    1,
+                ];
+                $false = [
+                    false,
+                    'false',
+                    'no',
+                    'n',
+                    '0',
+                    0,
+                ];
+                $matchValue = $value;
+                if (\is_string($matchValue)) {
+                    $matchValue = \strtolower($matchValue);
+                }
+
+                if (\in_array($matchValue, $true)) {
+                    $value = true;
+                } elseif (\in_array($matchValue, $false)) {
+                    $value = false;
+                }
+            } elseif ($parameter->getType() === 'array') {
+                if (!\is_null($value)) {
+                    $value = \explode(',', $value);
+                }
+            }
+        }
+
+        return $value;
     }
 }

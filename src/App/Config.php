@@ -3,96 +3,128 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\App;
 
-use Dotenv\Dotenv;
-use Dotenv\Exception\InvalidPathException;
-use Echron\Tools\Normalize\Normalizer;
+use Attlaz\Client;
+use Attlaz\Project\Cache\CacheManager;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-class Config
+class Config implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
 
-    public const MODE_PRODUCTION = 'production';
-    public const MODE_DEVELOPMENT = 'development';
+    private $cacheManager;
+    private $client;
+    private $environment;
+    private $configHelper;
 
-    public $branch;
-    public $mode;
-    public $definitionsFile;
+    private $configuration = [];
 
-    public $api_endpoint;
-    public $api_client_id;
-    public $api_client_secret;
+    private const CONFIG_CACHE_POOL = 'config';
+    private const CONFIG_CACHE_KEY = 'config';
 
-    public $mongoDBConnectionString;
+    public function __construct(
+        CacheManager $cacheManager,
+        Client $client,
+        Environment $environment,
+        ConfigHelper $configHelper
+    ) {
+        $this->cacheManager = $cacheManager;
+        $this->client = $client;
+        $this->environment = $environment;
+        $this->configHelper = $configHelper;
+    }
 
-    private $projectRootPath;
-
-    public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
-    private const DI_FILE_LOCATION = '/App/etc/di.php';
-    private const COMMANDS_LOCATION = '/App/Command';
-
-    public function __construct(string $projectRootPath)
+    public function loadConfig(): void
     {
-        //TODO: validate root path;
-        $this->projectRootPath = $projectRootPath;
+        $this->configuration = $this->parseConfig();
+    }
 
-        //TODO: handle that env file is not readable
-        try {
-            $dotenv = new Dotenv($projectRootPath);
-            $dotenv->load();
-        } catch (InvalidPathException $ex) {
-            throw new \Exception('Unable to start project: .env file missing in directory "' . $projectRootPath . '"');
+    private function parseConfig(): array
+    {
+        $cache = $this->cacheManager->getCache(self::CONFIG_CACHE_POOL);
+
+        if ($this->environment->cacheConfig && $cache->has(self::CONFIG_CACHE_KEY)) {
+            return $cache->get(self::CONFIG_CACHE_KEY);
+        }
+        $result = [];
+        //TODO: read from cache if possible
+        //TODO: when to flush cache (new build?)
+
+        //TODO: read database/API config values
+        $apiConfigValues = $this->fetchApiConfigValues();
+        $result = $apiConfigValues;
+
+        //TODO: what can override the rest?
+        $configFilePath = $this->environment->getConfigFilePath();
+        $localConfigValues = $this->configHelper->fetchLocalConfigValues($configFilePath);
+
+        foreach ($localConfigValues as $key => $localConfigValue) {
+            if (isset($apiConfigValues[$key])) {
+                if ($apiConfigValues[$key]['allowoverride']) {
+                    $result[$key] = $localConfigValue;
+                } else {
+                    if ($this->logger) {
+                        $this->logger->warning('Ignore local config value "' . $key . '": not allowed to override');
+                    }
+                }
+            } else {
+                $result[$key] = $localConfigValue;
+            }
         }
 
-        $this->branch = $this->getEnvValue('project');
-        $this->mode = $this->getEnvValue('mode');
-        if ($this->mode !== Config::MODE_PRODUCTION && $this->mode !== Config::MODE_DEVELOPMENT) {
-            throw new \InvalidArgumentException('Invalid mode "' . $this->mode . '", must be "' . Config::MODE_PRODUCTION . '" or "' . Config::MODE_DEVELOPMENT . '"');
+        $configVariables = [
+            'project_dir' => $this->environment->getProjectRootPath(),
+        ];
+        $result = $this->configHelper->patchConfigVariables($result, $configVariables);
+        if ($this->environment->cacheConfig) {
+            $cache->set(self::CONFIG_CACHE_KEY, $result);
         }
 
-        $this->api_endpoint = $this->getEnvValue('api_endpoint');
-        $this->api_client_id = $this->getEnvValue('api_client_id');
-        $this->api_client_secret = $this->getEnvValue('api_client_secret');
+        return $result;
+    }
 
-        $this->mongoDBConnectionString = $this->getEnvValue('storage');
+    private function fetchApiConfigValues(): array
+    {
+        $result = [];
 
-        $diFile = $this->getDIFileLocation($projectRootPath);
+//        $result['testkey'] = [
+//            'value'         => 'testvalue',
+//            'allowoverride' => false,
+//            'source'        => 'api',
+//
+//        ];
 
-        if (\file_exists($diFile)) {
-            $this->definitionsFile = $diFile;
+        $configValues = $this->client->getConfigByProject($this->environment->getProject()->id, $this->environment->getProjectEnvironment()->id);
+
+        foreach($configValues as $configValue)
+        {
+            $result[$configValue['key']] = [
+                'value'         => $configValue['value'],
+            'allowoverride' => false,
+            'source'        => 'api',
+
+        ];
         }
+
+        return $result;
     }
 
-    private function getEnvValue(string $key)
+    public function has(string $key): bool
     {
-        $value = \getenv($key);
-        if ($value === false) {
-            throw new \Exception('Config variable "' . $key . '" not defined');
+        return isset($this->configuration[$key]);
+    }
+
+    public function get(string $key)
+    {
+        if (isset($this->configuration[$key])) {
+            return $this->configuration[$key]['value'];
         }
 
-        if (!\is_string($value)) {
-            $value = strval($value);
-        }
-
-        return $value;
+        throw new \Exception('Unable to resolve config value for "' . $key . '"');
     }
 
-    public function getCacheName(): string
+    public function getConfigValues(): array
     {
-        return \strtolower(Normalizer::normalize($this->branch));
+        return $this->configuration;
     }
-
-    public function getProjectRootPath(): string
-    {
-        return $this->projectRootPath;
-    }
-
-    private function getDIFileLocation(string $projectRootPath): string
-    {
-        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::DI_FILE_LOCATION);
-    }
-
-    public static function getCommandDirectoryPath(string $projectRootPath): string
-    {
-        return realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
-    }
-
 }

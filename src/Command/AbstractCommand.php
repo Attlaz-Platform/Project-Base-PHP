@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskCollection;
 use Attlaz\Project\Model\TaskExecutionResult;
@@ -14,26 +13,47 @@ use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * show off @method
  *
  * @method execute()
  */
-abstract class AbstractCommand implements LoggerAwareInterface
+abstract class AbstractCommand
 {
 
-    /** @var  Client */
+    /**
+     * @var Client|null
+     */
     private $client;
-    /** @var  LoggerInterface */
-    protected $logger;
 
     const INVOKE_METHOD = 'execute';
 
-    /** @var CacheManager */
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+    /**
+     * @var \Attlaz\Project\App\Environment
+     */
+    protected $config;
+    /**
+     * @var \Attlaz\Project\Cache\CacheManager
+     */
     protected $cacheManager;
+
+    /**
+     * @var \DI\Container
+     */
+    protected $dependencyManager;
+
+    public function __construct(CommandContext $context)
+    {
+        $this->logger = $context->getLogger();
+        $this->config = $context->getConfig();
+        $this->cacheManager = $context->getCacheManager();
+        $this->dependencyManager = $context->getDependencyManager();
+    }
 
     /**
      * Place code here to initialize that doesn't belong in the constructor.
@@ -43,7 +63,7 @@ abstract class AbstractCommand implements LoggerAwareInterface
     {
     }
 
-    protected final function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
+    final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
         $request = $this->createRequest($task, $branch);
         /** @var ResponseInterface $response */
@@ -58,7 +78,7 @@ abstract class AbstractCommand implements LoggerAwareInterface
         return $taskResult;
     }
 
-    protected final function sendTaskWithoutResult(Task $task, string $branch): void
+    final  protected function sendTaskWithoutResult(Task $task, string $branch): void
     {
         $request = $this->createRequest($task, $branch);
 
@@ -66,41 +86,41 @@ abstract class AbstractCommand implements LoggerAwareInterface
         $this->getHTTPClient()
              ->send($request);
     }
-//
-//    protected final function executeMultiple(array $tasks): array
-//    {
-//        $results = [];
-//        foreach ($tasks as $task) {
-//            if ($task instanceof Task) {
-//                $results[] = $this->execute($task);
-//            }
-//        }
-//
-//        return $results;
-//    }
-//
-//    protected final function executeAsync(Task $task): PromiseInterface
-//    {
-//
-//        return $this->manager->executeAsync($task);
-////        $deferred = new \React\Promise\Deferred();
-////
-////        $result = $this->execute($task);
-////        $deferred->resolve($result);
-//
-//        // Execute a Node.js-style function using the callback pattern
-////        computeAwesomeResultAsynchronously(function ($error, $result) use ($deferred) {
-////            if ($error) {
-////                $deferred->reject($error);
-////            } else {
-////                $deferred->resolve($result);
-////            }
-////        });
-//
-//        // Return the promise
-//        //  return $deferred->promise();
-//    }
-//
+    //
+    //    protected final function executeMultiple(array $tasks): array
+    //    {
+    //        $results = [];
+    //        foreach ($tasks as $task) {
+    //            if ($task instanceof Task) {
+    //                $results[] = $this->execute($task);
+    //            }
+    //        }
+    //
+    //        return $results;
+    //    }
+    //
+    //    protected final function executeAsync(Task $task): PromiseInterface
+    //    {
+    //
+    //        return $this->manager->executeAsync($task);
+    ////        $deferred = new \React\Promise\Deferred();
+    ////
+    ////        $result = $this->execute($task);
+    ////        $deferred->resolve($result);
+    //
+    //        // Execute a Node.js-style function using the callback pattern
+    ////        computeAwesomeResultAsynchronously(function ($error, $result) use ($deferred) {
+    ////            if ($error) {
+    ////                $deferred->reject($error);
+    ////            } else {
+    ////                $deferred->resolve($result);
+    ////            }
+    ////        });
+    //
+    //        // Return the promise
+    //        //  return $deferred->promise();
+    //    }
+    //
     private function getHTTPClient(): Client
     {
         if (\is_null($this->client)) {
@@ -117,18 +137,18 @@ abstract class AbstractCommand implements LoggerAwareInterface
         return $this->client;
     }
 
-//    private $curlMultiHandler;
-//
-//    private function getMultiHandler()
-//    {
-//        if (\is_null($this->curlMultiHandler)) {
-//            $this->curlMultiHandler = new CurlMultiHandler;
-//        }
-//
-//        return $this->curlMultiHandler;
-//    }
+    //    private $curlMultiHandler;
+    //
+    //    private function getMultiHandler()
+    //    {
+    //        if (\is_null($this->curlMultiHandler)) {
+    //            $this->curlMultiHandler = new CurlMultiHandler;
+    //        }
+    //
+    //        return $this->curlMultiHandler;
+    //    }
 
-    protected final function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
+    final  protected function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
     {
         $results = new TaskExecutionResultCollection();
 
@@ -141,21 +161,22 @@ abstract class AbstractCommand implements LoggerAwareInterface
                            ->sendAsync($request)
                            ->then(function (ResponseInterface $response) use ($task) {
                                // echo $task->getArgument('input') . \PHP_EOL;
-//                               $strTaskResult = $response->getBody()
-//                                                         ->getContents();
-//
-//                               $cmd = new DeserializeTaskResult();
-//                               $taskResult = $cmd->__invoke($strTaskResult);
-//
-//                               return [
-//                                   'task'   => $task,
-//                                   'result' => $taskResult,
-//                               ];
+                               $strTaskResult = $response->getBody()
+                                                         ->getContents();
+                               //
+                               //                               $cmd = new DeserializeTaskResult();
+                               //                               $taskResult = $cmd->__invoke($strTaskResult);
+                               //
+                               return [
+                                   'task'   => $task,
+                                   'result' => $strTaskResult,
+                               ];
+
                                return true;
                            }, function (\Exception $ex) use ($task) {
                                //TODO: retry
-                               echo 'Ex: ' . $ex->getMessage() . \PHP_EOL;
-
+                               $this->logger->error('Unable to execute task: ' . $task->name . ': ' . $ex->getMessage());
+                              
                                return false;
                            });
             }
@@ -177,13 +198,13 @@ abstract class AbstractCommand implements LoggerAwareInterface
         $each->promise()
              ->wait();
 
-//        echo 'State: ' . $each->promise()
-//                              ->getState() . \PHP_EOL;
-//        while ($each->promise()
-//                    ->getState() === 'pending') {
-//            $this->getMultiHandler()
-//                 ->tick();
-//        }
+        //        echo 'State: ' . $each->promise()
+        //                              ->getState() . \PHP_EOL;
+        //        while ($each->promise()
+        //                    ->getState() === 'pending') {
+        //            $this->getMultiHandler()
+        //                 ->tick();
+        //        }
 
         return $results;
     }
@@ -206,15 +227,5 @@ abstract class AbstractCommand implements LoggerAwareInterface
         $request = new Request('POST', $uri, $headers, $body);
 
         return $request;
-    }
-
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
-
-    public function setCacheManager(CacheManager $cacheManager): void
-    {
-        $this->cacheManager = $cacheManager;
     }
 }

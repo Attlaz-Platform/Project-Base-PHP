@@ -12,6 +12,7 @@ class ApiHandler extends AbstractProcessingHandler
 {
 
     private $client;
+    private $maxLogMessageLength = 5000;
 
     public function __construct(Client $client, int $level = Logger::DEBUG, bool $bubble = true)
     {
@@ -21,22 +22,32 @@ class ApiHandler extends AbstractProcessingHandler
 
     protected function write(array $record)
     {
-        $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
-        $logEntry->date = $record['datetime'];
-        $logEntry->context = $record['context'];
-        if (isset($record['extra']['execution'])) {
-            //TODO: what is the log entry type when no task execution is defined?
-            $logEntry->context['taskexecution'] = $record['extra']['execution'];
-            $logEntry->type = 'taskexecution';
-        }
-
-        //TODO: combine extra with context?
         try {
-            $saved = $this->client->saveLog($logEntry);
-        } catch (\Exception $ex) {
-            echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
+            if (isset($record['formatted'])) {
+                $record = $record['formatted'];
+            }
 
-            var_dump($logEntry);
+            //TODO: check message length, if its to long, break the message in parts or skip
+            $logEntry = new LogEntry($record['message'], strtolower($record['level_name']));
+            $logEntry->date = $record['datetime'];
+            $logEntry->context = $record['context'];
+            if (isset($record['extra']['execution'])) {
+                //TODO: what is the log entry type when no task execution is defined?
+                $logEntry->context['taskexecution'] = $record['extra']['execution'];
+                $logEntry->type = 'taskexecution';
+            }
+
+            if (\strlen($logEntry->message) > $this->maxLogMessageLength) {
+                $logEntry->message = \substr($logEntry->message, 0, $this->maxLogMessageLength);
+            }
+            //TODO: combine extra with context?
+
+            $saved = $this->client->saveLog($logEntry);
+        } catch (\Throwable $ex) {
+            echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
+            // var_dump(\substr($logEntry->message, 0, 500));
+
+            echo $ex->getTraceAsString() . \PHP_EOL;
         }
     }
 }

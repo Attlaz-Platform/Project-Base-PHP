@@ -4,8 +4,8 @@ parameters:
     tasks:
         phpstan:
             level: 5
-            ignore_patterns: ["tests/*"]
+            ignore_patterns: ["*Test.php"]
 
         phpcs:
             standard: PSR2
-            ignore_patterns: ["./tests/*"]
+            ignore_patterns: ["*Test.php"]

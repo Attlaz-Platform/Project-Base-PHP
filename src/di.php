@@ -1,12 +1,24 @@
 <?php
 declare(strict_types=1);
 
-use Attlaz\Project\App\Config;
-use Psr\Log\LoggerInterface;
+use Attlaz\Project\App\Environment;
+
+//if (!defined('STDIN')) {
+//    define('STDIN', fopen('php://stdin', 'rb'));
+//}
+//if (!defined('STDOUT')) {
+//    define('STDOUT', fopen('php://stdout', 'wb'));
+//}
+//if (!defined('STDERR')) {
+//    define('STDERR', fopen('php://stderr', 'wb'));
+//}
+if (!defined('STDOUT')) {
+    define('STDOUT', fopen('php://output', 'wb'));
+}
 
 return [
-    \Psr\Log\LoggerInterface::class => \DI\factory(function (Config $config) {
-        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $config->branch);
+    \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment, \DI\Container $container) {
+        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->getProject()->name . ' (' . $environment->getProjectEnvironment()->name . ')');
 
         $ignoreDirectories = [
             '/var/attlaz/',
@@ -18,35 +30,39 @@ return [
         /**
          * Log to stream
          */
-        $verbose = true;
 
-        if ($verbose) {
+        if ($environment->cli_log_verbose) {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
         } else {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . \PHP_EOL . \PHP_EOL;
         }
 
-        //TODO: only show colors when in developer mode AND local mode
-        //TODO: add "verbose" and "non-verbose" mode
-        $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
-        //  $formatter = new \Monolog\Formatter\LineFormatter($format);
-        $formatter->allowInlineLineBreaks(true);
-
-        if ($verbose) {
-            $formatter->includeStacktraces(true);
-        }
-
-        $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, \Monolog\Logger::DEBUG);
-        $streamHandler->setFormatter($formatter);
-
+        $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, $environment->cli_log_level);
         $logger->pushHandler($streamHandler);
+
+        /**
+         * Color mode for local development
+         */
+        if (PHP_SAPI === 'cli') {
+            //TODO: only show colors when in developer mode AND local mode
+            //TODO: add "verbose" and "non-verbose" mode
+            $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
+            //  $formatter = new \Monolog\Formatter\LineFormatter($format);
+            $formatter->allowInlineLineBreaks(true);
+
+            if ($environment->cli_log_stacktrace) {
+                $formatter->includeStacktraces(true);
+            }
+            $streamHandler->setFormatter($formatter);
+        }
 
         /**
          * Log to API
          */
 
-        $apiClient = new \Attlaz\Client($config->api_endpoint, $config->api_client_id, $config->api_client_secret);
-        $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($apiClient);
+        $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($container->get(\Attlaz\Client::class));
+        $formatter = new \Attlaz\Project\Logger\Formatter();
+        $apiLogHandler->setFormatter($formatter);
         $logger->pushHandler($apiLogHandler);
 
         /**
@@ -56,19 +72,14 @@ return [
 
         return $logger;
     }),
-
-    \MongoDB\Driver\Manager::class => \DI\factory(function (LoggerInterface $logger, Config $config) {
-        return $manager = new \MongoDB\Driver\Manager($config->mongoDBConnectionString, ['readPreference' => 'nearest']);
+    \Attlaz\Client::class           => \DI\factory(function (Environment $environment) {
+        return new \Attlaz\Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
     }),
 
-    \Psr\SimpleCache\CacheInterface::class    => \DI\factory(function (LoggerInterface $logger, Config $config, \Attlaz\Project\Cache\CacheManager $cacheManager) {
+    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (
+        \Attlaz\Project\Cache\CacheManager $cacheManager
+    ) {
         return $cacheManager->getCache();
-    }),
-    \Attlaz\Project\Cache\CacheManager::class => \DI\factory(function (LoggerInterface $logger, Config $config, \MongoDB\Driver\Manager $mongoDBManager) {
-        $fileCachePath = $config->getProjectRootPath() . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache';
-        $cacheManager = new \Attlaz\Project\Cache\CacheManager($mongoDBManager, $config->getCacheName(), $fileCachePath, $logger);
-
-        return $cacheManager;
     }),
 
 ];

@@ -3,75 +3,88 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cache;
 
+use Attlaz\Project\App\Environment;
 use Cache\Adapter\Filesystem\FilesystemCachePool;
 use Echron\Tools\Normalize\Normalizer;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
-use MongoDB\Driver\Manager as MongoDBManager;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 class CacheManager
 {
-    private $manager;
-    private $logger;
-    private $database;
+
+    private $environment;
+    protected $logger;
 
     private $fileCachePath;
 
-    private $pool;
+    /** @var FailOverCachePool[] */
+    private $pools;
 
     public const DEFAULT_NAMESPACE = 'default';
 
     public function __construct(
-        MongoDBManager $manager,
-        string $database,
-        string $fileCachePath,
+        Environment $environment,
         LoggerInterface $logger
     ) {
-        $this->manager = $manager;
-        $this->database = $database;
-
-        $this->fileCachePath = $fileCachePath;
+        $this->environment = $environment;
         $this->logger = $logger;
 
-        $this->pool = [];
+        $this->fileCachePath = $environment->getFileCachePath();
+
+        $this->pools = [];
     }
 
-    public function getCache(string $name = self::DEFAULT_NAMESPACE): CacheInterface
+    public function getCache(string $key = self::DEFAULT_NAMESPACE): CacheInterface
     {
-        $name = Normalizer::normalize($name);
+        $key = Normalizer::normalize($key);
 
-        if (!isset($this->pool[$name])) {
-            $this->createCachePool($name);
+        if (!isset($this->pools[$key])) {
+            $this->pools[$key] = $this->createCachePool($key);
         }
 
-        return $this->pool[$name];
+        return $this->pools[$key];
     }
 
-    private function createCachePool(string $name): void
+    /**
+     * @return string[]
+     */
+    public function getCachePoolKeys(): array
+    {
+        return \array_keys($this->pools);
+    }
+
+    private function createCachePool(string $key): FailOverCachePool
     {
         //TODO: is it possible to instantiate this trought the DI?
         $failOverCachePool = new FailOverCachePool([
             'skip_on_failure'        => true,
             'remove_pool_on_failure' => true,
         ]);
+
         $failOverCachePool->setLogger($this->logger);
 
         /**
          * MongoDB
          */
-        $collection = new \MongoDB\Collection($this->manager, 'cache_' . $this->database, $name);
-        $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
-        $mongoDBCache->setLogger($this->logger);
-        $failOverCachePool->addCachePool('mongodb', $mongoDBCache);
+        if (extension_loaded("mongodb")) {
+            $mongoDBManager = new \MongoDB\Driver\Manager($this->environment->mongoDBConnectionString, ['readPreference' => 'nearest']);
+            $collection = new \MongoDB\Collection($mongoDBManager, 'cache_' . $this->environment->getCacheName(), $key);
+            $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
+
+            $mongoDBCache->setLogger($this->logger);
+
+            $failOverCachePool->addCachePool('mongodb', $mongoDBCache);
+        }
+
         /**
          * File
          */
         $filesystemAdapter = new Local($this->fileCachePath);
         $filesystem = new Filesystem($filesystemAdapter);
 
-        $fileCachePool = new FilesystemCachePool($filesystem, $this->database . \DIRECTORY_SEPARATOR . $name);
+        $fileCachePool = new FilesystemCachePool($filesystem, $this->environment->getCacheName() . \DIRECTORY_SEPARATOR . $key);
         $failOverCachePool->addCachePool('file', $fileCachePool);
         /**
          * Memory
@@ -79,6 +92,6 @@ class CacheManager
         $memoryCache = new \Cache\Adapter\PHPArray\ArrayCachePool(null);
         $failOverCachePool->addCachePool('memory', $memoryCache);
 
-        $this->pool[$name] = $failOverCachePool;
+        return $failOverCachePool;
     }
 }

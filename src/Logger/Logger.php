@@ -3,16 +3,34 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Logger;
 
+use Attlaz\Project\Exception\RuntimeException;
 use Psr\Log\LoggerInterface;
 
 class Logger extends \Monolog\Logger implements LoggerInterface
 {
     private $globalContext = [];
 
+    private const CONTEXT_EXCEPTION_PREFIX = 'exception';
+
     public function addRecord($level, $message, array $context = [])
     {
         if (count($this->globalContext) > 0) {
             $context['glob'] = $this->globalContext;
+        }
+
+        if ($message instanceof RuntimeException) {
+            $exception = $message;
+            $message = $exception->getMessage();
+
+            $context = $exception->getContext();
+
+            $context = [self::CONTEXT_EXCEPTION_PREFIX => $exception];
+
+            $context = \array_merge($context, $exception->getContext());
+        } elseif ($message instanceof \Throwable) {
+            $throwable = $message;
+            $message = $throwable->getMessage();
+            $context['exception'] = $throwable;
         }
 
         return parent::addRecord($level, $message, $context);

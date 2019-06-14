@@ -3,12 +3,11 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
-use Attlaz\Project\Command\CommandManager;
+use Attlaz\Client;
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
-use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\Model\TaskExecutionResult;
-use Attlaz\Project\Serialization\SerializeTaskResult;
+use Attlaz\Project\TaskExecution\CLI;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,14 +16,18 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ExecuteTask extends Command
 {
-    protected $commandManager;
+    protected $taskExecutor;
+    protected $client;
+    protected $environment;
     protected $logger;
 
-    public function __construct(CommandManager $commandManager, Logger $logger)
+    public function __construct(CLI $taskExecutor, Client $client, Environment $environment, Logger $logger)
     {
         parent::__construct();
 
-        $this->commandManager = $commandManager;
+        $this->taskExecutor = $taskExecutor;
+        $this->client = $client;
+        $this->environment = $environment;
         $this->logger = $logger;
     }
 
@@ -35,36 +38,16 @@ class ExecuteTask extends Command
              ->setHelp('This command allows you to run a task')
              ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
              ->addOption('arguments', null, InputOption::VALUE_REQUIRED, '', null)
-             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', 'x');
-//        ->addArgument('arguments', InputArgument::REQUIRED, 'Arguments to pass to the command')
-//        ->addArgument('execution', InputArgument::REQUIRED, 'Execution id to identify the execution');
+             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', null);
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-//        // outputs multiple lines to the console (adding "\n" at the end of each line)
-//        $output->writeln([
-//            'User Creator',
-//            '============',
-//            '',
-//        ]);
-//
-//        // the value returned by someMethod() can be an iterator (https://secure.php.net/iterator)
-//        // that generates and returns the messages with the 'yield' PHP keyword
-//        //$output->writeln($this->someMethod());
-//
-//        // outputs a message followed by a "\n"
-//        $output->writeln('Whoa!');
-//
-//        // outputs a message without adding a "\n" at the end of the line
-//        $output->write('You are about to ');
-//        $output->write('create a user.');
-
         try {
             $taskExecutionRequest = $this->getRequestFromInput($input);
 
-            return $this->executeTaskExecutionRequest($taskExecutionRequest);
+            return $this->taskExecutor->execute($taskExecutionRequest);
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 
@@ -72,12 +55,21 @@ class ExecuteTask extends Command
         }
     }
 
-    private function getRequestFromInput(InputInterface $input)
+    private function getRequestFromInput(InputInterface $input): TaskExecutionRequest
     {
         $task = $input->getArgument('task');
         $arguments = $this->getArguments($input);
 
         $executionId = $input->getOption('execution');
+
+        if (\is_null($executionId)) {
+            if ($this->environment->getProjectEnvironment()->isLocal) {
+                //TODO: only when local and no execution is given
+                $executionId = $this->client->createTaskExecution($task, $this->environment->getProjectEnvironment()->id);
+            } else {
+                throw new \Exception('Execution must be defined or environment should be local');
+            }
+        }
 
         return new TaskExecutionRequest($task, $arguments, $executionId);
     }
@@ -107,30 +99,4 @@ class ExecuteTask extends Command
         return $arguments;
     }
 
-    protected function executeTaskExecutionRequest(TaskExecutionRequest $taskExecutionRequest): int
-    {
-        $logProcessor = new Processor();
-        $logProcessor->setExecutionId($taskExecutionRequest->getExecutionId());
-        $this->logger->pushProcessor($logProcessor);
-
-        $taskExecutionResult = $this->commandManager->executeTask($taskExecutionRequest);
-
-        $this->sendResponse($taskExecutionResult);
-
-        if ($taskExecutionResult->getSuccess()) {
-            return 0;
-        } else {
-            //TODO: change exit code based on exception type
-            return 1;
-        }
-    }
-
-    private function sendResponse(TaskExecutionResult $taskExecutionResult)
-    {
-        $cmd = new SerializeTaskResult();
-        $strTaskResult = $cmd->__invoke($taskExecutionResult);
-
-        $this->logger->debug('Sending back response: ' . $strTaskResult);
-        echo \base64_encode('Result') . ':' . base64_encode($strTaskResult);
-    }
 }
