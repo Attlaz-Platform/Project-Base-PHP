@@ -11,6 +11,10 @@ class SerializeTaskResult
     {
         $serialized = json_encode($taskResult);
 
+        if (!\is_string($serialized)) {
+            throw new \Exception('Unable to encode task result');
+        }
+
         return $serialized;
     }
 }

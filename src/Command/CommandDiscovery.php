@@ -163,18 +163,21 @@ class CommandDiscovery
             $parameterName = $reflectionParameter->getName();
 
             $required = !$reflectionParameter->isOptional();
-            $type = null;
+            $typeName = null;
             if ($reflectionParameter->hasType()) {
                 //TODO: validate type and throw exception when it's an unknown type
-                $type = $reflectionParameter->getType()
-                                            ->getName();
+
+                $type = $reflectionParameter->getType();
+                if (!\is_null($type)) {
+                    $typeName = $type->getName();
+                }
             }
             $default = null;
             if ($reflectionParameter->isDefaultValueAvailable()) {
                 $default = $reflectionParameter->getDefaultValue();
             }
-
-            $parameters[$parameterName] = new CommandParameterDefinition($parameterName, $type, $required, $default);
+            $parameterDefinition = new CommandParameterDefinition($parameterName, $typeName, $required, $default);
+            $parameters[$parameterName] = $parameterDefinition;
         }
 
         return $parameters;

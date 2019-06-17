@@ -17,15 +17,19 @@ class FPM extends AbstractTaskHandler
     private function getTaskExecutionRequest(): TaskExecutionRequest
     {
         $json = file_get_contents('php://input');
-        $values = json_decode($json, true);
-        var_dump($json);
-        var_dump($values);
+        if (!\is_string($json)) {
+            throw new \Exception('Unable to get input content');
+        } else {
+            $values = json_decode($json, true);
+            var_dump($json);
+            var_dump($values);
 
-        $taskId = $values['taskId'];
-        $arguments = $values['arguments'];
+            $taskId = $values['taskId'];
+            $arguments = $values['arguments'];
 
-        $executionId = $values['executionId'];
+            $executionId = $values['executionId'];
 
-        return new TaskExecutionRequest($taskId, $arguments, $executionId);
+            return new TaskExecutionRequest($taskId, $arguments, $executionId);
+        }
     }
 }
