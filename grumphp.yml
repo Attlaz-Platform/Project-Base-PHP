@@ -3,7 +3,7 @@ parameters:
     bin_dir: vendor/bin
     tasks:
         phpstan:
-            level: 5
+            level: 7
             ignore_patterns: ["*Test.php"]
 
         phpcs:

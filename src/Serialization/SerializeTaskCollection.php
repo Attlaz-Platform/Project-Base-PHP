@@ -14,6 +14,12 @@ class SerializeTaskCollection
             $data[] = $task->__toString();
         }
 
-        return json_encode($data);
+        $result = json_encode($data);
+
+        if (!\is_string($result)) {
+            throw new \Exception('Unable to serialize task collection');
+        }
+
+        return $result;
     }
 }

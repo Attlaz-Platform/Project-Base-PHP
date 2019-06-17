@@ -122,10 +122,14 @@ class SystemSetup extends Command
                 }
             }
 
+            if (!isset($values[Environment::ENV_PROJECT])) {
+                throw new \Exception('Invalid project');
+            }
+
             /**
              * Project environment
              */
-            $projectEnvironments = $client->getProjectEnvironments($values[Environment::ENV_PROJECT]);
+            $projectEnvironments = $client->getProjectEnvironments((string)$values[Environment::ENV_PROJECT]);
             $arrProjectEnvironmentOptions = [];
             foreach ($projectEnvironments as $projectEnvironment) {
                 $arrProjectEnvironmentOptions[$projectEnvironment->id] = $projectEnvironment->name;
