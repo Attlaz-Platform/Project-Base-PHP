@@ -36,9 +36,9 @@ class Environment
     public $mode;
     public $definitionsFile;
 
-    public $api_endpoint;
-    public $api_client_id;
-    public $api_client_secret;
+    public $api_endpoint = 'https://api.attlaz.com';
+    public $api_client_id = 'public_client_id';
+    public $api_client_secret = 'public_client_secret';
 
     public $sys_memory_limit = '2G';
     public $sys_timezone = 'Europe/Brussels';
@@ -48,6 +48,16 @@ class Environment
     public $cli_log_stacktrace = true;
 
     public $mongoDBConnectionString;
+
+    private $isInitialized = false;
+
+    public const ENV_PROJECT = 'project';
+    public const ENV_PROJECT_ENVIRONMENT = 'project_environment';
+    public const ENV_MODE = 'mode';
+    public const ENV_API_ENDPOINT = 'api_endpoint';
+    public const ENV_API_CLIENT_ID = 'api_client_id';
+    public const ENV_API_CLIENT_SECRET = 'api_client_secret';
+    public const ENV_STORAGE = 'storage';
 
     public function __construct(string $projectRootPath)
     {
@@ -63,12 +73,13 @@ class Environment
 
         $this->loadEnvSettings();
 
-        $this->api_endpoint = $this->getEnvValue('api_endpoint');
-        $this->api_client_id = $this->getEnvValue('api_client_id');
-        $this->api_client_secret = $this->getEnvValue('api_client_secret');
+        if ($this->isInitialized) {
+            $this->api_endpoint = $this->getEnvValue(self::ENV_API_ENDPOINT);
+            $this->api_client_id = $this->getEnvValue(self::ENV_API_CLIENT_ID);
+            $this->api_client_secret = $this->getEnvValue(self::ENV_API_CLIENT_SECRET);
 
-        $this->mongoDBConnectionString = $this->getEnvValue('storage');
-
+            $this->mongoDBConnectionString = $this->getEnvValue(self::ENV_STORAGE);
+        }
         $diFile = $this->getDIFileLocation($projectRootPath);
 
         if (!is_null($diFile) && \file_exists($diFile)) {
@@ -81,9 +92,17 @@ class Environment
         try {
             $dotenv = new Dotenv($this->projectRootPath);
             $dotenv->load();
+
+            $this->isInitialized = true;
         } catch (InvalidPathException $ex) {
+            $this->isInitialized = false;
             //                throw new \Exception('Unable to start project: .env file missing in directory "' . $this->projectRootPath . '"');
         }
+    }
+    
+    public function getEnvFilePath():string 
+    {
+        return $this->projectRootPath.\DIRECTORY_SEPARATOR.'.env';
     }
 
     private function getEnvValue(string $key): string
@@ -165,13 +184,20 @@ class Environment
 
     public function init(): void
     {
-        //TODO: load this from DI
-        $client = new \Attlaz\Client($this->api_endpoint, $this->api_client_id, $this->api_client_secret);
+        if ($this->isInitialized) {
+            //TODO: load this from DI
+            $client = new \Attlaz\Client($this->api_endpoint, $this->api_client_id, $this->api_client_secret);
 
-        $projectId = $this->getEnvValue('project');
-        $this->project = $client->getProjectById($projectId);
+            $projectId = $this->getEnvValue(self::ENV_PROJECT);
+            $this->project = $client->getProjectById($projectId);
 
-        $projectEnvironmentId = $this->getNumEnvValue('project_environment');
-        $this->projectEnvironment = $client->getProjectEnvironmentById($projectEnvironmentId);
+            $projectEnvironmentId = $this->getNumEnvValue(self::ENV_PROJECT_ENVIRONMENT);
+            $this->projectEnvironment = $client->getProjectEnvironmentById($projectEnvironmentId);
+        }
+    }
+
+    public function isInitialized(): bool
+    {
+        return $this->isInitialized;
     }
 }
