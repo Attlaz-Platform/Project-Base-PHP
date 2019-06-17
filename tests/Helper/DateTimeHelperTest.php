@@ -12,7 +12,9 @@ class DateTimeHelperTest extends TestCase
         $now = new \DateTime();
 
         $serialized = json_encode($now);
-
+        if (!\is_string($serialized)) {
+            throw new \Exception('Unable to encode datetime');
+        }
         $deserialized = json_decode($serialized, true);
 
         $dateTime = DateTimeHelper::deserialize($deserialized);
