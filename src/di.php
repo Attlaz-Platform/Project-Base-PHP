@@ -18,7 +18,12 @@ if (!defined('STDOUT')) {
 
 return [
     \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment, \DI\Container $container) {
-        $logger = new \Attlaz\Project\Logger\Logger("Attlaz Project " . $environment->getProject()->name . ' (' . $environment->getProjectEnvironment()->name . ')');
+        $loggerName = 'Attlaz';
+        if ($environment->isInitialized()) {
+            $loggerName = "Attlaz Project " . $environment->getProject()->name . ' (' . $environment->getProjectEnvironment()->name . ')';
+        }
+
+        $logger = new \Attlaz\Project\Logger\Logger($loggerName);
 
         $ignoreDirectories = [
             '/var/attlaz/',
@@ -59,12 +64,12 @@ return [
         /**
          * Log to API
          */
-
-        $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($container->get(\Attlaz\Client::class));
-        $formatter = new \Attlaz\Project\Logger\Formatter();
-        $apiLogHandler->setFormatter($formatter);
-        $logger->pushHandler($apiLogHandler);
-
+        if ($environment->isInitialized()) {
+            $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($container->get(\Attlaz\Client::class));
+            $formatter = new \Attlaz\Project\Logger\Formatter();
+            $apiLogHandler->setFormatter($formatter);
+            $logger->pushHandler($apiLogHandler);
+        }
         /**
          * Log fatal errors
          */

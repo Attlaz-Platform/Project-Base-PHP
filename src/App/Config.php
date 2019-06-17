@@ -27,6 +27,7 @@ class Config implements LoggerAwareInterface
         Client $client,
         Environment $environment,
         ConfigHelper $configHelper
+
     ) {
         $this->cacheManager = $cacheManager;
         $this->client = $client;
@@ -36,7 +37,9 @@ class Config implements LoggerAwareInterface
 
     public function loadConfig(): void
     {
-        $this->configuration = $this->parseConfig();
+        if ($this->environment->isInitialized()) {
+            $this->configuration = $this->parseConfig();
+        }
     }
 
     private function parseConfig(): array
@@ -87,23 +90,15 @@ class Config implements LoggerAwareInterface
     {
         $result = [];
 
-//        $result['testkey'] = [
-//            'value'         => 'testvalue',
-//            'allowoverride' => false,
-//            'source'        => 'api',
-//
-//        ];
-
         $configValues = $this->client->getConfigByProject($this->environment->getProject()->id, $this->environment->getProjectEnvironment()->id);
 
-        foreach($configValues as $configValue)
-        {
+        foreach ($configValues as $configValue) {
             $result[$configValue['key']] = [
                 'value'         => $configValue['value'],
-            'allowoverride' => false,
-            'source'        => 'api',
+                'allowoverride' => false,
+                'source'        => 'api',
 
-        ];
+            ];
         }
 
         return $result;
