@@ -13,6 +13,9 @@ use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
 use Attlaz\Project\Cli\Command\ListTasks;
 use Attlaz\Project\Cli\Command\RequestDeploy;
 use Attlaz\Project\Cli\Command\RunTests;
+use Attlaz\Project\Cli\Command\Setup;
+use Attlaz\Project\Cli\Command\SystemSetup;
+use Attlaz\Project\Cli\Command\SystemStatus;
 use Attlaz\Project\Command\CommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Model\TaskExecutionRequest;
@@ -69,7 +72,10 @@ class Project
             //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             $start = \microtime(true);
             $config = $container->get(Config::class);
-            $config->loadConfig();
+
+            if ($this->environment->isInitialized()) {
+                $config->loadConfig();
+            }
 
             //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             $start = \microtime(true);
@@ -136,13 +142,19 @@ class Project
 
             $cli = new CLI($this->commandManager, $this->logger);
 
-            $cliApplication->add(new ListTasks($this->commandManager, $this->logger));
-            $cliApplication->add(new ExecuteTask($cli, $attlazClient, $this->environment, $this->logger));
-            $cliApplication->add(new ExecuteTaskInteractive($cli, $attlazClient, $this->commandManager, $this->environment, $this->logger));
-            $cliApplication->add(new ConfigList($config, $this->logger));
-            $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
-            $cliApplication->add(new RequestDeploy($this->environment, $attlazClient, $this->logger));
-            $cliApplication->add(new RunTests($this->logger));
+            $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
+            
+            if ($this->environment->isInitialized()) {
+                $cliApplication->add(new ListTasks($this->commandManager, $this->logger));
+                $cliApplication->add(new ExecuteTask($cli, $attlazClient, $this->environment, $this->logger));
+                $cliApplication->add(new ExecuteTaskInteractive($cli, $attlazClient, $this->commandManager, $this->environment, $this->logger));
+                $cliApplication->add(new ConfigList($config, $this->logger));
+                $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
+                $cliApplication->add(new RequestDeploy($this->environment, $attlazClient, $this->logger));
+                $cliApplication->add(new RunTests($this->logger));
+            } else {
+                $cliApplication->add(new SystemSetup($attlazClient, $this->environment, $this->logger));
+            }
             $output = $cliApplication->run();
 
             echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
