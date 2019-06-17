@@ -5,7 +5,7 @@ namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Logger\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +18,7 @@ class RequestDeploy extends Command
     protected $environment;
     protected $logger;
 
-    public function __construct(Environment $environment, Client $client, Logger $logger)
+    public function __construct(Environment $environment, Client $client, LoggerInterface $logger)
     {
         parent::__construct();
         $this->environment = $environment;
@@ -47,7 +47,8 @@ class RequestDeploy extends Command
                 $environmentIdentifier = \intval($environmentIdentifier);
                 $environment = $this->client->getProjectEnvironmentById($environmentIdentifier);
             } else {
-                $environment = $this->client->getProjectEnvironmentByKey($this->environment->getProject()->id, $environmentIdentifier);
+                $projectId = $this->environment->getProject()->id;
+                $environment = $this->client->getProjectEnvironmentByKey($projectId, $environmentIdentifier);
             }
             if (\is_null($environment)) {
                 throw new \Exception('Unable to request deploy: environment not found');
@@ -60,5 +61,4 @@ class RequestDeploy extends Command
             return 1;
         }
     }
-
 }

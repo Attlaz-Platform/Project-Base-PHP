@@ -88,7 +88,9 @@ class CommandParameterDefinition
         //        switch ($parameter->getType()) {
         //            case 'int':
         //                if (!\is_int($value)) {
-        //                    throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type, type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
+        //                    throw new \Exception('Parameter "' . $parameter->getName() . '"
+        // has invalid type, type "' .
+        // ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
         //                }
         //                break;
         //            case 'string':

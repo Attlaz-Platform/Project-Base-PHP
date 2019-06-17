@@ -5,9 +5,9 @@ namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\CLI;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,7 +21,7 @@ class ExecuteTask extends Command
     protected $environment;
     protected $logger;
 
-    public function __construct(CLI $taskExecutor, Client $client, Environment $environment, Logger $logger)
+    public function __construct(CLI $taskExecutor, Client $client, Environment $environment, LoggerInterface $logger)
     {
         parent::__construct();
 
@@ -65,7 +65,8 @@ class ExecuteTask extends Command
         if (\is_null($executionId)) {
             if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
-                $executionId = $this->client->createTaskExecution($task, $this->environment->getProjectEnvironment()->id);
+                $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
+                $executionId = $this->client->createTaskExecution($task, $projectEnvironmentId);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
@@ -98,5 +99,4 @@ class ExecuteTask extends Command
 
         return $arguments;
     }
-
 }

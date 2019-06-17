@@ -12,9 +12,4 @@ class TaskExecutionResultCollection extends BasicCollection
     {
         parent::addToCollection($taskResult);
     }
-
-    public function current(): TaskExecutionResult
-    {
-        return parent::current();
-    }
 }

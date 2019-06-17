@@ -76,7 +76,7 @@ class FailOverCachePool extends AbstractCachePool
     protected function getCaches()
     {
         if (empty($this->caches)) {
-            throw new NoPoolAvailableException('No valid cache pool available for the chain.');
+            throw new CachePoolException('No valid cache pool available for the chain.');
         }
 
         return $this->caches;
