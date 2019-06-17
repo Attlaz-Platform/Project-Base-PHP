@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
-use Attlaz\Project\Logger\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,7 +13,7 @@ class RunTests extends Command
 
     protected $logger;
 
-    public function __construct(Logger $logger)
+    public function __construct(LoggerInterface $logger)
     {
         parent::__construct();
 
@@ -32,5 +32,4 @@ class RunTests extends Command
     {
         return 1;
     }
-
 }

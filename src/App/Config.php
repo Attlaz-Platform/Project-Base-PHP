@@ -27,7 +27,6 @@ class Config implements LoggerAwareInterface
         Client $client,
         Environment $environment,
         ConfigHelper $configHelper
-
     ) {
         $this->cacheManager = $cacheManager;
         $this->client = $client;
@@ -66,7 +65,7 @@ class Config implements LoggerAwareInterface
                 if ($apiConfigValues[$key]['allowoverride']) {
                     $result[$key] = $localConfigValue;
                 } else {
-                    if ($this->logger) {
+                    if (\is_object($this->logger)) {
                         $this->logger->warning('Ignore local config value "' . $key . '": not allowed to override');
                     }
                 }
@@ -90,7 +89,9 @@ class Config implements LoggerAwareInterface
     {
         $result = [];
 
-        $configValues = $this->client->getConfigByProject($this->environment->getProject()->id, $this->environment->getProjectEnvironment()->id);
+        $projectId = $this->environment->getProject()->id;
+        $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
+        $configValues = $this->client->getConfigByProject($projectId, $projectEnvironmentId);
 
         foreach ($configValues as $configValue) {
             $result[$configValue['key']] = [

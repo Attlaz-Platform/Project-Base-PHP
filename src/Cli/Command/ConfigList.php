@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Project\App\Config;
-use Attlaz\Project\Logger\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,7 +15,7 @@ class ConfigList extends Command
     protected $config;
     protected $logger;
 
-    public function __construct(Config $config, Logger $logger)
+    public function __construct(Config $config, LoggerInterface $logger)
     {
         parent::__construct();
 
@@ -70,5 +70,4 @@ class ConfigList extends Command
             $source,
         ];
     }
-
 }

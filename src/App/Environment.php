@@ -96,13 +96,12 @@ class Environment
             $this->isInitialized = true;
         } catch (InvalidPathException $ex) {
             $this->isInitialized = false;
-            //                throw new \Exception('Unable to start project: .env file missing in directory "' . $this->projectRootPath . '"');
         }
     }
-    
-    public function getEnvFilePath():string 
+
+    public function getEnvFilePath(): string
     {
-        return $this->projectRootPath.\DIRECTORY_SEPARATOR.'.env';
+        return $this->projectRootPath . \DIRECTORY_SEPARATOR . '.env';
     }
 
     private function getEnvValue(string $key): string
@@ -138,7 +137,8 @@ class Environment
 
     private function getDIFileLocation(string $projectRootPath): ?string
     {
-        $diFileLocation = realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::DI_FILE_LOCATION);
+        $diFileLocation = FileSystem::joinPath($projectRootPath, self::DI_FILE_LOCATION);
+        $diFileLocation = realpath($diFileLocation);
         if ($diFileLocation === false) {
             return null;
         }
@@ -148,12 +148,13 @@ class Environment
 
     public function getConfigFilePath(): string
     {
-        return $this->projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::CONFIG_FILE_LOCATION;
+        return FileSystem::joinPath($this->projectRootPath, self::SOURCE_LOCATION, self::CONFIG_FILE_LOCATION);
     }
 
     public static function getCommandDirectoryPath(string $projectRootPath): ?string
     {
-        $commandDirectoryPath = realpath($projectRootPath . '/' . self::SOURCE_LOCATION . '/' . self::COMMANDS_LOCATION);
+        $commandDirectoryPath = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::COMMANDS_LOCATION);
+        $commandDirectoryPath = realpath($commandDirectoryPath);
         if ($commandDirectoryPath === false) {
             return null;
         }
@@ -163,7 +164,7 @@ class Environment
 
     public function getFileCachePath(): string
     {
-        $cachePath = $this->projectRootPath . '/' . self::CACHE_LOCATION;
+        $cachePath = FileSystem::joinPath($this->projectRootPath, self::CACHE_LOCATION);
         FileSystem::createDir($cachePath, true);
         if (!FileSystem::dirExists($cachePath)) {
             throw new \Exception('Unable to create cache directory');

@@ -31,7 +31,8 @@ class CommandManager
             $this->logger->pushProcessor($logProcessor);
         }
 
-        $this->logger->info('Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ')');
+        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ')';
+        $this->logger->info($strLogMessage);
 
         try {
             $commandDefinition = $this->getCommandDefinitionByTask($request);
@@ -49,7 +50,9 @@ class CommandManager
 
             $result = new TaskExecutionResult($request->getTask(), $result, true);
 
-            $this->logger->info('Task: ' . $request->getTask() . ' execution complete (' . \json_encode($request->getArguments()) . ')');
+            $strArguments = \json_encode($request->getArguments());
+            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ')';
+            $this->logger->info($strLogMessage);
         } catch (\Throwable $ex) {
             $this->logger->error($ex);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
@@ -86,7 +89,9 @@ class CommandManager
         $parameterName = $parameter->getName();
 
         if (!$request->hasArgument($parameterName) && $parameter->isRequired()) {
-            throw new \Exception('Missing parameter "' . $parameterName . '" (type ' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . ')');
+            $parameterType = $parameter->hasType() ? $parameter->getType() : 'undefined';
+            $strErrorMessage = 'Missing parameter "' . $parameterName . '" (type ' . $parameterType . ')';
+            throw new \Exception($strErrorMessage);
         }
 
         if (!$request->hasArgument($parameterName) && !$parameter->isRequired()) {
@@ -104,7 +109,10 @@ class CommandManager
     private function validateParameterValueType($value, CommandParameterDefinition $parameter): void
     {
         if (!CommandParameterDefinition::isCorrectType($value, $parameter)) {
-            throw new \Exception('Parameter "' . $parameter->getName() . '" has invalid type "' . ($parameter->hasType() ? $parameter->getType() : 'undefined') . '" expected');
+            $parameterName = $parameter->getName();
+            $parameterType = $parameter->hasType() ? $parameter->getType() : 'undefined';
+            $strErrorMessage = 'Parameter "' . $parameterName . '" has invalid type "' . $parameterType . '" expected';
+            throw new \Exception($strErrorMessage);
         }
     }
 
