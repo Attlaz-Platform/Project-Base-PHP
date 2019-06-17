@@ -7,9 +7,9 @@ use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\CommandParameterDefinition;
-use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\CLI;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,15 +20,14 @@ class ExecuteTaskInteractive extends ExecuteTask
 {
     private $commandManager;
 
-
     public function __construct(
         CLI $taskExecutor,
         Client $client,
         CommandManager $commandManager,
         Environment $environment,
-        Logger $logger
+        LoggerInterface $logger
     ) {
-        parent::__construct($taskExecutor, $client,$environment, $logger);
+        parent::__construct($taskExecutor, $client, $environment, $logger);
         $this->commandManager = $commandManager;
     }
 
@@ -77,8 +76,9 @@ class ExecuteTaskInteractive extends ExecuteTask
 
             foreach ($parameters as $parameter) {
                 $parameterString = $parameter->__toString();
-
-                $question = new Question('Please enter a value for: ' . $parameterString . ':', $parameter->getDefault());
+                $parameterValue = null;
+                $strQuestionText = 'Please enter a value for: ' . $parameterString . ':';
+                $question = new Question($strQuestionText, $parameter->getDefault());
 
                 $valid = false;
                 while (!$valid) {

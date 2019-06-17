@@ -22,6 +22,7 @@ use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\CLI;
 use Attlaz\Project\TaskExecution\FPM;
 use DI\ContainerBuilder;
+use Echron\Tools\FileSystem;
 use Echron\Tools\Time;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -93,20 +94,25 @@ class Project
         }
         //   echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
-        echo PHP_EOL . 'Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+        echo PHP_EOL . 'Constructor Total time: ';
+        echo Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
 
     private function initDI(string $definitionsFile = null)
     {
         if (!\is_null($definitionsFile) && !\file_exists($definitionsFile) && !\is_readable($definitionsFile)) {
-            throw new \Exception('Unable to add definitions, file "' . $definitionsFile . '" is not readable or does not exist');
+            $strErrorMessage = 'Unable to add definitions, ';
+            $strErrorMessage .= 'file "' . $definitionsFile . '" is not readable or does not exist';
+            throw new \Exception($strErrorMessage);
         }
 
         /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
 
         if ($this->environment->compileDi) {
-            $containerBuilder->enableCompilation($this->projectRootPath . \DIRECTORY_SEPARATOR . 'var' . \DIRECTORY_SEPARATOR . 'cache');
+            $compilationCacheDir = FileSystem::joinPath($this->projectRootPath, 'var', 'cache');
+
+            $containerBuilder->enableCompilation($compilationCacheDir);
             // TODO: this doesn't make sense with PHP CLI
             $containerBuilder->enableDefinitionCache();
         }
@@ -143,17 +149,22 @@ class Project
             $cli = new CLI($this->commandManager, $this->logger);
 
             $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
-            
+
+            $commandManager = $this->commandManager;
+            $environment = $this->environment;
+
             if ($this->environment->isInitialized()) {
-                $cliApplication->add(new ListTasks($this->commandManager, $this->logger));
-                $cliApplication->add(new ExecuteTask($cli, $attlazClient, $this->environment, $this->logger));
-                $cliApplication->add(new ExecuteTaskInteractive($cli, $attlazClient, $this->commandManager, $this->environment, $this->logger));
+                $cliApplication->add(new ListTasks($commandManager, $this->logger));
+                $cliApplication->add(new ExecuteTask($cli, $attlazClient, $environment, $this->logger));
+                $cmd = new ExecuteTaskInteractive($cli, $attlazClient, $commandManager, $environment, $this->logger);
+                $cliApplication->add($cmd);
                 $cliApplication->add(new ConfigList($config, $this->logger));
-                $cliApplication->add(new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger));
-                $cliApplication->add(new RequestDeploy($this->environment, $attlazClient, $this->logger));
+                $cmd = new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger);
+                $cliApplication->add($cmd);
+                $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
                 $cliApplication->add(new RunTests($this->logger));
             } else {
-                $cliApplication->add(new SystemSetup($attlazClient, $this->environment, $this->logger));
+                $cliApplication->add(new SystemSetup($attlazClient, $environment, $this->logger));
             }
             $output = $cliApplication->run();
 

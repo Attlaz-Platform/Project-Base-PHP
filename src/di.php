@@ -1,7 +1,18 @@
 <?php
 declare(strict_types=1);
 
+use Attlaz\Client;
 use Attlaz\Project\App\Environment;
+use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Logger\ApiHandler;
+use Attlaz\Project\Logger\Formatter;
+use Attlaz\Project\Logger\Logger;
+use DI\Container;
+use Monolog\Handler\StreamHandler;
+use Monolog\Processor\IntrospectionProcessor;
+use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
+use function DI\factory;
 
 //if (!defined('STDIN')) {
 //    define('STDIN', fopen('php://stdin', 'rb'));
@@ -12,24 +23,27 @@ use Attlaz\Project\App\Environment;
 //if (!defined('STDERR')) {
 //    define('STDERR', fopen('php://stderr', 'wb'));
 //}
-if (!defined('STDOUT')) {
-    define('STDOUT', fopen('php://output', 'wb'));
-}
+//if (!defined('STDOUT')) {
+//    define('STDOUT', fopen('php://output', 'wb'));
+//}
 
 return [
-    \Psr\Log\LoggerInterface::class => \DI\factory(function (Environment $environment, \DI\Container $container) {
+    LoggerInterface::class => factory(function (Environment $environment, Container $container) {
         $loggerName = 'Attlaz';
         if ($environment->isInitialized()) {
-            $loggerName = "Attlaz Project " . $environment->getProject()->name . ' (' . $environment->getProjectEnvironment()->name . ')';
+            $projectName = $environment->getProject()->name;
+            $projectEnvironmentName = $environment->getProjectEnvironment()->name;
+
+            $loggerName = "Attlaz Project " . $projectName . ' (' . $projectEnvironmentName . ')';
         }
 
-        $logger = new \Attlaz\Project\Logger\Logger($loggerName);
+        $logger = new Logger($loggerName);
 
         $ignoreDirectories = [
             '/var/attlaz/',
             '/var/attlaz/project/vendor/attlaz/project/src',
         ];
-        $introspectionProcessor = new \Monolog\Processor\IntrospectionProcessor(\Monolog\Logger::DEBUG, $ignoreDirectories);
+        $introspectionProcessor = new IntrospectionProcessor(\Monolog\Logger::DEBUG, $ignoreDirectories);
         $logger->pushProcessor($introspectionProcessor);
 
         /**
@@ -37,12 +51,13 @@ return [
          */
 
         if ($environment->cli_log_verbose) {
-            $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
+            $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL;
+            $format .= '   %context%' . \PHP_EOL . '%extra%' . \PHP_EOL;
         } else {
             $format = '%level_name%: %message% [%datetime%]' . \PHP_EOL . \PHP_EOL . \PHP_EOL;
         }
 
-        $streamHandler = new \Monolog\Handler\StreamHandler(STDOUT, $environment->cli_log_level);
+        $streamHandler = new StreamHandler(STDOUT, $environment->cli_log_level);
         $logger->pushHandler($streamHandler);
 
         /**
@@ -65,8 +80,8 @@ return [
          * Log to API
          */
         if ($environment->isInitialized()) {
-            $apiLogHandler = new \Attlaz\Project\Logger\ApiHandler($container->get(\Attlaz\Client::class));
-            $formatter = new \Attlaz\Project\Logger\Formatter();
+            $apiLogHandler = new ApiHandler($container->get(Client::class));
+            $formatter = new Formatter();
             $apiLogHandler->setFormatter($formatter);
             $logger->pushHandler($apiLogHandler);
         }
@@ -77,12 +92,12 @@ return [
 
         return $logger;
     }),
-    \Attlaz\Client::class           => \DI\factory(function (Environment $environment) {
-        return new \Attlaz\Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
+    Client::class          => factory(function (Environment $environment) {
+        return new Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
     }),
 
-    \Psr\SimpleCache\CacheInterface::class => \DI\factory(function (
-        \Attlaz\Project\Cache\CacheManager $cacheManager
+    CacheInterface::class => factory(function (
+        CacheManager $cacheManager
     ) {
         return $cacheManager->getCache();
     }),

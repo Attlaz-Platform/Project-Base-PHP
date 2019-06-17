@@ -1,9 +1,8 @@
 <?php
 declare(strict_types=1);
 
-namespace Helper;
+namespace Attlaz\Project\Helper;
 
-use Attlaz\Framework\Helper\DateTimeHelper;
 use PHPUnit\Framework\TestCase;
 
 class DateTimeHelperTest extends TestCase
@@ -21,7 +20,6 @@ class DateTimeHelperTest extends TestCase
 
         $this->assertEquals($now->getTimezone(), $dateTime->getTimezone());
         $this->assertEquals($now->getTimestamp(), $dateTime->getTimestamp());
-
     }
 
 }
