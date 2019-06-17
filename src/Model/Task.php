@@ -32,7 +32,12 @@ class Task implements \JsonSerializable
 
     public function __toString()
     {
-        return json_encode($this->jsonSerialize());
+        $result = json_encode($this->jsonSerialize());
+        if (!\is_string($result)) {
+            throw new \Exception('Unable to serialize task');
+        }
+
+        return $result;
     }
 
     public static function fromArray(array $input): self

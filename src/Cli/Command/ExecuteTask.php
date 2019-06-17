@@ -58,6 +58,9 @@ class ExecuteTask extends Command
     private function getRequestFromInput(InputInterface $input): TaskExecutionRequest
     {
         $task = $input->getArgument('task');
+        if (!\is_string($task)) {
+            throw new \Exception('Invalid task identifier');
+        }
         $arguments = $this->getArguments($input);
 
         $executionId = $input->getOption('execution');
@@ -84,6 +87,11 @@ class ExecuteTask extends Command
         }
 
         try {
+            if (!\is_string($arguments)) {
+                throw new \Exception('Invalid arguments');
+            }
+            // $arguments = (string)$arguments;
+
             $arguments = \base64_decode($arguments);
             if ($arguments === false) {
                 throw new \Exception('Unable to decode arguments');
