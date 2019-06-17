@@ -14,8 +14,6 @@ use Echron\Tools\FileSystem;
 class CommandDiscovery
 {
 
-
-
     /**
      * @var string
      */
@@ -75,7 +73,11 @@ class CommandDiscovery
                 $commandDefinition = $this->registerCommand($className);
                 if (!\is_null($commandDefinition)) {
                     if (isset($commands[$commandDefinition->task])) {
-                        throw new \Exception('Unable to register command: there is already a command defined for task "' . $commandDefinition->task . '"');
+                        $strErrorMessage = 'Unable to register command: ';
+                        $strErrorMessage .= 'There is already a command defined for task ';
+                        $strErrorMessage .= '"' . $commandDefinition->task . '"';
+
+                        throw new \Exception($strErrorMessage);
                     }
                     $commands[$commandDefinition->task] = $commandDefinition;
                 }
@@ -116,11 +118,15 @@ class CommandDiscovery
 
             //Check if class extends AbstractCommand
             if (!$reflectionClass->isSubclassOf(AbstractCommand::class)) {
-                throw new \Exception('Unable to register command "' . $className . '": must extend "' . AbstractCommand::class . '" class');
+                $strErrorMessage = 'Unable to register command "' . $className . '": ';
+                $strErrorMessage .= 'must extend "' . AbstractCommand::class . '" class';
+                throw new \Exception($strErrorMessage);
             }
             //Check if invoke method exists
             if (!$reflectionClass->hasMethod(AbstractCommand::INVOKE_METHOD)) {
-                throw new \Exception('Unable to register command "' . $className . '": must have "' . AbstractCommand::INVOKE_METHOD . '" method');
+                $strErrorMessage = 'Unable to register command "' . $className . '": ';
+                $strErrorMessage .= 'must have "' . AbstractCommand::INVOKE_METHOD . '" method';
+                throw new \Exception($strErrorMessage);
             }
             $invokeMethodReflection = $reflectionClass->getMethod(AbstractCommand::INVOKE_METHOD);
 
@@ -140,8 +146,10 @@ class CommandDiscovery
 
             return $commandDefinition;
         } catch (AnnotationException $ex) {
-            throw new \Exception('Unable to register command "' . $className . '":' . $ex->getMessage());
-            //TODO: handle invalid/incomplete annotations, maybe make it possible to validate the project before building it?
+            $strErrorMessage = 'Unable to register command "' . $className . '":' . $ex->getMessage();
+            throw new \Exception($strErrorMessage);
+            //TODO: handle invalid/incomplete annotations,
+            // maybe make it possible to validate the project before building it?
         }
     }
 

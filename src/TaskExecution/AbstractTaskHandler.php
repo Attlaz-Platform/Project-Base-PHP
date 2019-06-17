@@ -4,17 +4,17 @@ declare(strict_types=1);
 namespace Attlaz\Project\TaskExecution;
 
 use Attlaz\Project\Command\CommandManager;
-use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Serialization\SerializeTaskResult;
+use Psr\Log\LoggerInterface;
 
 class AbstractTaskHandler
 {
     protected $commandManager;
     protected $logger;
 
-    public function __construct(CommandManager $commandManager, Logger $logger)
+    public function __construct(CommandManager $commandManager, LoggerInterface $logger)
     {
         $this->commandManager = $commandManager;
         $this->logger = $logger;
@@ -57,6 +57,5 @@ class AbstractTaskHandler
     private function output(string $output): void
     {
         \fwrite(\STDOUT, $output . \PHP_EOL);
-}
-
+    }
 }

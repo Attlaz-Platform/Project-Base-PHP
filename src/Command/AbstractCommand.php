@@ -175,8 +175,9 @@ abstract class AbstractCommand
                                return true;
                            }, function (\Exception $ex) use ($task) {
                                //TODO: retry
-                               $this->logger->error('Unable to execute task: ' . $task->name . ': ' . $ex->getMessage());
-                              
+                               $strErrorMessage = 'Unable to execute task: ' . $task->name . ': ' . $ex->getMessage();
+                               $this->logger->error($strErrorMessage);
+
                                return false;
                            });
             }
@@ -185,14 +186,14 @@ abstract class AbstractCommand
         //https://blog.madewithlove.be/post/concurrent-http-requests/
         $each = new EachPromise($promises, [
             'concurrency' => 5,
-            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
-                echo 'Done' . \PHP_EOL;
-                //$results->addTaskResult($value['result']);
-            },
-            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
-                // echo \get_class($reason) . \PHP_EOL;
-                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
-            },
+//            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
+//                echo 'Done' . \PHP_EOL;
+//                //$results->addTaskResult($value['result']);
+//            },
+//            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
+//                // echo \get_class($reason) . \PHP_EOL;
+//                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
+//            },
         ]);
 
         $each->promise()

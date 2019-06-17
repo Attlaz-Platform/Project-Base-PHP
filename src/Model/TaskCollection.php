@@ -12,9 +12,4 @@ class TaskCollection extends BasicCollection
     {
         parent::addToCollection($taskResult);
     }
-
-    public function current(): Task
-    {
-        return parent::current();
-    }
 }

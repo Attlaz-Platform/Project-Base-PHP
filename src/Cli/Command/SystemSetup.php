@@ -5,7 +5,7 @@ namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Logger\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +20,7 @@ class SystemSetup extends Command
     protected $environment;
     protected $logger;
 
-    public function __construct(Client $client, Environment $environment, Logger $logger)
+    public function __construct(Client $client, Environment $environment, LoggerInterface $logger)
     {
         parent::__construct();
 
@@ -51,20 +51,16 @@ class SystemSetup extends Command
                 'staging'    => 'https://stag.api.attlaz.com',
             ];
             $question = new ChoiceQuestion('API endpoint?', $apiEndpoints, $apiEndpoints['production']);
-            //            $question->setValidator(function ($answer) {
-            //                if (!is_string($answer) || empty($answer) || !StringHelper::startsWith($answer, 'https://')) {
-            //                    throw new \RuntimeException('The API endpoint cannot be empty and must start with https://');
-            //                }
-            //
-            //                return $answer;
-            //            });
 
             $answer = $questionHelper->ask($input, $output, $question);
+
+            $apiEndpoint = $apiEndpoints['production'];
             foreach ($apiEndpoints as $key => $value) {
                 if ($answer === $key || $answer === $value) {
-                    $values[Environment::ENV_API_ENDPOINT] = $value;
+                    $apiEndpoint = $value;
                 }
             }
+            //TODO: handle when answer is not a valid option
 
             /**
              * API Client id
@@ -78,7 +74,7 @@ class SystemSetup extends Command
                 return $answer;
             });
 
-            $values[Environment::ENV_API_CLIENT_ID] = $questionHelper->ask($input, $output, $question);
+            $apiClientId = $questionHelper->ask($input, $output, $question);
 
             /**
              * API Client secret
@@ -93,9 +89,14 @@ class SystemSetup extends Command
                 return $answer;
             });
 
-            $values[Environment::ENV_API_CLIENT_SECRET] = $questionHelper->ask($input, $output, $question);
+            $apiClientSecret = $questionHelper->ask($input, $output, $question);
 
-            $client = new Client($values[Environment::ENV_API_ENDPOINT], $values[Environment::ENV_API_CLIENT_ID], $values[Environment::ENV_API_CLIENT_SECRET]);
+            //TODO: handle when client is not able to connect to API
+
+            $client = new Client($apiEndpoint, $apiClientId, $apiClientSecret);
+            $values[Environment::ENV_API_ENDPOINT] = $apiEndpoint;
+            $values[Environment::ENV_API_CLIENT_ID] = $apiClientId;
+            $values[Environment::ENV_API_CLIENT_SECRET] = $apiClientSecret;
 
             /**
              * Project
@@ -184,5 +185,4 @@ class SystemSetup extends Command
 
         \file_put_contents($this->environment->getEnvFilePath(), $strEnv);
     }
-
 }

@@ -5,9 +5,13 @@ namespace Attlaz\Project\Cache;
 
 use Attlaz\Project\App\Environment;
 use Cache\Adapter\Filesystem\FilesystemCachePool;
+use Cache\Adapter\MongoDB\MongoDBCachePool;
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use Echron\Tools\Normalize\Normalizer;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
+use MongoDB\Collection;
+use MongoDB\Driver\Manager;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
@@ -69,9 +73,9 @@ class CacheManager
          * MongoDB
          */
         if (extension_loaded("mongodb")) {
-            $mongoDBManager = new \MongoDB\Driver\Manager($this->environment->mongoDBConnectionString, ['readPreference' => 'nearest']);
-            $collection = new \MongoDB\Collection($mongoDBManager, 'cache_' . $this->environment->getCacheName(), $key);
-            $mongoDBCache = new \Cache\Adapter\MongoDB\MongoDBCachePool($collection);
+            $mongoDBManager = new Manager($this->environment->mongoDBConnectionString, ['readPreference' => 'nearest']);
+            $collection = new Collection($mongoDBManager, 'cache_' . $this->environment->getCacheName(), $key);
+            $mongoDBCache = new MongoDBCachePool($collection);
 
             $mongoDBCache->setLogger($this->logger);
 
@@ -84,12 +88,13 @@ class CacheManager
         $filesystemAdapter = new Local($this->fileCachePath);
         $filesystem = new Filesystem($filesystemAdapter);
 
-        $fileCachePool = new FilesystemCachePool($filesystem, $this->environment->getCacheName() . \DIRECTORY_SEPARATOR . $key);
+        $fileCacheLocation = \Echron\Tools\FileSystem::joinPath($this->environment->getCacheName(), $key);
+        $fileCachePool = new FilesystemCachePool($filesystem, $fileCacheLocation);
         $failOverCachePool->addCachePool('file', $fileCachePool);
         /**
          * Memory
          */
-        $memoryCache = new \Cache\Adapter\PHPArray\ArrayCachePool(null);
+        $memoryCache = new ArrayCachePool(null);
         $failOverCachePool->addCachePool('memory', $memoryCache);
 
         return $failOverCachePool;
