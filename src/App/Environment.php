@@ -137,7 +137,7 @@ class Environment
 
     private function getDIFileLocation(string $projectRootPath): ?string
     {
-        $diFileLocation = FileSystem::joinPath($projectRootPath, self::DI_FILE_LOCATION);
+        $diFileLocation = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::DI_FILE_LOCATION);
         $diFileLocation = realpath($diFileLocation);
         if ($diFileLocation === false) {
             return null;
