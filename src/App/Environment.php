@@ -59,6 +59,8 @@ class Environment
     public const ENV_API_CLIENT_SECRET = 'api_client_secret';
     public const ENV_STORAGE = 'storage';
 
+    public const ENV_SYS_MEMORY_LIMIT = 'sys_memory_limit';
+
     public function __construct(string $projectRootPath)
     {
         $this->projectRootPath = realpath($projectRootPath) . \DIRECTORY_SEPARATOR;
@@ -78,8 +80,14 @@ class Environment
             $this->api_client_id = $this->getEnvValue(self::ENV_API_CLIENT_ID);
             $this->api_client_secret = $this->getEnvValue(self::ENV_API_CLIENT_SECRET);
 
+            $this->sys_memory_limit = $this->getEnvValue(self::ENV_SYS_MEMORY_LIMIT, $this->sys_memory_limit);
+
             $this->mongoDBConnectionString = $this->getEnvValue(self::ENV_STORAGE);
         }
+        //TODO: check if we were able to set this
+        ini_set('memory_limit', $this->sys_memory_limit);
+        date_default_timezone_set($this->sys_timezone);
+
         $diFile = $this->getDIFileLocation($projectRootPath);
 
         if (!is_null($diFile) && \file_exists($diFile)) {
@@ -104,10 +112,10 @@ class Environment
         return $this->projectRootPath . \DIRECTORY_SEPARATOR . '.env';
     }
 
-    private function getEnvValue(string $key): string
+    private function getEnvValue(string $key, string $failback = null): string
     {
         $value = \getenv($key);
-        if ($value === false) {
+        if ($value === false && \is_null($failback)) {
             throw new \Exception('Environment variable "' . $key . '" not defined');
         }
 
