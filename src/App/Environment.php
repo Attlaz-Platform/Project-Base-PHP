@@ -73,7 +73,8 @@ class Environment
         ini_set('display_errors', '1');
         //}
 
-        $this->loadEnvSettings();
+        $this->loadEnvSettingsFromFile();
+        $this->checkIfInitialized();
 
         if ($this->isInitialized) {
             $this->api_endpoint = $this->getEnvValue(self::ENV_API_ENDPOINT);
@@ -95,7 +96,25 @@ class Environment
         }
     }
 
-    private function loadEnvSettings(): void
+    private function checkIfInitialized(): void
+    {
+        $requiredEnvValues = [
+            self::ENV_API_ENDPOINT,
+            self::ENV_API_CLIENT_ID,
+            self::ENV_API_CLIENT_SECRET,
+        ];
+        foreach ($requiredEnvValues as $requiredEnvValue) {
+            $value = $this->getEnvValue(self::ENV_API_ENDPOINT, $requiredEnvValue);
+            if (\is_null($value)) {
+                $this->isInitialized = false;
+
+                return;
+            }
+        }
+        $this->isInitialized = true;
+    }
+
+    private function loadEnvSettingsFromFile(): void
     {
         try {
             $dotenv = new Dotenv($this->projectRootPath);
