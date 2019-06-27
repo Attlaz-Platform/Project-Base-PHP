@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
@@ -14,12 +15,18 @@ class CommandManager
 {
     private $discovery;
     private $diContainer;
+    private $environment;
     private $logger;
 
-    public function __construct(CommandDiscovery $discovery, ContainerInterface $diContainer, LoggerInterface $logger)
-    {
+    public function __construct(
+        CommandDiscovery $discovery,
+        ContainerInterface $diContainer,
+        Environment $environment,
+        LoggerInterface $logger
+    ) {
         $this->discovery = $discovery;
         $this->diContainer = $diContainer;
+        $this->environment = $environment;
         $this->logger = $logger;
     }
 
@@ -31,7 +38,16 @@ class CommandManager
             $this->logger->pushProcessor($logProcessor);
         }
 
-        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ')';
+        //TODO: make it possible to switch between app/staging app
+
+        $projectKey = $this->environment->getProject()->key;
+        $environmentKey = $this->environment->getProjectEnvironment()->key;
+        $taskKey = $request->getTask();
+        $taskExecutionKey = $request->getExecutionId();
+        $dashboardUrl = 'https://app.attlaz.com/baldwin/' . $projectKey . '/' . $environmentKey . '/tasks/' . $taskKey . '/execution/' . $taskExecutionKey;
+
+        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ') ' . $dashboardUrl;
+
         $this->logger->info($strLogMessage);
 
         try {

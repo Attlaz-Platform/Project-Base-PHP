@@ -84,7 +84,7 @@ class Project
             //Pre fetch commands
             $discovery->getCommands();
 
-            $this->commandManager = new CommandManager($discovery, $this->diContainer, $this->logger);
+            $this->commandManager = new CommandManager($discovery, $this->diContainer, $this->environment, $this->logger);
 
             // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
