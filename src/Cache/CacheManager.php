@@ -28,6 +28,8 @@ class CacheManager
 
     public const DEFAULT_NAMESPACE = 'default';
 
+    public const KEY_SYSTEM = '_sys';
+
     public function __construct(
         Environment $environment,
         LoggerInterface $logger
@@ -38,6 +40,8 @@ class CacheManager
         $this->fileCachePath = $environment->getFileCachePath();
 
         $this->pools = [];
+
+        $this->getExternalCachePoolKeys();
     }
 
     public function getCache(string $key = self::DEFAULT_NAMESPACE): CacheInterface
@@ -52,11 +56,29 @@ class CacheManager
     }
 
     /**
+     * @param bool $inclExternal
+     * @param bool $inclSys
      * @return string[]
      */
-    public function getCachePoolKeys(): array
+    public function getCachePoolKeys(bool $inclExternal = false, bool $inclSys = false): array
     {
+        if ($inclExternal) {
+            $cachePoolKeys = $this->getExternalCachePoolKeys();
+            if ($inclSys) {
+                $cachePoolKeys[] = self::KEY_SYSTEM;
+            }
+
+            return $cachePoolKeys;
+        }
+
         return \array_keys($this->pools);
+    }
+
+    public function cleanCachePool(string $key): bool
+    {
+        $cachePool = $this->createCachePool($key);
+
+        return $cachePool->clear();
     }
 
     private function createCachePool(string $key): FailOverCachePool
@@ -97,6 +119,37 @@ class CacheManager
         $memoryCache = new ArrayCachePool(null);
         $failOverCachePool->addCachePool('memory', $memoryCache);
 
+        if ($key !== self::KEY_SYSTEM) {
+            $this->addExternalCachePoolKeys($key);
+        }
+
         return $failOverCachePool;
+    }
+
+    private function getExternalCachePoolKeys(): array
+    {
+        $sysCachePool = $this->createCachePool(self::KEY_SYSTEM);
+
+        $cachePools = $sysCachePool->get('cache_pools');
+        if (\is_null($cachePools) || !\is_array($cachePools)) {
+            $cachePools = [];
+        }
+
+        return $cachePools;
+    }
+
+    private function addExternalCachePoolKeys(string $key): array
+    {
+        $sysCachePool = $this->createCachePool(self::KEY_SYSTEM);
+
+        $cachePools = $this->getExternalCachePoolKeys();
+
+        if (!\in_array($key, $cachePools)) {
+            $cachePools[] = $key;
+
+            $sysCachePool->set('cache_pools', $cachePools);
+        }
+
+        return $cachePools;
     }
 }
