@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project;
 
+use Attlaz\Client;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
@@ -139,19 +140,19 @@ class Project
 
     public function run()
     {
+        $attlazClient = $this->diContainer->get(Client::class);
+        $environment = $this->environment;
         if (PHP_SAPI === 'cli') {
             $config = $this->diContainer->get(Config::class);
-            $attlazClient = $this->diContainer->get(\Attlaz\Client::class);
+
+            $commandManager = $this->commandManager;
 
             $cliApplication = new Application();
             $cliApplication->setAutoExit(false);
 
-            $cli = new CLI($this->commandManager, $this->logger);
+            $cli = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
 
             $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
-
-            $commandManager = $this->commandManager;
-            $environment = $this->environment;
 
             if ($this->environment->isInitialized()) {
                 $cliApplication->add(new ListTasks($commandManager, $this->logger));
@@ -177,7 +178,7 @@ class Project
                 exit(1);
             }
         } else {
-            $fpm = new FPM($this->commandManager, $this->logger);
+            $fpm = new FPM($this->commandManager, $attlazClient, $environment, $this->logger);
             $fpm->run();
         }
     }
