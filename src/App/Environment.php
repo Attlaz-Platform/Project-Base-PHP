@@ -134,8 +134,12 @@ class Environment
     private function getEnvValue(string $key, string $failback = null): string
     {
         $value = \getenv($key);
-        if ($value === false && \is_null($failback)) {
-            throw new \Exception('Environment variable "' . $key . '" not defined');
+        if ($value === false) {
+            if (\is_null($failback)) {
+                throw new \Exception('Environment variable "' . $key . '" not defined');
+            } else {
+                $value = $failback;
+            }
         }
 
         if (!\is_string($value)) {
