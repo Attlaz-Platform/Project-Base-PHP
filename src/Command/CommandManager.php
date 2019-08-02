@@ -40,11 +40,12 @@ class CommandManager
 
         //TODO: make it possible to switch between app/staging app
 
+        $teamKey = $this->environment->getProject()->team;
         $projectKey = $this->environment->getProject()->key;
         $environmentKey = $this->environment->getProjectEnvironment()->key;
         $taskKey = $request->getTask();
         $taskExecutionKey = $request->getExecutionId();
-        $dashboardUrl = 'https://app.attlaz.com/baldwin/' . $projectKey . '/' . $environmentKey . '/tasks/' . $taskKey . '/execution/' . $taskExecutionKey;
+        $dashboardUrl = 'https://app.attlaz.com/' . $teamKey . '/' . $projectKey . '/' . $environmentKey . '/tasks/' . $taskKey . '/execution/' . $taskExecutionKey;
 
         $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ') ' . $dashboardUrl;
 
@@ -67,7 +68,7 @@ class CommandManager
             $result = new TaskExecutionResult($request->getTask(), $result, true);
 
             $strArguments = \json_encode($request->getArguments());
-            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ')';
+            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ') ' . $dashboardUrl;
             $this->logger->info($strLogMessage);
         } catch (\Throwable $ex) {
             $this->logger->error($ex);
