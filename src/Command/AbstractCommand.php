@@ -63,6 +63,12 @@ abstract class AbstractCommand
     {
     }
 
+    public function progress(string $key, int $current, int $total, string $label): void
+    {
+        $procent = $current / $total * 100;
+        $this->logger->info($label . ' ' . $current . '/' . $total . ' ' . $procent . '%');
+    }
+
     final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
         $request = $this->createRequest($task, $branch);
