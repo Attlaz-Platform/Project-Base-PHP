@@ -47,12 +47,15 @@ abstract class AbstractCommand
      */
     protected $dependencyManager;
 
+    protected $outputHelper;
+
     public function __construct(CommandContext $context)
     {
         $this->logger = $context->getLogger();
         $this->config = $context->getConfig();
         $this->cacheManager = $context->getCacheManager();
         $this->dependencyManager = $context->getDependencyManager();
+        $this->outputHelper = $context->getOutputHelper();
     }
 
     /**
@@ -65,8 +68,7 @@ abstract class AbstractCommand
 
     public function progress(string $key, int $current, int $total, string $label): void
     {
-        $procent = $current / $total * 100;
-        $this->logger->info($label . ' ' . $current . '/' . $total . ' ' . $procent . '%');
+        $this->outputHelper->progress($key, $current, $total, $label);
     }
 
     final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult

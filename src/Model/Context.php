@@ -5,6 +5,7 @@ namespace Attlaz\Project\Model;
 
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Helper\OutputHelper;
 use DI\Container;
 use Psr\Log\LoggerInterface;
 
@@ -28,16 +29,23 @@ class Context
      */
     protected $dependencyManager;
 
+    /**
+     * @var OutputHelper
+     */
+    protected $outputHelper;
+
     public function __construct(
         LoggerInterface $logger,
         Environment $config,
         CacheManager $cacheManager,
-        Container $dependencyManager
+        Container $dependencyManager,
+        OutputHelper $outputHelper
     ) {
         $this->logger = $logger;
         $this->config = $config;
         $this->cacheManager = $cacheManager;
         $this->dependencyManager = $dependencyManager;
+        $this->outputHelper = $outputHelper;
     }
 
     public function getLogger(): LoggerInterface
@@ -58,5 +66,10 @@ class Context
     public function getDependencyManager(): Container
     {
         return $this->dependencyManager;
+    }
+
+    public function getOutputHelper(): OutputHelper
+    {
+        return $this->outputHelper;
     }
 }
