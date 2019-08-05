@@ -24,11 +24,17 @@ class AbstractHelper
      */
     protected $dependencyManager;
 
+    /**
+     * @var OutputHelper
+     */
+    protected $outputHelper;
+
     public function __construct(HelperContext $context)
     {
         $this->logger = $context->getLogger();
         $this->config = $context->getConfig();
         $this->cacheManager = $context->getCacheManager();
         $this->dependencyManager = $context->getDependencyManager();
+        $this->outputHelper = $context->getOutputHelper();
     }
 }
