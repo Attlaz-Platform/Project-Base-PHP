@@ -57,8 +57,8 @@ class ExecuteTask extends Command
 
     private function getRequestFromInput(InputInterface $input): TaskExecutionRequest
     {
-        $task = $input->getArgument('task');
-        if (!\is_string($task)) {
+        $taskId = $input->getArgument('task');
+        if (!\is_string($taskId)) {
             throw new \Exception('Invalid task identifier');
         }
         $arguments = $this->getArguments($input);
@@ -69,13 +69,13 @@ class ExecuteTask extends Command
             if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
                 $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
-                $executionId = $this->client->createTaskExecution($task, $projectEnvironmentId);
+                $executionId = $this->client->createTaskExecution($taskId, $projectEnvironmentId);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
         }
 
-        return new TaskExecutionRequest($task, $arguments, $executionId);
+        return new TaskExecutionRequest($taskId, $arguments, $executionId);
     }
 
     private function getArguments(InputInterface $input): array
