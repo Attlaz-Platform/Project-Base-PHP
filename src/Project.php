@@ -85,7 +85,7 @@ class Project
             //Pre fetch commands
             $discovery->getCommands();
 
-            $this->commandManager = new CommandManager($discovery, $this->diContainer, $this->environment, $this->logger);
+            $this->commandManager->initialize($discovery, $this->diContainer, $this->environment, $this->logger);
 
             // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
@@ -127,6 +127,15 @@ class Project
         if (!\is_null($definitionsFile)) {
             $containerBuilder->addDefinitions($definitionsFile);
         }
+
+        //  $config = $containerBuilder->get(Config::class);
+
+        //        $discovery = new CommandDiscovery($this->projectRootPath);
+        //        //Pre fetch commands
+        //        $discovery->getCommands();
+
+        $this->commandManager = new CommandManager();
+        $containerBuilder->addDefinitions([CommandManager::class => $this->commandManager]);
 
         $containerBuilder->useAutowiring(true);
 

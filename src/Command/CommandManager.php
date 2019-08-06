@@ -18,12 +18,25 @@ class CommandManager
     private $environment;
     private $logger;
 
-    public function __construct(
+    //    public function __construct(
+    //        CommandDiscovery $discovery,
+    //        ContainerInterface $diContainer,
+    //        Environment $environment,
+    //        LoggerInterface $logger
+    //    ) {
+    //        $this->discovery = $discovery;
+    //        $this->diContainer = $diContainer;
+    //        $this->environment = $environment;
+    //        $this->logger = $logger;
+    //    }
+
+    public function initialize(
         CommandDiscovery $discovery,
         ContainerInterface $diContainer,
         Environment $environment,
         LoggerInterface $logger
     ) {
+        //TODO: we should check if the CommandManager is initialized an has everything loaded
         $this->discovery = $discovery;
         $this->diContainer = $diContainer;
         $this->environment = $environment;

@@ -3,14 +3,15 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskCollection;
+use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Model\TaskExecutionResultCollection;
 use Attlaz\Project\Serialization\DeserializeTaskResult;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\EachPromise;
-use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 
@@ -26,6 +27,8 @@ abstract class AbstractCommand
      * @var Client|null
      */
     private $client;
+
+    private $attlazClient;
 
     const INVOKE_METHOD = 'execute';
 
@@ -56,6 +59,8 @@ abstract class AbstractCommand
         $this->cacheManager = $context->getCacheManager();
         $this->dependencyManager = $context->getDependencyManager();
         $this->outputHelper = $context->getOutputHelper();
+
+        $this->attlazClient = $this->dependencyManager->get(\Attlaz\Client::class);
     }
 
     /**
@@ -71,6 +76,7 @@ abstract class AbstractCommand
         $this->outputHelper->progress($key, $current, $total, $label);
     }
 
+    /** @deprecated */
     final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
         $request = $this->createRequest($task, $branch);
@@ -86,6 +92,26 @@ abstract class AbstractCommand
         return $taskResult;
     }
 
+    final protected function requestTaskExecution(string $taskId, array $arguments = null)
+    {
+        $environment = $this->dependencyManager->get(Environment::class);
+
+        $projectEnvironment = $environment->getProjectEnvironment();
+        $projectEnvironmentId = $projectEnvironment->id;
+        if ($projectEnvironment->isLocal) {
+            $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
+
+            $request = new TaskExecutionRequest($taskId, $arguments, $executionId);
+
+            $commandManager = $this->dependencyManager->get(CommandManager::class);
+
+            $commandManager->executeTask($request);
+        } else {
+            return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
+        }
+    }
+
+    /** @deprecated */
     final  protected function sendTaskWithoutResult(Task $task, string $branch): void
     {
         $request = $this->createRequest($task, $branch);
@@ -129,6 +155,7 @@ abstract class AbstractCommand
     //        //  return $deferred->promise();
     //    }
     //
+    /** @deprecated */
     private function getHTTPClient(): Client
     {
         if (\is_null($this->client)) {
@@ -155,7 +182,7 @@ abstract class AbstractCommand
     //
     //        return $this->curlMultiHandler;
     //    }
-
+    /** @deprecated */
     final  protected function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
     {
         $results = new TaskExecutionResultCollection();
@@ -218,6 +245,7 @@ abstract class AbstractCommand
         return $results;
     }
 
+    /** @deprecated */
     private function createRequest(Task $task, string $branch, bool $await = false): Request
     {
         $endPoint = 'http://hq.attlaz.com:14810/task/execute';
