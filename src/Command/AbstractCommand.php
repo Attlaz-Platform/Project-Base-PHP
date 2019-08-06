@@ -92,7 +92,7 @@ abstract class AbstractCommand
         return $taskResult;
     }
 
-    final protected function requestTaskExecution(string $taskId, array $arguments = null)
+    final protected function requestTaskExecution(string $taskId, array $arguments = [])
     {
         $environment = $this->dependencyManager->get(Environment::class);
 
