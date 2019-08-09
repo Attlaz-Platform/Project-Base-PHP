@@ -81,11 +81,13 @@ class Project
 
             //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             $start = \microtime(true);
+            if ($this->environment->isInitialized()) {
             $discovery = new CommandDiscovery($this->projectRootPath);
             //Pre fetch commands
             $discovery->getCommands();
 
             $this->commandManager->initialize($discovery, $this->diContainer, $this->environment, $this->logger);
+            }
 
             // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
