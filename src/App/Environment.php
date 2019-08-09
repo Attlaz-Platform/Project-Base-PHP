@@ -22,7 +22,7 @@ class Environment
     private const CACHE_LOCATION = 'var/cache';
     private const DI_FILE_LOCATION = '/App/etc/di.php';
     private const CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
-    private const COMMANDS_LOCATION = '/App/Command';
+    public const COMMANDS_LOCATION = '/App/Command';
 
     /**
      * Config values
