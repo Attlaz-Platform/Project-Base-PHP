@@ -48,7 +48,7 @@ class SystemSetup extends Command
              */
             $apiEndpoints = [
                 'production' => 'https://api.attlaz.com',
-                'staging'    => 'https://stag.api.attlaz.com',
+                'staging'    => 'https://api2.attlaz.com',
             ];
             $question = new ChoiceQuestion('API endpoint?', $apiEndpoints, $apiEndpoints['production']);
 
