@@ -104,8 +104,8 @@ class Environment
             self::ENV_API_CLIENT_SECRET,
         ];
         foreach ($requiredEnvValues as $requiredEnvValue) {
-            $value = $this->getEnvValue(self::ENV_API_ENDPOINT, $requiredEnvValue);
-            if (\is_null($value)) {
+            $value = $this->getEnvValue($requiredEnvValue, '');
+            if ($value === '') {
                 $this->isInitialized = false;
 
                 return;
@@ -158,6 +158,10 @@ class Environment
 
     public function getCacheName(): string
     {
+//        if (!$this->isInitialized()) {
+//            return \strtolower(Normalizer::normalize('x'));
+//        }
+
         return \strtolower(Normalizer::normalize($this->getProject()->key . '_' . $this->getProjectEnvironment()->key));
     }
 
