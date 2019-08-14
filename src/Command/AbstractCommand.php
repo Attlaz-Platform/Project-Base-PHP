@@ -92,10 +92,14 @@ abstract class AbstractCommand
         return $taskResult;
     }
 
-    final protected function requestTaskExecution(string $taskId, array $arguments = [])
-    {
+    final protected function requestTaskExecution(
+        string $taskId,
+        array $arguments = [],
+        int $projectEnvironmentId = null
+    ) {
         $environment = $this->dependencyManager->get(Environment::class);
 
+        if (\is_null($projectEnvironmentId)) {
         $projectEnvironment = $environment->getProjectEnvironment();
         $projectEnvironmentId = $projectEnvironment->id;
         if ($projectEnvironment->isLocal) {
@@ -106,6 +110,9 @@ abstract class AbstractCommand
             $commandManager = $this->dependencyManager->get(CommandManager::class);
 
             $commandManager->executeTask($request);
+        } else {
+            return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
+        }
         } else {
             return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
         }
