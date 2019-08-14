@@ -9,6 +9,7 @@ use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\CommandParameterDefinition;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\CLI;
+use Monolog\Handler\StreamHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,9 +26,10 @@ class ExecuteTaskInteractive extends ExecuteTask
         Client $client,
         CommandManager $commandManager,
         Environment $environment,
+        StreamHandler $streamHandler,
         LoggerInterface $logger
     ) {
-        parent::__construct($taskExecutor, $client, $environment, $logger);
+        parent::__construct($taskExecutor, $client, $environment, $streamHandler, $logger);
         $this->commandManager = $commandManager;
     }
 
@@ -41,6 +43,7 @@ class ExecuteTaskInteractive extends ExecuteTask
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->init($input);
         try {
             $commands = $this->commandManager->getCommandDefinitions();
 

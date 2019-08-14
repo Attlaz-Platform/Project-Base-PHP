@@ -166,9 +166,11 @@ class Project
             $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
 
             if ($this->environment->isInitialized()) {
+                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
+
                 $cliApplication->add(new ListTasks($commandManager, $this->logger));
-                $cliApplication->add(new ExecuteTask($cli, $attlazClient, $environment, $this->logger));
-                $cmd = new ExecuteTaskInteractive($cli, $attlazClient, $commandManager, $environment, $this->logger);
+                $cliApplication->add(new ExecuteTask($cli, $attlazClient, $environment, $cliStreamHandler, $this->logger));
+                $cmd = new ExecuteTaskInteractive($cli, $attlazClient, $commandManager, $environment, $cliStreamHandler, $this->logger);
                 $cliApplication->add($cmd);
                 $cliApplication->add(new ConfigList($config, $this->logger));
                 $cmd = new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger);

@@ -7,7 +7,9 @@ use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\CLI;
+use Monolog\Handler\StreamHandler;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,15 +21,22 @@ class ExecuteTask extends Command
     protected $taskExecutor;
     protected $client;
     protected $environment;
+    protected $streamHandler;
     protected $logger;
 
-    public function __construct(CLI $taskExecutor, Client $client, Environment $environment, LoggerInterface $logger)
-    {
+    public function __construct(
+        CLI $taskExecutor,
+        Client $client,
+        Environment $environment,
+        StreamHandler $streamHandler,
+        LoggerInterface $logger
+    ) {
         parent::__construct();
 
         $this->taskExecutor = $taskExecutor;
         $this->client = $client;
         $this->environment = $environment;
+        $this->streamHandler = $streamHandler;
         $this->logger = $logger;
     }
 
@@ -41,9 +50,18 @@ class ExecuteTask extends Command
              ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', null);
     }
 
+    protected function init(InputInterface $input)
+    {
+        if ($input->getOption('verbose') === true) {
+            $this->streamHandler->setLevel(LogLevel::DEBUG);
+        }
+    }
+
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->init($input);
+
         try {
             $taskExecutionRequest = $this->getRequestFromInput($input);
 
