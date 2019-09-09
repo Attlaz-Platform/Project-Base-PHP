@@ -6,7 +6,7 @@
   "require": {
     "php": "^7.2.0",
     "monolog/monolog": "^1.24.0",
-    "echron/tools": "^1.0.8",
+    "echron/tools": "^1.1.0",
     "echron/datatypes": "^1.0.0",
     "echron/io": "^1.0.0",
     "php-di/php-di": "^6.0.5",
@@ -25,7 +25,7 @@
     "ext-json": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.4.5",
+    "phpunit/phpunit": "^8.0.0",
     "bramus/monolog-colored-line-formatter": "^2.0",
     "phpro/grumphp": "^0.14.2",
     "phpstan/phpstan": "^0.10.5",
@@ -33,13 +33,13 @@
   },
   "autoload": {
     "psr-4": {
-      "Attlaz\\Project\\": "src",
-      "App\\": ".project/src/App"
+      "Attlaz\\Project\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Attlaz\\Project\\": "tests"
+      "Attlaz\\Project\\": "tests",
+      "App\\": ".project/src/App"
     }
   },
   "repositories": [
