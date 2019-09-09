@@ -42,8 +42,8 @@ class CacheManager
         $this->pools = [];
 
         if ($environment->isInitialized()) {
-        $this->getExternalCachePoolKeys();
-    }
+            $this->getExternalCachePoolKeys();
+        }
     }
 
     public function getCache(string $key = self::DEFAULT_NAMESPACE): CacheInterface

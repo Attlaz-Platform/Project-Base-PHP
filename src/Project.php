@@ -62,7 +62,7 @@ class Project
             // echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) .
             //   \PHP_EOL;
 
-            $start = \microtime(true);
+            //            $start = \microtime(true);
             $this->initDI($environment->definitionsFile);
 
             //   echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
@@ -72,7 +72,7 @@ class Project
             $this->logger = $container->get(LoggerInterface::class);
 
             //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            $start = \microtime(true);
+            //            $start = \microtime(true);
             $config = $container->get(Config::class);
 
             if ($this->environment->isInitialized()) {
@@ -80,13 +80,13 @@ class Project
             }
 
             //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            $start = \microtime(true);
+            // $start = \microtime(true);
             if ($this->environment->isInitialized()) {
-            $discovery = new CommandDiscovery($this->projectRootPath);
-            //Pre fetch commands
-            $discovery->getCommands();
+                $discovery = new CommandDiscovery($this->projectRootPath);
+                //Pre fetch commands
+                $discovery->getCommands();
 
-            $this->commandManager->initialize($discovery, $this->diContainer, $this->environment, $this->logger);
+                $this->commandManager->initialize($discovery, $this->diContainer, $this->environment, $this->logger);
             }
 
             // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
@@ -97,6 +97,7 @@ class Project
         }
         //   echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
+        // TODO: only show this in debug (local) mode
         echo PHP_EOL . 'Constructor Total time: ';
         echo Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
@@ -161,27 +162,43 @@ class Project
             $cliApplication = new Application();
             $cliApplication->setAutoExit(false);
 
-            $cli = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
+            $taskHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
 
             $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
 
             if ($this->environment->isInitialized()) {
                 $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
 
+                //List tasks
                 $cliApplication->add(new ListTasks($commandManager, $this->logger));
-                $cliApplication->add(new ExecuteTask($cli, $attlazClient, $environment, $cliStreamHandler, $this->logger));
-                $cmd = new ExecuteTaskInteractive($cli, $attlazClient, $commandManager, $environment, $cliStreamHandler, $this->logger);
+                //Execute task
+                $cmd = new ExecuteTask($taskHandler, $attlazClient, $environment, $cliStreamHandler, $this->logger);
                 $cliApplication->add($cmd);
+                //Execute task interactive
+                $cmd = new ExecuteTaskInteractive(
+                    $taskHandler,
+                    $attlazClient,
+                    $commandManager,
+                    $environment,
+                    $cliStreamHandler,
+                    $this->logger
+                );
+                $cliApplication->add($cmd);
+                //Config list
                 $cliApplication->add(new ConfigList($config, $this->logger));
+                //Clean cache
                 $cmd = new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger);
                 $cliApplication->add($cmd);
+                //Request deploy
                 $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
+                //Run tests
                 $cliApplication->add(new RunTests($this->logger));
             } else {
                 $cliApplication->add(new SystemSetup($attlazClient, $environment, $this->logger));
             }
             $output = $cliApplication->run();
 
+            // TODO: only show this in debug (local) mode
             echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
 
             if ($output === 0) {

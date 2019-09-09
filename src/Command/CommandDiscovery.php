@@ -60,7 +60,10 @@ class CommandDiscovery
     {
         $commandDirectoryPath = Environment::getCommandDirectoryPath($this->directory);
         if (is_null($commandDirectoryPath)) {
-            throw new \Exception('Unable to discover commands: command directory "' . Environment::COMMANDS_LOCATION . '" does not exist');
+            $errorMessage = 'Unable to discover commands: ';
+            $errorMessage .= 'command directory "' . Environment::COMMANDS_LOCATION . '" does not exist';
+
+            throw new \Exception($errorMessage);
         }
 
         $commands = [];

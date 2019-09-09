@@ -100,19 +100,19 @@ abstract class AbstractCommand
         $environment = $this->dependencyManager->get(Environment::class);
 
         if (\is_null($projectEnvironmentId)) {
-        $projectEnvironment = $environment->getProjectEnvironment();
-        $projectEnvironmentId = $projectEnvironment->id;
-        if ($projectEnvironment->isLocal) {
-            $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
+            $projectEnvironment = $environment->getProjectEnvironment();
+            $projectEnvironmentId = $projectEnvironment->id;
+            if ($projectEnvironment->isLocal) {
+                $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
 
-            $request = new TaskExecutionRequest($taskId, $arguments, $executionId);
+                $request = new TaskExecutionRequest($taskId, $arguments, $executionId);
 
-            $commandManager = $this->dependencyManager->get(CommandManager::class);
+                $commandManager = $this->dependencyManager->get(CommandManager::class);
 
-            $commandManager->executeTask($request);
-        } else {
-            return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
-        }
+                $commandManager->executeTask($request);
+            } else {
+                return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
+            }
         } else {
             return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
         }
@@ -228,14 +228,14 @@ abstract class AbstractCommand
         //https://blog.madewithlove.be/post/concurrent-http-requests/
         $each = new EachPromise($promises, [
             'concurrency' => 5,
-//            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
-//                echo 'Done' . \PHP_EOL;
-//                //$results->addTaskResult($value['result']);
-//            },
-//            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
-//                // echo \get_class($reason) . \PHP_EOL;
-//                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
-//            },
+            //            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
+            //                echo 'Done' . \PHP_EOL;
+            //                //$results->addTaskResult($value['result']);
+            //            },
+            //            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
+            //                // echo \get_class($reason) . \PHP_EOL;
+            //                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
+            //            },
         ]);
 
         $each->promise()

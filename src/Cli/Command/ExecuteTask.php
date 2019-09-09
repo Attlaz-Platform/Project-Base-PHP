@@ -6,7 +6,7 @@ namespace Attlaz\Project\Cli\Command;
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\TaskExecution\CLI;
+use Attlaz\Project\TaskExecution\AbstractTaskHandler;
 use Monolog\Handler\StreamHandler;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -25,7 +25,7 @@ class ExecuteTask extends Command
     protected $logger;
 
     public function __construct(
-        CLI $taskExecutor,
+        AbstractTaskHandler $taskExecutor,
         Client $client,
         Environment $environment,
         StreamHandler $streamHandler,
@@ -81,7 +81,7 @@ class ExecuteTask extends Command
         }
         $arguments = $this->getArguments($input);
 
-        $taskExecutionId = $input->getOption('execution');
+        $taskExecutionId = $this->getTaskExecutionIdFromInput($input);
 
         if (\is_null($taskExecutionId)) {
             if ($this->environment->getProjectEnvironment()->isLocal) {
@@ -100,22 +100,36 @@ class ExecuteTask extends Command
         return new TaskExecutionRequest($taskId, $arguments, $taskExecutionId);
     }
 
-    private function getArgumentsFromStorage(string $taskExecutionId): ?array
+    private function getArgumentsFromStorage(string $taskExecutionId): array
     {
         $taskExecution = $this->client->getTaskExecution($taskExecutionId);
-        if (!\is_null($taskExecution)) {
-            $arguments = $taskExecution['arguments'];
-            $arguments = \json_decode($arguments, true);
-
-            return $arguments;
+        if (\is_null($taskExecution)) {
+            throw new \Exception('Unable to execute task: unable to get arguments from storage');
         }
 
-        return null;
+        $arguments = $taskExecution['arguments'];
+        $arguments = \json_decode($arguments, true);
+
+        return $arguments;
     }
 
     private function areArgumentsInStorage(array $inputArguments): bool
     {
         return isset($inputArguments['from_storage']);
+    }
+
+    private function getTaskExecutionIdFromInput(InputInterface $input): ?string
+    {
+        $taskExecutionId = $input->getOption('execution');
+        if (!\is_null($taskExecutionId)) {
+            if (\is_array($taskExecutionId)) {
+                $taskExecutionId = $taskExecutionId[0];
+            }
+
+            return (string)$taskExecutionId;
+        }
+
+        return null;
     }
 
     private function getArguments(InputInterface $input): array
