@@ -59,7 +59,7 @@ return [
 
         $streamHandler = new StreamHandler(STDOUT, $environment->cli_log_level);
 
-        $container->set('attlaz_streamhandler',$streamHandler);
+        $container->set('attlaz_streamhandler', $streamHandler);
 
         $logger->pushHandler($streamHandler);
 

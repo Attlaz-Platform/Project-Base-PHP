@@ -58,11 +58,29 @@ class CommandManager
         $environmentKey = $this->environment->getProjectEnvironment()->key;
         $taskKey = $request->getTask();
         $taskExecutionKey = $request->getExecutionId();
-        $dashboardUrl = 'https://app.attlaz.com/' . $teamKey . '/' . $projectKey . '/' . $environmentKey . '/tasks/' . $taskKey . '/execution/' . $taskExecutionKey;
 
-        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ') ' . $dashboardUrl;
+        $urlSegments = [
+            'https://app.attlaz.com',
+            $teamKey,
+            $projectKey,
+            $environmentKey,
+            'tasks',
+            $taskKey,
+            'execution',
+            $taskExecutionKey,
+        ];
+        $dashboardUrl = \implode('/', $urlSegments);
+        $strArguments = \json_encode($request->getArguments());
+        if ($strArguments === false) {
+            $strArguments = '[INVALID ARGUMENTS]';
+        }
+        if (\strlen($strArguments) > 1000) {
+            $strArguments = \substr($strArguments, 0, 1000) . ' ...';
+        }
 
-        $this->logger->info($strLogMessage);
+        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . $strArguments . ') ';
+
+        $this->logger->info($strLogMessage, ['more' => $dashboardUrl]);
 
         try {
             $commandDefinition = $this->getCommandDefinitionByTask($request);
@@ -80,9 +98,8 @@ class CommandManager
 
             $result = new TaskExecutionResult($request->getTask(), $result, true);
 
-            $strArguments = \json_encode($request->getArguments());
-            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ') ' . $dashboardUrl;
-            $this->logger->info($strLogMessage);
+            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ') ';
+            $this->logger->info($strLogMessage, ['more' => $dashboardUrl]);
         } catch (\Throwable $ex) {
             $this->logger->error($ex);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
