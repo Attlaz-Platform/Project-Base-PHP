@@ -81,19 +81,41 @@ class ExecuteTask extends Command
         }
         $arguments = $this->getArguments($input);
 
-        $executionId = $input->getOption('execution');
+        $taskExecutionId = $input->getOption('execution');
 
-        if (\is_null($executionId)) {
+        if (\is_null($taskExecutionId)) {
             if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
                 $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
-                $executionId = $this->client->createTaskExecution($taskId, $projectEnvironmentId);
+                $taskExecutionId = $this->client->createTaskExecution($taskId, $projectEnvironmentId);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
+        } else {
+            if ($this->areArgumentsInStorage($arguments)) {
+                $arguments = $this->getArgumentsFromStorage($taskExecutionId);
+            }
         }
 
-        return new TaskExecutionRequest($taskId, $arguments, $executionId);
+        return new TaskExecutionRequest($taskId, $arguments, $taskExecutionId);
+    }
+
+    private function getArgumentsFromStorage(string $taskExecutionId): ?array
+    {
+        $taskExecution = $this->client->getTaskExecution($taskExecutionId);
+        if (!\is_null($taskExecution)) {
+            $arguments = $taskExecution['arguments'];
+            $arguments = \json_decode($arguments, true);
+
+            return $arguments;
+        }
+
+        return null;
+    }
+
+    private function areArgumentsInStorage(array $inputArguments): bool
+    {
+        return isset($inputArguments['from_storage']);
     }
 
     private function getArguments(InputInterface $input): array
