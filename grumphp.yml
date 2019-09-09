@@ -9,3 +9,10 @@ parameters:
         phpcs:
             standard: PSR2
             ignore_patterns: ["*Test.php"]
+
+        phplint:
+            exclude: []
+            jobs: ~
+            short_open_tag: false
+            ignore_patterns: ["*Test.php"]
+            triggered_by: ['php']
