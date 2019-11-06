@@ -3,17 +3,23 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Client as AttlazClient;
+use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
+use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Helper\OutputHelper;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskCollection;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Model\TaskExecutionResultCollection;
 use Attlaz\Project\Serialization\DeserializeTaskResult;
-use GuzzleHttp\Client;
+use DI\Container as DIContainer;
+use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Promise\EachPromise;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * show off @method
@@ -23,44 +29,56 @@ use Psr\Http\Message\ResponseInterface;
 abstract class AbstractCommand
 {
 
-    /**
-     * @var Client|null
-     */
-    private $client;
-
-    private $attlazClient;
-
     const INVOKE_METHOD = 'execute';
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var HttpClient
+     */
+    private $client;
+
+    /**
+     * @var AttlazClient
+     */
+    private $attlazClient;
+
+    /**
+     * @var LoggerInterface
      */
     protected $logger;
     /**
-     * @var \Attlaz\Project\App\Environment
+     * @var Environment
+     */
+    protected $environment;
+
+    /**
+     * @var Config
      */
     protected $config;
     /**
-     * @var \Attlaz\Project\Cache\CacheManager
+     * @var CacheManager
      */
     protected $cacheManager;
 
     /**
-     * @var \DI\Container
+     * @var DIContainer
      */
     protected $dependencyManager;
 
+    /**
+     * @var OutputHelper
+     */
     protected $outputHelper;
 
     public function __construct(CommandContext $context)
     {
         $this->logger = $context->getLogger();
+        $this->environment = $context->getEnvironment();
         $this->config = $context->getConfig();
         $this->cacheManager = $context->getCacheManager();
         $this->dependencyManager = $context->getDependencyManager();
         $this->outputHelper = $context->getOutputHelper();
 
-        $this->attlazClient = $this->dependencyManager->get(\Attlaz\Client::class);
+        $this->attlazClient = $this->dependencyManager->get(AttlazClient::class);
     }
 
     /**
@@ -163,11 +181,11 @@ abstract class AbstractCommand
     //    }
     //
     /** @deprecated */
-    private function getHTTPClient(): Client
+    private function getHTTPClient(): HttpClient
     {
         if (\is_null($this->client)) {
             //  $handler = HandlerStack::create($this->getMultiHandler());
-            $this->client = new Client([
+            $this->client = new HttpClient([
                 //  'headers' => [],
                 //   'handler' => HandlerStack::create($handler),
                 //                'connect_timeout' => 5,
