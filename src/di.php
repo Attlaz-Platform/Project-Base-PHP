@@ -7,7 +7,9 @@ use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Logger\ApiHandler;
 use Attlaz\Project\Logger\Formatter;
 use Attlaz\Project\Logger\Logger;
+use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use DI\Container;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Processor\IntrospectionProcessor;
 use Psr\Log\LoggerInterface;
@@ -69,8 +71,11 @@ return [
         if (PHP_SAPI === 'cli') {
             //TODO: only show colors when in developer mode AND local mode
             //TODO: add "verbose" and "non-verbose" mode
-            $formatter = new Bramus\Monolog\Formatter\ColoredLineFormatter(null, $format);
-            //  $formatter = new \Monolog\Formatter\LineFormatter($format);
+            if (class_exists('\Bramus\Monolog\Formatter\ColoredLineFormatter')) {
+                $formatter = new ColoredLineFormatter(null, $format);
+            } else {
+                $formatter = new LineFormatter($format);
+            }
             $formatter->allowInlineLineBreaks(true);
 
             if ($environment->cli_log_stacktrace) {
