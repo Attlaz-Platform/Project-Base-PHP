@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Helper;
 
-use Attlaz\Project\App\Environment;
+use Attlaz\Project\App\Config;
 use Attlaz\Project\Cache\CacheManager;
 use DI\Container;
 use Psr\Log\LoggerInterface;
@@ -16,7 +16,7 @@ class AbstractHelper
      */
     protected $logger;
     /**
-     * @var Environment
+     * @var Config
      */
     protected $config;
     /**

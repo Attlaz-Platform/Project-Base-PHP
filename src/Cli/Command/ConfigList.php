@@ -37,7 +37,9 @@ class ConfigList extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $this->logger->info('Project: ' . $this->environment->getProject()->name . ' Environment: ' . $this->environment->getProjectEnvironment()->name);
+            $projectName = $this->environment->getProject()->name;
+            $environmentName = $this->environment->getProjectEnvironment()->name;
+            $this->logger->info('Project: ' . $projectName . ' Environment: ' . $environmentName);
             $configValues = $this->config->getConfigValues();
 
             $rows = [];
