@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Project\App\Config;
+use Attlaz\Project\App\Environment;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -13,13 +14,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ConfigList extends Command
 {
     protected $config;
+    protected $environment;
     protected $logger;
 
-    public function __construct(Config $config, LoggerInterface $logger)
+    public function __construct(Config $config, Environment $environment, LoggerInterface $logger)
     {
         parent::__construct();
 
         $this->config = $config;
+        $this->environment = $environment;
         $this->logger = $logger;
     }
 
@@ -34,6 +37,7 @@ class ConfigList extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
+            $this->logger->info('Project: ' . $this->environment->getProject()->name . ' Environment: ' . $this->environment->getProjectEnvironment()->name);
             $configValues = $this->config->getConfigValues();
 
             $rows = [];
