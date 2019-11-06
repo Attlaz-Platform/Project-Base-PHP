@@ -110,7 +110,13 @@ class Config implements LoggerAwareInterface
         return isset($this->configuration[$key]);
     }
 
-    public function get(string $key)
+    /**
+     * @param string $key
+     * @param string|null $datatype
+     * @return float|int|string
+     * @throws \Exception
+     */
+    public function get(string $key, string $datatype = null)
     {
         if (isset($this->configuration[$key])) {
             $value = $this->configuration[$key]['value'];
@@ -123,12 +129,15 @@ class Config implements LoggerAwareInterface
                     case 'integer':
                         $value = \intval($value);
                         break;
+                    case 'float':
+                        $value = \floatval($value);
+                        break;
                     default:
                         throw new \Exception('Unable to cast config value to "' . $datatype . '": unknown type');
                 }
             }
-            return $value;
 
+            return $value;
         }
 
         throw new \Exception('Unable to resolve config value for "' . $key . '"');

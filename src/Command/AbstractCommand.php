@@ -32,7 +32,7 @@ abstract class AbstractCommand
     const INVOKE_METHOD = 'execute';
 
     /**
-     * @var HttpClient
+     * @var HttpClient|null
      */
     private $client;
 
