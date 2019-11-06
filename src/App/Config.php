@@ -113,7 +113,22 @@ class Config implements LoggerAwareInterface
     public function get(string $key)
     {
         if (isset($this->configuration[$key])) {
-            return $this->configuration[$key]['value'];
+            $value = $this->configuration[$key]['value'];
+
+            if (!\is_null($datatype)) {
+                switch ($datatype) {
+                    case 'string':
+                        break;
+                    case 'int':
+                    case 'integer':
+                        $value = \intval($value);
+                        break;
+                    default:
+                        throw new \Exception('Unable to cast config value to "' . $datatype . '": unknown type');
+                }
+            }
+            return $value;
+
         }
 
         throw new \Exception('Unable to resolve config value for "' . $key . '"');
