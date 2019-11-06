@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
+use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Helper\OutputHelper;
@@ -17,6 +18,11 @@ class Context
     protected $logger;
     /**
      * @var \Attlaz\Project\App\Environment
+     */
+    protected $environment;
+
+    /**
+     * @var Config
      */
     protected $config;
     /**
@@ -36,12 +42,14 @@ class Context
 
     public function __construct(
         LoggerInterface $logger,
-        Environment $config,
+        Environment $environment,
+        Config $config,
         CacheManager $cacheManager,
         Container $dependencyManager,
         OutputHelper $outputHelper
     ) {
         $this->logger = $logger;
+        $this->environment = $environment;
         $this->config = $config;
         $this->cacheManager = $cacheManager;
         $this->dependencyManager = $dependencyManager;
@@ -53,7 +61,12 @@ class Context
         return $this->logger;
     }
 
-    public function getConfig(): Environment
+    public function getEnvironment(): Environment
+    {
+        return $this->environment;
+    }
+
+    public function getConfig(): Config
     {
         return $this->config;
     }
