@@ -74,22 +74,10 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         ContainerInterface $container,
         string $datatype = null
     ) {
+        /** @var Config $config */
         $config = $container->get(Config::class);
 
-        $value = $config->get($key);
-
-        if (!\is_null($datatype)) {
-            switch ($datatype) {
-                case 'string':
-                    break;
-                case 'int':
-                case 'integer':
-                    $value = \intval($value);
-                    break;
-                default:
-                    throw new \Exception('Unable to cast config value to "' . $datatype . '": unknown type');
-            }
-        }
+        $value = $config->get($key, $datatype);
 
         return $value;
     }
