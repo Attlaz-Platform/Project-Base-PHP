@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
@@ -6,8 +7,10 @@ namespace Attlaz\Project\Cli\Command;
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\TaskExecution\CLI;
+use Attlaz\Project\TaskExecution\AbstractTaskHandler;
+use Monolog\Handler\StreamHandler;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,15 +22,26 @@ class ExecuteTask extends Command
     protected $taskExecutor;
     protected $client;
     protected $environment;
+    protected $streamHandler;
     protected $logger;
 
-    public function __construct(CLI $taskExecutor, Client $client, Environment $environment, LoggerInterface $logger)
-    {
+    private const ARG_TASK = 'task';
+    private const ARG_ARGUMENTS = 'arguments';
+    private const ARG_EXECUTION = 'execution';
+
+    public function __construct(
+        AbstractTaskHandler $taskExecutor,
+        Client $client,
+        Environment $environment,
+        StreamHandler $streamHandler,
+        LoggerInterface $logger
+    ) {
         parent::__construct();
 
         $this->taskExecutor = $taskExecutor;
         $this->client = $client;
         $this->environment = $environment;
+        $this->streamHandler = $streamHandler;
         $this->logger = $logger;
     }
 
@@ -36,14 +50,23 @@ class ExecuteTask extends Command
         $this->setName('task:execute')
              ->setDescription('Run task.')
              ->setHelp('This command allows you to run a task')
-             ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
-             ->addOption('arguments', null, InputOption::VALUE_REQUIRED, '', null)
-             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', null);
+             ->addArgument(self::ARG_TASK, InputArgument::REQUIRED, 'Task identifier to execute')
+             ->addOption(self::ARG_ARGUMENTS, null, InputOption::VALUE_REQUIRED, 'Pass arguments in base64 encoded JSON format', null)
+             ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the task execution id', null);
+    }
+
+    protected function init(InputInterface $input)
+    {
+        if ($input->getOption('verbose') === true) {
+            $this->streamHandler->setLevel(LogLevel::DEBUG);
+        }
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->init($input);
+
         try {
             $taskExecutionRequest = $this->getRequestFromInput($input);
 
@@ -57,30 +80,66 @@ class ExecuteTask extends Command
 
     private function getRequestFromInput(InputInterface $input): TaskExecutionRequest
     {
-        $task = $input->getArgument('task');
-        if (!\is_string($task)) {
+        $taskId = $input->getArgument(self::ARG_TASK);
+        if (!\is_string($taskId)) {
             throw new \Exception('Invalid task identifier');
         }
         $arguments = $this->getArguments($input);
 
-        $executionId = $input->getOption('execution');
+        $taskExecutionId = $this->getTaskExecutionIdFromInput($input);
 
-        if (\is_null($executionId)) {
+        if (\is_null($taskExecutionId)) {
             if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
                 $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
-                $executionId = $this->client->createTaskExecution($task, $projectEnvironmentId);
+                $taskExecutionId = $this->client->createTaskExecution($taskId, $projectEnvironmentId);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
+        } else {
+            if ($this->areArgumentsInStorage($arguments)) {
+                $arguments = $this->getArgumentsFromStorage($taskExecutionId);
+            }
         }
 
-        return new TaskExecutionRequest($task, $arguments, $executionId);
+        return new TaskExecutionRequest($taskId, $arguments, $taskExecutionId);
+    }
+
+    private function getArgumentsFromStorage(string $taskExecutionId): array
+    {
+        $taskExecution = $this->client->getTaskExecution($taskExecutionId);
+        if (\is_null($taskExecution)) {
+            throw new \Exception('Unable to execute task: unable to get arguments from storage');
+        }
+
+        $arguments = $taskExecution['arguments'];
+        $arguments = \json_decode($arguments, true);
+
+        return $arguments;
+    }
+
+    private function areArgumentsInStorage(array $inputArguments): bool
+    {
+        return isset($inputArguments['from_storage']);
+    }
+
+    private function getTaskExecutionIdFromInput(InputInterface $input): ?string
+    {
+        $taskExecutionId = $input->getOption(self::ARG_EXECUTION);
+        if (!\is_null($taskExecutionId)) {
+            if (\is_array($taskExecutionId)) {
+                $taskExecutionId = $taskExecutionId[0];
+            }
+
+            return (string)$taskExecutionId;
+        }
+
+        return null;
     }
 
     private function getArguments(InputInterface $input): array
     {
-        $arguments = $input->getOption('arguments');
+        $arguments = $input->getOption(self::ARG_ARGUMENTS);
 
         if (\is_null($arguments)) {
             return [];

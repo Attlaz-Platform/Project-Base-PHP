@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Logger;
 
+use Attlaz\Project\Exception\RuntimeException;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\NormalizerFormatter;
 
@@ -33,5 +35,15 @@ class Formatter extends NormalizerFormatter implements FormatterInterface
         }
 
         return $result;
+    }
+
+    protected function normalizeException($e)
+    {
+        $data = parent::normalizeException($e);
+        if ($e instanceof RuntimeException) {
+            $data['context'] = $e->getContext();
+        }
+
+        return $data;
     }
 }

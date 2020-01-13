@@ -1,25 +1,37 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
+use Attlaz\Client;
+use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\App\Config;
+use Attlaz\Project\App\Environment;
+use Echron\Tools\StringHelper;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ConfigList extends Command
 {
+    private const ARG_FORCE_ENVIRONMENT = 'force-config-environment';
+
     protected $config;
+    protected $environment;
+    protected $attlazClient;
     protected $logger;
 
-    public function __construct(Config $config, LoggerInterface $logger)
+    public function __construct(Config $config, Environment $environment, Client $attlazClient, LoggerInterface $logger)
     {
         parent::__construct();
 
         $this->config = $config;
+        $this->environment = $environment;
+        $this->attlazClient = $attlazClient;
         $this->logger = $logger;
     }
 
@@ -27,26 +39,60 @@ class ConfigList extends Command
     {
         $this->setName('config:list')
              ->setDescription('List configuration')
-             ->setHelp('List configuration');
+             ->setHelp('List configuration')
+             ->addOption(self::ARG_FORCE_ENVIRONMENT, null, InputOption::VALUE_OPTIONAL, 'Force the configuration to be fetched from this environment (id or key)', null);
+    }
+
+    private function getForcedConfigProjectEnvironment(InputInterface $input): ?ProjectEnvironment
+    {
+        $value = $input->getOption(self::ARG_FORCE_ENVIRONMENT);
+
+        if (!\is_null($value)) {
+            $identifier = trim($value);
+
+            if (\is_numeric($identifier)) {
+                $id = \intval($identifier);
+
+                return $this->attlazClient->getProjectEnvironmentById($id);
+            } else {
+                return $this->attlazClient->getProjectEnvironmentByKey($this->environment->getProject()->id, $identifier);
+            }
+        }
+
+        return null;
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $configValues = $this->config->getConfigValues();
+            $environments = $this->attlazClient->getProjectEnvironments($this->environment->getProject()->id);
+
+            $totalConfigValues = [];
+            foreach ($environments as $environment) {
+                $configValues = $this->config->getConfigValues($environment);
+                foreach ($configValues as $configValue) {
+                    if (!isset($totalConfigValues[$configValue->key])) {
+                        $totalConfigValues[$configValue->key] = [];
+                    }
+
+                    $totalConfigValues[$configValue->key][$environment->key] = $configValue;
+                }
+            }
 
             $rows = [];
-            foreach ($configValues as $key => $value) {
-                $rows[] = $this->formatConfigValue($key, $value);
+            foreach ($totalConfigValues as $key => $configValues) {
+                $rows[] = $this->formatConfigValues($key, $configValues, $environments);
             }
             $table = new Table($output);
             $table->setStyle('box');
-            $table->setHeaders([
-                'Key',
-                'Value',
-                'Source',
-            ])
+
+            $headers = ['Key'];
+            foreach ($environments as $environment) {
+                $headers[] = $environment->name;
+            }
+
+            $table->setHeaders($headers)
                   ->setRows($rows);
             $table->render();
 
@@ -58,16 +104,35 @@ class ConfigList extends Command
         }
     }
 
-    private function formatConfigValue(string $key, array $configValue): array
+    /**
+     * @param \Attlaz\Project\Model\Config[] $configValues
+     * @param ProjectEnvironment[] $environments
+     * @return array
+     */
+    private function formatConfigValues(string $key, array $configValues, array $environments): array
     {
-        $source = $configValue['source'];
-        $value = $configValue['value'];
-        $value = $configValue['value'] . ' (' . \gettype($value) . ')';
+        $result = [$key];
 
-        return [
-            $key,
-            $value,
-            $source,
-        ];
+        foreach ($environments as $environment) {
+            $value = '';
+            if (isset($configValues[$environment->key])) {
+                $config = $configValues[$environment->key];
+                $value = $this->formatConfigValue($config);
+            }
+            $result[] = $value;
+        }
+
+        return $result;
+    }
+
+    private function formatConfigValue(\Attlaz\Project\Model\Config $config): string
+    {
+        $value = $config->value;
+        if ($config->sensitive) {
+            $value = StringHelper::mask($value, '*', 2, 2);
+        }
+        $value = $value . ' (' . \gettype($value) . ')';
+
+        return $value;
     }
 }

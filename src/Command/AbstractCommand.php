@@ -1,18 +1,26 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Client as AttlazClient;
+use Attlaz\Project\App\Config;
+use Attlaz\Project\App\Environment;
+use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Helper\OutputHelper;
 use Attlaz\Project\Model\Task;
 use Attlaz\Project\Model\TaskCollection;
+use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Attlaz\Project\Model\TaskExecutionResultCollection;
 use Attlaz\Project\Serialization\DeserializeTaskResult;
-use GuzzleHttp\Client;
+use DI\Container as DIContainer;
+use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Promise\EachPromise;
-use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * show off @method
@@ -22,37 +30,56 @@ use Psr\Http\Message\ResponseInterface;
 abstract class AbstractCommand
 {
 
+    public const INVOKE_METHOD = 'execute';
+
     /**
-     * @var Client|null
+     * @var HttpClient|null
      */
     private $client;
 
-    const INVOKE_METHOD = 'execute';
+    /**
+     * @var AttlazClient
+     */
+    private $attlazClient;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     protected $logger;
     /**
-     * @var \Attlaz\Project\App\Environment
+     * @var Environment
+     */
+    protected $environment;
+
+    /**
+     * @var Config
      */
     protected $config;
     /**
-     * @var \Attlaz\Project\Cache\CacheManager
+     * @var CacheManager
      */
     protected $cacheManager;
 
     /**
-     * @var \DI\Container
+     * @var DIContainer
      */
     protected $dependencyManager;
+
+    /**
+     * @var OutputHelper
+     */
+    protected $outputHelper;
 
     public function __construct(CommandContext $context)
     {
         $this->logger = $context->getLogger();
+        $this->environment = $context->getEnvironment();
         $this->config = $context->getConfig();
         $this->cacheManager = $context->getCacheManager();
         $this->dependencyManager = $context->getDependencyManager();
+        $this->outputHelper = $context->getOutputHelper();
+
+        $this->attlazClient = $this->dependencyManager->get(AttlazClient::class);
     }
 
     /**
@@ -63,6 +90,12 @@ abstract class AbstractCommand
     {
     }
 
+    public function progress(string $key, int $current, int $total, string $label): void
+    {
+        $this->outputHelper->progress($key, $current, $total, $label);
+    }
+
+    /** @deprecated */
     final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
     {
         $request = $this->createRequest($task, $branch);
@@ -78,6 +111,33 @@ abstract class AbstractCommand
         return $taskResult;
     }
 
+    final protected function requestTaskExecution(
+        string $taskId,
+        array $arguments = [],
+        int $projectEnvironmentId = null
+    ) {
+        $environment = $this->dependencyManager->get(Environment::class);
+
+        if (\is_null($projectEnvironmentId)) {
+            $projectEnvironment = $environment->getProjectEnvironment();
+            $projectEnvironmentId = $projectEnvironment->id;
+            if ($projectEnvironment->isLocal) {
+                $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
+
+                $request = new TaskExecutionRequest($taskId, $arguments, $executionId);
+
+                $commandManager = $this->dependencyManager->get(CommandManager::class);
+
+                $commandManager->executeTask($request);
+            } else {
+                return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
+            }
+        } else {
+            return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
+        }
+    }
+
+    /** @deprecated */
     final  protected function sendTaskWithoutResult(Task $task, string $branch): void
     {
         $request = $this->createRequest($task, $branch);
@@ -121,11 +181,12 @@ abstract class AbstractCommand
     //        //  return $deferred->promise();
     //    }
     //
-    private function getHTTPClient(): Client
+    /** @deprecated */
+    private function getHTTPClient(): HttpClient
     {
         if (\is_null($this->client)) {
             //  $handler = HandlerStack::create($this->getMultiHandler());
-            $this->client = new Client([
+            $this->client = new HttpClient([
                 //  'headers' => [],
                 //   'handler' => HandlerStack::create($handler),
                 //                'connect_timeout' => 5,
@@ -147,7 +208,7 @@ abstract class AbstractCommand
     //
     //        return $this->curlMultiHandler;
     //    }
-
+    /** @deprecated */
     final  protected function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
     {
         $results = new TaskExecutionResultCollection();
@@ -186,14 +247,14 @@ abstract class AbstractCommand
         //https://blog.madewithlove.be/post/concurrent-http-requests/
         $each = new EachPromise($promises, [
             'concurrency' => 5,
-//            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
-//                echo 'Done' . \PHP_EOL;
-//                //$results->addTaskResult($value['result']);
-//            },
-//            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
-//                // echo \get_class($reason) . \PHP_EOL;
-//                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
-//            },
+            //            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
+            //                echo 'Done' . \PHP_EOL;
+            //                //$results->addTaskResult($value['result']);
+            //            },
+            //            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
+            //                // echo \get_class($reason) . \PHP_EOL;
+            //                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
+            //            },
         ]);
 
         $each->promise()
@@ -210,6 +271,7 @@ abstract class AbstractCommand
         return $results;
     }
 
+    /** @deprecated */
     private function createRequest(Task $task, string $branch, bool $await = false): Request
     {
         $endPoint = 'http://hq.attlaz.com:14810/task/execute';
