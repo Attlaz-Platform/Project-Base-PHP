@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project;
@@ -185,7 +186,7 @@ class Project
                 );
                 $cliApplication->add($cmd);
                 //Config list
-                $cliApplication->add(new ConfigList($config, $environment,$attlazClient, $this->logger));
+                $cliApplication->add(new ConfigList($config, $environment, $attlazClient, $this->logger));
                 //Clean cache
                 $cmd = new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger);
                 $cliApplication->add($cmd);

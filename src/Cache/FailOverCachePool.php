@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Cache;
@@ -13,6 +14,7 @@ use Psr\Log\LoggerTrait;
 class FailOverCachePool extends AbstractCachePool
 {
     use LoggerTrait;
+
     /**
      * @type LoggerInterface
      */
