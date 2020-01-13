@@ -6,7 +6,7 @@
   "require": {
     "php": "^7.2.0",
     "monolog/monolog": "^1.24.0",
-    "echron/tools": "^1.1.0",
+    "echron/tools": "^1.2.0",
     "echron/datatypes": "^1.0.0",
     "echron/io": "^1.0.0",
     "php-di/php-di": "^6.0.5",
@@ -20,7 +20,7 @@
     "doctrine/annotations": "1.6.*",
     "vlucas/phpdotenv": "2.5.*",
     "symfony/console": "^4.1.7",
-    "symfony/yaml": "4.2.*",
+    "symfony/yaml": "~3.0|^4.0",
     "ext-mongodb": "*",
     "ext-json": "*"
   },
