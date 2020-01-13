@@ -17,6 +17,11 @@ class ConfigHelper
         $this->logger = $logger;
     }
 
+    /**
+     * @param string $configFilePath
+     * @return \Attlaz\Project\Model\Config[]
+     * @throws \Exception
+     */
     public function fetchLocalConfigValues(string $configFilePath): array
     {
         $result = [];
@@ -37,10 +42,12 @@ class ConfigHelper
                     $configValues = $this->flatten($values);
 
                     foreach ($configValues as $key => $value) {
-                        $result[$key] = [
-                            'value'  => $value,
-                            'source' => 'local',
-                        ];
+                        $configValue = new \Attlaz\Project\Model\Config();
+
+                        $configValue->key = $key;
+                        $configValue->value = $value;
+                        $configValue->source = 'local';
+                        $result[] = $configValue;
                     }
                 }
             } catch (ParseException $ex) {
@@ -77,8 +84,12 @@ class ConfigHelper
 
     public function patchConfigVariables(array $config, array $variables): array
     {
+        /**
+         * @var string $key
+         * @var \Attlaz\Project\Model\Config $configValue
+         */
         foreach ($config as $key => $configValue) {
-            $value = $configValue['value'];
+            $value = $configValue->value;
             if (\is_string($value)) {
                 //TODO: use regex to replace config variables
 
@@ -86,8 +97,7 @@ class ConfigHelper
                     $value = \str_replace('{{' . $variableKey . '}}', $variableValue, $value);
                 }
             }
-
-            $config[$key]['value'] = $value;
+            $configValue->value = $value;
         }
 
         return $config;
