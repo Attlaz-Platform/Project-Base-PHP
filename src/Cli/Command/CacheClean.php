@@ -28,6 +28,10 @@ class CacheClean extends Command
     protected function configure()
     {
         $this->setName('cache:clean')
+             ->setAliases([
+                 'cache:clear',
+                 'cache:flush',
+             ])
              ->setDescription('Clean cache')
              ->setHelp('Clean cache');
     }
