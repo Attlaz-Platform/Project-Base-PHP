@@ -24,6 +24,10 @@ class ExecuteTask extends Command
     protected $streamHandler;
     protected $logger;
 
+    private const ARG_TASK = 'task';
+    private const ARG_ARGUMENTS = 'arguments';
+    private const ARG_EXECUTION = 'execution';
+
     public function __construct(
         AbstractTaskHandler $taskExecutor,
         Client $client,
@@ -45,9 +49,9 @@ class ExecuteTask extends Command
         $this->setName('task:execute')
              ->setDescription('Run task.')
              ->setHelp('This command allows you to run a task')
-             ->addArgument('task', InputArgument::REQUIRED, 'Task (id) to execute')
-             ->addOption('arguments', null, InputOption::VALUE_REQUIRED, '', null)
-             ->addOption('execution', null, InputOption::VALUE_REQUIRED, '', null);
+             ->addArgument(self::ARG_TASK, InputArgument::REQUIRED, 'Task identifier to execute')
+             ->addOption(self::ARG_ARGUMENTS, null, InputOption::VALUE_REQUIRED, 'Pass arguments in base64 encoded JSON format', null)
+             ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the task execution id', null);
     }
 
     protected function init(InputInterface $input)
@@ -75,7 +79,7 @@ class ExecuteTask extends Command
 
     private function getRequestFromInput(InputInterface $input): TaskExecutionRequest
     {
-        $taskId = $input->getArgument('task');
+        $taskId = $input->getArgument(self::ARG_TASK);
         if (!\is_string($taskId)) {
             throw new \Exception('Invalid task identifier');
         }
@@ -120,7 +124,7 @@ class ExecuteTask extends Command
 
     private function getTaskExecutionIdFromInput(InputInterface $input): ?string
     {
-        $taskExecutionId = $input->getOption('execution');
+        $taskExecutionId = $input->getOption(self::ARG_EXECUTION);
         if (!\is_null($taskExecutionId)) {
             if (\is_array($taskExecutionId)) {
                 $taskExecutionId = $taskExecutionId[0];
@@ -134,7 +138,7 @@ class ExecuteTask extends Command
 
     private function getArguments(InputInterface $input): array
     {
-        $arguments = $input->getOption('arguments');
+        $arguments = $input->getOption(self::ARG_ARGUMENTS);
 
         if (\is_null($arguments)) {
             return [];
