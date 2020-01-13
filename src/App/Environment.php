@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\App;
@@ -22,7 +23,7 @@ class Environment
     private const CACHE_LOCATION = 'var/cache';
     private const DI_FILE_LOCATION = '/App/etc/di.php';
     private const CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
-    private const COMMANDS_LOCATION = '/App/Command';
+    public const COMMANDS_LOCATION = '/App/Command';
 
     /**
      * Config values
@@ -59,6 +60,8 @@ class Environment
     public const ENV_API_CLIENT_SECRET = 'api_client_secret';
     public const ENV_STORAGE = 'storage';
 
+    public const ENV_SYS_MEMORY_LIMIT = 'sys_memory_limit';
+
     public function __construct(string $projectRootPath)
     {
         $this->projectRootPath = realpath($projectRootPath) . \DIRECTORY_SEPARATOR;
@@ -71,15 +74,22 @@ class Environment
         ini_set('display_errors', '1');
         //}
 
-        $this->loadEnvSettings();
+        $this->loadEnvSettingsFromFile();
+        $this->checkIfInitialized();
 
         if ($this->isInitialized) {
             $this->api_endpoint = $this->getEnvValue(self::ENV_API_ENDPOINT);
             $this->api_client_id = $this->getEnvValue(self::ENV_API_CLIENT_ID);
             $this->api_client_secret = $this->getEnvValue(self::ENV_API_CLIENT_SECRET);
 
+            $this->sys_memory_limit = $this->getEnvValue(self::ENV_SYS_MEMORY_LIMIT, $this->sys_memory_limit);
+
             $this->mongoDBConnectionString = $this->getEnvValue(self::ENV_STORAGE);
         }
+        //TODO: check if we were able to set this
+        ini_set('memory_limit', $this->sys_memory_limit);
+        date_default_timezone_set($this->sys_timezone);
+
         $diFile = $this->getDIFileLocation($projectRootPath);
 
         if (!is_null($diFile) && \file_exists($diFile)) {
@@ -87,7 +97,25 @@ class Environment
         }
     }
 
-    private function loadEnvSettings(): void
+    private function checkIfInitialized(): void
+    {
+        $requiredEnvValues = [
+            self::ENV_API_ENDPOINT,
+            self::ENV_API_CLIENT_ID,
+            self::ENV_API_CLIENT_SECRET,
+        ];
+        foreach ($requiredEnvValues as $requiredEnvValue) {
+            $value = $this->getEnvValue($requiredEnvValue, '');
+            if ($value === '') {
+                $this->isInitialized = false;
+
+                return;
+            }
+        }
+        $this->isInitialized = true;
+    }
+
+    private function loadEnvSettingsFromFile(): void
     {
         try {
             $dotenv = new Dotenv($this->projectRootPath);
@@ -104,11 +132,15 @@ class Environment
         return $this->projectRootPath . \DIRECTORY_SEPARATOR . '.env';
     }
 
-    private function getEnvValue(string $key): string
+    private function getEnvValue(string $key, string $failback = null): string
     {
         $value = \getenv($key);
         if ($value === false) {
-            throw new \Exception('Environment variable "' . $key . '" not defined');
+            if (\is_null($failback)) {
+                throw new \Exception('Environment variable "' . $key . '" not defined');
+            } else {
+                $value = $failback;
+            }
         }
 
         if (!\is_string($value)) {
@@ -127,6 +159,10 @@ class Environment
 
     public function getCacheName(): string
     {
+//        if (!$this->isInitialized()) {
+//            return \strtolower(Normalizer::normalize('x'));
+//        }
+
         return \strtolower(Normalizer::normalize($this->getProject()->key . '_' . $this->getProjectEnvironment()->key));
     }
 
@@ -137,7 +173,7 @@ class Environment
 
     private function getDIFileLocation(string $projectRootPath): ?string
     {
-        $diFileLocation = FileSystem::joinPath($projectRootPath, self::DI_FILE_LOCATION);
+        $diFileLocation = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::DI_FILE_LOCATION);
         $diFileLocation = realpath($diFileLocation);
         if ($diFileLocation === false) {
             return null;

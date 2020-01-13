@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
@@ -14,12 +16,31 @@ class CommandManager
 {
     private $discovery;
     private $diContainer;
+    private $environment;
     private $logger;
 
-    public function __construct(CommandDiscovery $discovery, ContainerInterface $diContainer, LoggerInterface $logger)
-    {
+    //    public function __construct(
+    //        CommandDiscovery $discovery,
+    //        ContainerInterface $diContainer,
+    //        Environment $environment,
+    //        LoggerInterface $logger
+    //    ) {
+    //        $this->discovery = $discovery;
+    //        $this->diContainer = $diContainer;
+    //        $this->environment = $environment;
+    //        $this->logger = $logger;
+    //    }
+
+    public function initialize(
+        CommandDiscovery $discovery,
+        ContainerInterface $diContainer,
+        Environment $environment,
+        LoggerInterface $logger
+    ) {
+        //TODO: we should check if the CommandManager is initialized an has everything loaded
         $this->discovery = $discovery;
         $this->diContainer = $diContainer;
+        $this->environment = $environment;
         $this->logger = $logger;
     }
 
@@ -31,8 +52,36 @@ class CommandManager
             $this->logger->pushProcessor($logProcessor);
         }
 
-        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . \json_encode($request->getArguments()) . ')';
-        $this->logger->info($strLogMessage);
+        //TODO: make it possible to switch between app/staging app
+
+        $teamKey = $this->environment->getProject()->team;
+        $projectKey = $this->environment->getProject()->key;
+        $environmentKey = $this->environment->getProjectEnvironment()->key;
+        $taskKey = $request->getTask();
+        $taskExecutionKey = $request->getExecutionId();
+
+        $urlSegments = [
+            'https://app.attlaz.com',
+            $teamKey,
+            $projectKey,
+            $environmentKey,
+            'tasks',
+            $taskKey,
+            'execution',
+            $taskExecutionKey,
+        ];
+        $dashboardUrl = \implode('/', $urlSegments);
+        $strArguments = \json_encode($request->getArguments());
+        if ($strArguments === false) {
+            $strArguments = '[INVALID ARGUMENTS]';
+        }
+        if (\strlen($strArguments) > 1000) {
+            $strArguments = \substr($strArguments, 0, 1000) . ' ...';
+        }
+
+        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . $strArguments . ') ';
+
+        $this->logger->info($strLogMessage, ['more' => $dashboardUrl]);
 
         try {
             $commandDefinition = $this->getCommandDefinitionByTask($request);
@@ -50,9 +99,8 @@ class CommandManager
 
             $result = new TaskExecutionResult($request->getTask(), $result, true);
 
-            $strArguments = \json_encode($request->getArguments());
-            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ')';
-            $this->logger->info($strLogMessage);
+            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ') ';
+            $this->logger->info($strLogMessage, ['more' => $dashboardUrl]);
         } catch (\Throwable $ex) {
             $this->logger->error($ex);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);

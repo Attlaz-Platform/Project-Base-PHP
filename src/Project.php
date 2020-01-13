@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project;
 
+use Attlaz\Client;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
@@ -61,7 +63,7 @@ class Project
             // echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) .
             //   \PHP_EOL;
 
-            $start = \microtime(true);
+            //            $start = \microtime(true);
             $this->initDI($environment->definitionsFile);
 
             //   echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
@@ -71,7 +73,7 @@ class Project
             $this->logger = $container->get(LoggerInterface::class);
 
             //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            $start = \microtime(true);
+            //            $start = \microtime(true);
             $config = $container->get(Config::class);
 
             if ($this->environment->isInitialized()) {
@@ -79,12 +81,14 @@ class Project
             }
 
             //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            $start = \microtime(true);
-            $discovery = new CommandDiscovery($this->projectRootPath);
-            //Pre fetch commands
-            $discovery->getCommands();
+            // $start = \microtime(true);
+            if ($this->environment->isInitialized()) {
+                $discovery = new CommandDiscovery($this->projectRootPath);
+                //Pre fetch commands
+                $discovery->getCommands();
 
-            $this->commandManager = new CommandManager($discovery, $this->diContainer, $this->logger);
+                $this->commandManager->initialize($discovery, $this->diContainer, $this->environment, $this->logger);
+            }
 
             // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
@@ -94,6 +98,7 @@ class Project
         }
         //   echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
+        // TODO: only show this in debug (local) mode
         echo PHP_EOL . 'Constructor Total time: ';
         echo Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
     }
@@ -127,6 +132,15 @@ class Project
             $containerBuilder->addDefinitions($definitionsFile);
         }
 
+        //  $config = $containerBuilder->get(Config::class);
+
+        //        $discovery = new CommandDiscovery($this->projectRootPath);
+        //        //Pre fetch commands
+        //        $discovery->getCommands();
+
+        $this->commandManager = new CommandManager();
+        $containerBuilder->addDefinitions([CommandManager::class => $this->commandManager]);
+
         $containerBuilder->useAutowiring(true);
 
         $this->diContainer = $containerBuilder->build();
@@ -139,35 +153,53 @@ class Project
 
     public function run()
     {
+        $attlazClient = $this->diContainer->get(Client::class);
+        $environment = $this->environment;
         if (PHP_SAPI === 'cli') {
             $config = $this->diContainer->get(Config::class);
-            $attlazClient = $this->diContainer->get(\Attlaz\Client::class);
+
+            $commandManager = $this->commandManager;
 
             $cliApplication = new Application();
             $cliApplication->setAutoExit(false);
 
-            $cli = new CLI($this->commandManager, $this->logger);
+            $taskHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
 
             $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
 
-            $commandManager = $this->commandManager;
-            $environment = $this->environment;
-
             if ($this->environment->isInitialized()) {
+                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
+
+                //List tasks
                 $cliApplication->add(new ListTasks($commandManager, $this->logger));
-                $cliApplication->add(new ExecuteTask($cli, $attlazClient, $environment, $this->logger));
-                $cmd = new ExecuteTaskInteractive($cli, $attlazClient, $commandManager, $environment, $this->logger);
+                //Execute task
+                $cmd = new ExecuteTask($taskHandler, $attlazClient, $environment, $cliStreamHandler, $this->logger);
                 $cliApplication->add($cmd);
-                $cliApplication->add(new ConfigList($config, $this->logger));
+                //Execute task interactive
+                $cmd = new ExecuteTaskInteractive(
+                    $taskHandler,
+                    $attlazClient,
+                    $commandManager,
+                    $environment,
+                    $cliStreamHandler,
+                    $this->logger
+                );
+                $cliApplication->add($cmd);
+                //Config list
+                $cliApplication->add(new ConfigList($config, $environment, $attlazClient, $this->logger));
+                //Clean cache
                 $cmd = new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger);
                 $cliApplication->add($cmd);
+                //Request deploy
                 $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
+                //Run tests
                 $cliApplication->add(new RunTests($this->logger));
             } else {
                 $cliApplication->add(new SystemSetup($attlazClient, $environment, $this->logger));
             }
             $output = $cliApplication->run();
 
+            // TODO: only show this in debug (local) mode
             echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
 
             if ($output === 0) {
@@ -177,7 +209,7 @@ class Project
                 exit(1);
             }
         } else {
-            $fpm = new FPM($this->commandManager, $this->logger);
+            $fpm = new FPM($this->commandManager, $attlazClient, $environment, $this->logger);
             $fpm->run();
         }
     }
