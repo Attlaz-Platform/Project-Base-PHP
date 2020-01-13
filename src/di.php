@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Attlaz\Client;
@@ -14,6 +15,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Processor\IntrospectionProcessor;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+
 use function DI\factory;
 
 //if (!defined('STDIN')) {

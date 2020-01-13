@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Logger;
@@ -17,23 +18,36 @@ class Logger extends \Monolog\Logger implements LoggerInterface
         if (count($this->globalContext) > 0) {
             $context['glob'] = $this->globalContext;
         }
+        foreach ($context as $key => $value) {
+            if ($value instanceof RuntimeException) {
+                $context = $this->mergeExceptionContext($value, $context, false);
+            }
+        }
 
         if ($message instanceof RuntimeException) {
             $exception = $message;
             $message = $exception->getMessage();
 
-            $context = $exception->getContext();
-
-            $context = [self::CONTEXT_EXCEPTION_PREFIX => $exception];
-
-            $context = \array_merge($context, $exception->getContext());
+            $context = $this->mergeExceptionContext($exception, $context, true);
         } elseif ($message instanceof \Throwable) {
             $throwable = $message;
             $message = $throwable->getMessage();
-            $context['exception'] = $throwable;
+            $context[self::CONTEXT_EXCEPTION_PREFIX] = $throwable;
         }
 
         return parent::addRecord($level, $message, $context);
+    }
+
+    private function mergeExceptionContext(
+        RuntimeException $runtimeException,
+        array $context,
+        bool $appendExceptionToContext
+    ): array {
+        if ($appendExceptionToContext) {
+            $context[self::CONTEXT_EXCEPTION_PREFIX] = $runtimeException;
+        }
+
+        return \array_merge($context, $runtimeException->getContext());
     }
 
     public function addGlobalContext(string $key, $value)

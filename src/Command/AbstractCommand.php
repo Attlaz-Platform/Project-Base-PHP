@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
@@ -29,7 +30,7 @@ use Psr\Log\LoggerInterface;
 abstract class AbstractCommand
 {
 
-    const INVOKE_METHOD = 'execute';
+    public const INVOKE_METHOD = 'execute';
 
     /**
      * @var HttpClient|null

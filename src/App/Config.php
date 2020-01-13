@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\App;
@@ -89,7 +90,7 @@ class Config implements LoggerAwareInterface
                 //                        $result[$key] = $localConfigValue;
                 //                    } else {
                 //                        if (\is_object($this->logger)) {
-                //                            $this->logger->warning('Ignore local config value "' . $key . '": not allowed to override');
+                //$this->logger->warning('Ignore local config value "' . $key . '": not allowed to override');
                 //                        }
                 //                    }
                 //                } else {
@@ -197,5 +198,4 @@ class Config implements LoggerAwareInterface
     //
     //        return $this->environment->getProjectEnvironment();
     //    }
-
 }
