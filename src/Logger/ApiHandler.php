@@ -21,7 +21,7 @@ class ApiHandler extends AbstractProcessingHandler
         $this->client = $client;
     }
 
-    protected function write(array $record)
+    protected function write(array $record): void
     {
         try {
             if (isset($record['formatted'])) {
