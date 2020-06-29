@@ -14,9 +14,13 @@ use Psr\Log\LoggerInterface;
 
 class CommandManager
 {
+    /** @var CommandDiscovery */
     private $discovery;
+    /** @var ContainerInterface */
     private $diContainer;
+    /** @var Environment */
     private $environment;
+    /** @var LoggerInterface */
     private $logger;
 
     //    public function __construct(
@@ -70,7 +74,8 @@ class CommandManager
             'execution',
             $taskExecutionKey,
         ];
-        $dashboardUrl = \implode('/', $urlSegments);
+        $dashboardUrl = $this->environment->getAppUrl(null, $urlSegments);
+
         $strArguments = \json_encode($request->getArguments());
         if ($strArguments === false) {
             $strArguments = '[INVALID ARGUMENTS]';
