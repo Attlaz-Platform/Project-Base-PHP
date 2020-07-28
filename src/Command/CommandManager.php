@@ -65,10 +65,6 @@ class CommandManager
         $taskExecutionKey = $request->getExecutionId();
 
         $urlSegments = [
-            'https://app.attlaz.com',
-            $teamKey,
-            $projectKey,
-            $environmentKey,
             'tasks',
             $taskKey,
             'execution',
