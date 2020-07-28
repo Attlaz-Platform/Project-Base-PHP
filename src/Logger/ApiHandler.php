@@ -53,8 +53,6 @@ class ApiHandler extends AbstractProcessingHandler
             //TODO: combine extra with context?
 
             $logEntryId = $this->client->saveLog($logEntry);
-
-            \var_dump($logEntryId);
         } catch (\Throwable $ex) {
             echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
             // var_dump(\substr($logEntry->message, 0, 500));
