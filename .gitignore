@@ -1,9 +1,7 @@
 .idea
 *.iml
 vendor
-bin/*
-lib
 .env
 config.yml
-!lib
 auth.json
+docker-compose.yml
