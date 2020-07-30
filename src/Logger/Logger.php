@@ -13,7 +13,7 @@ class Logger extends \Monolog\Logger implements LoggerInterface
 
     private const CONTEXT_EXCEPTION_PREFIX = 'exception';
 
-    public function addRecord($level, $message, array $context = [])
+    public function addRecord(int $level, string $message, array $context = []): bool
     {
         if (count($this->globalContext) > 0) {
             $context['glob'] = $this->globalContext;

@@ -237,4 +237,27 @@ class Environment
     {
         return $this->isInitialized;
     }
+
+    public function getAppUrl(ProjectEnvironment $environment = null, array $segments = []): string
+    {
+        $teamKey = $this->getProject()->team;
+        $projectKey = $this->getProject()->key;
+
+        if (\is_null($environment)) {
+            $environment = $this->getProjectEnvironment();
+        }
+        $environmentKey = $environment->key;
+
+        $urlSegments = [
+            'https://app.attlaz.com',
+            $teamKey,
+            $projectKey,
+            $environmentKey,
+
+        ];
+
+        $urlSegments = \array_merge($urlSegments, $segments);
+
+        return \implode('/', $urlSegments);
+    }
 }

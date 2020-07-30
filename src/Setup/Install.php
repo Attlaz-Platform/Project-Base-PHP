@@ -13,49 +13,48 @@ class Install
         echo 'Setup project';
         try {
             self::copyBinFiles();
+            self::makeExecutable();
         } catch (\Throwable $ex) {
             throw new \Exception('Unable to run setup: ' . $ex->getMessage());
         }
     }
 
-    private static function copyBinFiles(): void
+    private static function getVendorBinPath(): string
     {
-        $sourceBinDirectoryPath = realpath(dirname(__FILE__)) . \DIRECTORY_SEPARATOR . 'bin';
-
-        $destinationBinDirectoryPath = FileSystem::joinPath(dirname(__FILE__), '..', '..', '..', '..', '..', 'bin');
-        $destinationBinDirectoryPath = realpath($destinationBinDirectoryPath);
-
-        if (!\is_string($destinationBinDirectoryPath)) {
-            throw new \Exception('Destination directory not found');
-        }
-
-        self::copyDirectory($sourceBinDirectoryPath, $destinationBinDirectoryPath);
+        return realpath(dirname(__FILE__)) . \DIRECTORY_SEPARATOR . 'bin';
     }
 
-    private static function copyDirectory(string $src, string $dst): void
+    private static function getProjectBinPath(): string
     {
-        // open the source directory
-        $dir = opendir($src);
-        if ($dir === false) {
-            throw new \Exception('Unable to read source directory');
+        return FileSystem::joinPath(dirname(__FILE__), '..', '..', '..', '..', '..', 'bin');
+    }
+
+    private static function copyBinFiles(): void
+    {
+        // TODO: how to make sure the bin directory is not in git without modifiying the .gitignore file to avoid bad
+        // changes to that file
+        $sourceBinDirectoryPath = self::getVendorBinPath();
+        $destinationBinDirectoryPath = self::getProjectBinPath();
+
+        if (!FileSystem::dirExists($destinationBinDirectoryPath)) {
+            FileSystem::createDir($destinationBinDirectoryPath, true);
         }
 
-        // Make the destination directory if not exist
-        @mkdir($dst);
+        FileSystem::copyDirectory($sourceBinDirectoryPath, $destinationBinDirectoryPath, true);
+    }
 
-        // Loop through the files in source directory
-        while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($src . '/' . $file)) {
-                    // Recursively calling custom copy function
-                    // for sub directory
-                    self::copyDirectory($src . '/' . $file, $dst . '/' . $file);
-                } else {
-                    copy($src . '/' . $file, $dst . '/' . $file);
-                }
-            }
+    private static function makeExecutable(): void
+    {
+        $sourceBinDirectoryPath = self::getVendorBinPath();
+        $destinationBinDirectoryPath = self::getProjectBinPath();
+
+        $files = [
+            $sourceBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console',
+        ];
+        foreach ($files as $file) {
+            \chmod($sourceBinDirectoryPath, 0755);
         }
-
-        closedir($dir);
     }
 }

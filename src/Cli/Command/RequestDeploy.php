@@ -31,6 +31,11 @@ class RequestDeploy extends Command
     protected function configure()
     {
         $this->setName('deploy:request')
+             ->setAliases([
+                 'deployment:request',
+                 'request:deploy',
+                 'deploy',
+             ])
              ->setDescription('Request deploy.')
              ->setHelp('This command allows you to request a deployment')
              ->addArgument('environment', InputArgument::REQUIRED, 'Environment id or key');
@@ -55,7 +60,11 @@ class RequestDeploy extends Command
                 throw new \Exception('Unable to request deploy: environment not found');
             }
 
-            return $this->client->requestDeploy($environment->id);
+            $deployId = $this->client->requestDeploy($environment->id);
+
+            $deployUrl = $this->environment->getAppUrl($environment, ['manage']);
+
+            $this->logger->info('Deploy requested (more: ' . $deployUrl . ')');
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 
