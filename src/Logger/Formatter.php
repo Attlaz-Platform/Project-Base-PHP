@@ -37,7 +37,7 @@ class Formatter extends NormalizerFormatter implements FormatterInterface
         return $result;
     }
 
-    protected function normalizeException($e)
+    protected function normalizeException(\Throwable $e, int $depth = 0)
     {
         $data = parent::normalizeException($e);
         if ($e instanceof RuntimeException) {

@@ -1,7 +1,7 @@
 .idea
 *.iml
 vendor
-bin/attlaz.php
+bin/*
 lib
 .env
 config.yml

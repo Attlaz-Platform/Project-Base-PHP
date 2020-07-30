@@ -21,7 +21,7 @@ class ApiHandler extends AbstractProcessingHandler
         $this->client = $client;
     }
 
-    protected function write(array $record)
+    protected function write(array $record): void
     {
         try {
             if (isset($record['formatted'])) {
@@ -34,8 +34,17 @@ class ApiHandler extends AbstractProcessingHandler
             $logEntry->context = $record['context'];
             if (isset($record['extra']['execution'])) {
                 //TODO: what is the log entry type when no task execution is defined?
-                $logEntry->context['taskexecution'] = $record['extra']['execution'];
-                $logEntry->type = 'taskexecution';
+                //                $logEntry->context['taskexecution'] = $record['extra']['execution'];
+                //                $logEntry->type = 'taskexecution';
+
+                $logEntry->tags[] = [
+                    'key'   => 'taskexecution',
+                    'value' => $record['extra']['execution'],
+                ];
+                $logEntry->tags[] = [
+                    'key'   => 'type',
+                    'value' => 'taskexecution',
+                ];
             }
 
             if (\strlen($logEntry->message) > $this->maxLogMessageLength) {
@@ -43,7 +52,7 @@ class ApiHandler extends AbstractProcessingHandler
             }
             //TODO: combine extra with context?
 
-            $saved = $this->client->saveLog($logEntry);
+            $logEntryId = $this->client->saveLog($logEntry);
         } catch (\Throwable $ex) {
             echo 'Unable to save Log: ' . $ex->getMessage() . PHP_EOL;
             // var_dump(\substr($logEntry->message, 0, 500));
