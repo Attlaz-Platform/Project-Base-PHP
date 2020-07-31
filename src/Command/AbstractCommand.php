@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
@@ -9,17 +8,9 @@ use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Helper\OutputHelper;
-use Attlaz\Project\Model\Task;
-use Attlaz\Project\Model\TaskCollection;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
-use Attlaz\Project\Model\TaskExecutionResultCollection;
-use Attlaz\Project\Serialization\DeserializeTaskResult;
 use DI\Container as DIContainer;
-use GuzzleHttp\Client as HttpClient;
-use GuzzleHttp\Promise\EachPromise;
-use GuzzleHttp\Psr7\Request;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -32,10 +23,6 @@ abstract class AbstractCommand
 
     public const INVOKE_METHOD = 'execute';
 
-    /**
-     * @var HttpClient|null
-     */
-    private $client;
 
     /**
      * @var AttlazClient
@@ -95,57 +82,68 @@ abstract class AbstractCommand
         $this->outputHelper->progress($key, $current, $total, $label);
     }
 
-    /** @deprecated */
-    final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
-    {
-        $request = $this->createRequest($task, $branch);
-        /** @var ResponseInterface $response */
-        $response = $this->getHTTPClient()
-                         ->send($request, []);
-
-        $strTaskResult = $response->getBody()
-                                  ->getContents();
-        $cmd = new DeserializeTaskResult();
-        $taskResult = $cmd->__invoke($strTaskResult);
-
-        return $taskResult;
-    }
+//    /** @deprecated */
+//    final protected function sendTaskWithResult(Task $task, string $branch): TaskExecutionResult
+//    {
+//        $request = $this->createRequest($task, $branch);
+//        /** @var ResponseInterface $response */
+//        $response = $this->getHTTPClient()
+//            ->send($request, []);
+//
+//        $strTaskResult = $response->getBody()
+//            ->getContents();
+//        $cmd = new DeserializeTaskResult();
+//        $taskResult = $cmd->__invoke($strTaskResult);
+//
+//        return $taskResult;
+//    }
 
     final protected function requestTaskExecution(
         string $taskId,
         array $arguments = [],
         int $projectEnvironmentId = null
-    ) {
+    ): TaskExecutionResult
+    {
+        $executeLocal = false;
+
         $environment = $this->dependencyManager->get(Environment::class);
+        $projectEnvironment = $environment->getProjectEnvironment();
 
-        if (\is_null($projectEnvironmentId)) {
-            $projectEnvironment = $environment->getProjectEnvironment();
+        if (\is_null($projectEnvironmentId) || $projectEnvironmentId === $projectEnvironment->id) {
             $projectEnvironmentId = $projectEnvironment->id;
-            if ($projectEnvironment->isLocal) {
-                $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
+            $executeLocal = $projectEnvironment->isLocal;
+        }
 
-                $request = new TaskExecutionRequest($taskId, $arguments, $executionId);
-
-                $commandManager = $this->dependencyManager->get(CommandManager::class);
-
-                $commandManager->executeTask($request);
-            } else {
-                return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
-            }
+        if ($executeLocal) {
+            return $this->executeLocal($taskId, $arguments, $projectEnvironmentId);
         } else {
-            return $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
+            $result = $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
+            return new TaskExecutionResult($taskId, $result->result, true);
         }
     }
 
-    /** @deprecated */
-    final  protected function sendTaskWithoutResult(Task $task, string $branch): void
+    final private function executeLocal(string $taskId,
+                                        array $arguments = [],
+                                        int $projectEnvironmentId = null): TaskExecutionResult
     {
-        $request = $this->createRequest($task, $branch);
+        $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
 
-        //echo $request->getBody() . \PHP_EOL;
-        $this->getHTTPClient()
-             ->send($request);
+        $request = new TaskExecutionRequest($taskId, $arguments, $executionId);
+
+        $commandManager = $this->dependencyManager->get(CommandManager::class);
+
+        return $commandManager->executeTask($request);
     }
+
+    /** @deprecated */
+//    final  protected function sendTaskWithoutResult(Task $task, string $branch): void
+//    {
+//        $request = $this->createRequest($task, $branch);
+//
+//        //echo $request->getBody() . \PHP_EOL;
+//        $this->getHTTPClient()
+//            ->send($request);
+//    }
     //
     //    protected final function executeMultiple(array $tasks): array
     //    {
@@ -182,21 +180,21 @@ abstract class AbstractCommand
     //    }
     //
     /** @deprecated */
-    private function getHTTPClient(): HttpClient
-    {
-        if (\is_null($this->client)) {
-            //  $handler = HandlerStack::create($this->getMultiHandler());
-            $this->client = new HttpClient([
-                //  'headers' => [],
-                //   'handler' => HandlerStack::create($handler),
-                //                'connect_timeout' => 5,
-                //                'read_timeout'    => 5,
-                //                'timeout'         => 5,
-            ]);
-        }
-
-        return $this->client;
-    }
+//    private function getHTTPClient(): HttpClient
+//    {
+//        if (\is_null($this->client)) {
+//            //  $handler = HandlerStack::create($this->getMultiHandler());
+//            $this->client = new HttpClient([
+//                //  'headers' => [],
+//                //   'handler' => HandlerStack::create($handler),
+//                //                'connect_timeout' => 5,
+//                //                'read_timeout'    => 5,
+//                //                'timeout'         => 5,
+//            ]);
+//        }
+//
+//        return $this->client;
+//    }
 
     //    private $curlMultiHandler;
     //
@@ -209,86 +207,86 @@ abstract class AbstractCommand
     //        return $this->curlMultiHandler;
     //    }
     /** @deprecated */
-    final  protected function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
-    {
-        $results = new TaskExecutionResultCollection();
-
-        echo 'Create promises' . \PHP_EOL;
-        $promises = (function () use ($tasks, $branch) {
-            foreach ($tasks as $task) {
-                $request = $this->createRequest($task, $branch, true);
-
-                yield $this->getHTTPClient()
-                           ->sendAsync($request)
-                           ->then(function (ResponseInterface $response) use ($task) {
-                               // echo $task->getArgument('input') . \PHP_EOL;
-                               $strTaskResult = $response->getBody()
-                                                         ->getContents();
-                               //
-                               //                               $cmd = new DeserializeTaskResult();
-                               //                               $taskResult = $cmd->__invoke($strTaskResult);
-                               //
-                               return [
-                                   'task'   => $task,
-                                   'result' => $strTaskResult,
-                               ];
-
-                               return true;
-                           }, function (\Exception $ex) use ($task) {
-                               //TODO: retry
-                               $strErrorMessage = 'Unable to execute task: ' . $task->name . ': ' . $ex->getMessage();
-                               $this->logger->error($strErrorMessage);
-
-                               return false;
-                           });
-            }
-        })();
-        echo 'Start sending' . \PHP_EOL;
-        //https://blog.madewithlove.be/post/concurrent-http-requests/
-        $each = new EachPromise($promises, [
-            'concurrency' => 5,
-            //            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
-            //                echo 'Done' . \PHP_EOL;
-            //                //$results->addTaskResult($value['result']);
-            //            },
-            //            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
-            //                // echo \get_class($reason) . \PHP_EOL;
-            //                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
-            //            },
-        ]);
-
-        $each->promise()
-             ->wait();
-
-        //        echo 'State: ' . $each->promise()
-        //                              ->getState() . \PHP_EOL;
-        //        while ($each->promise()
-        //                    ->getState() === 'pending') {
-        //            $this->getMultiHandler()
-        //                 ->tick();
-        //        }
-
-        return $results;
-    }
+//    final  protected function executeMultipleAsync(TaskCollection $tasks, string $branch): TaskExecutionResultCollection
+//    {
+//        $results = new TaskExecutionResultCollection();
+//
+//        echo 'Create promises' . \PHP_EOL;
+//        $promises = (function () use ($tasks, $branch) {
+//            foreach ($tasks as $task) {
+//                $request = $this->createRequest($task, $branch, true);
+//
+//                yield $this->getHTTPClient()
+//                    ->sendAsync($request)
+//                    ->then(function (ResponseInterface $response) use ($task) {
+//                        // echo $task->getArgument('input') . \PHP_EOL;
+//                        $strTaskResult = $response->getBody()
+//                            ->getContents();
+//                        //
+//                        //                               $cmd = new DeserializeTaskResult();
+//                        //                               $taskResult = $cmd->__invoke($strTaskResult);
+//                        //
+//                        return [
+//                            'task' => $task,
+//                            'result' => $strTaskResult,
+//                        ];
+//
+//                        return true;
+//                    }, function (\Exception $ex) use ($task) {
+//                        //TODO: retry
+//                        $strErrorMessage = 'Unable to execute task: ' . $task->name . ': ' . $ex->getMessage();
+//                        $this->logger->error($strErrorMessage);
+//
+//                        return false;
+//                    });
+//            }
+//        })();
+//        echo 'Start sending' . \PHP_EOL;
+//        //https://blog.madewithlove.be/post/concurrent-http-requests/
+//        $each = new EachPromise($promises, [
+//            'concurrency' => 5,
+//            //            'fulfilled'   => function ($value, $idx, Promise $aggregat) use (&$results) {
+//            //                echo 'Done' . \PHP_EOL;
+//            //                //$results->addTaskResult($value['result']);
+//            //            },
+//            //            'rejected'    => function (\Exception $reason, $idx, Promise $aggregat) use (&$results) {
+//            //                // echo \get_class($reason) . \PHP_EOL;
+//            //                echo 'Ex: ' . $reason->getMessage() . \PHP_EOL;
+//            //            },
+//        ]);
+//
+//        $each->promise()
+//            ->wait();
+//
+//        //        echo 'State: ' . $each->promise()
+//        //                              ->getState() . \PHP_EOL;
+//        //        while ($each->promise()
+//        //                    ->getState() === 'pending') {
+//        //            $this->getMultiHandler()
+//        //                 ->tick();
+//        //        }
+//
+//        return $results;
+//    }
 
     /** @deprecated */
-    private function createRequest(Task $task, string $branch, bool $await = false): Request
-    {
-        $endPoint = 'http://hq.attlaz.com:14810/task/execute';
-        //$endPoint = 'https://www.google.com';
-        //TODO: get endpoint from configuration
-        $uri = $endPoint . '?branch=' . $branch;
-        if ($await) {
-            $uri = $endPoint . '?branch=' . $branch . '&wait=1';
-        }
-        $headers = [
-            'Content-Type' => 'application/json',
-        ];
-
-        $body = $task->__toString();
-
-        $request = new Request('POST', $uri, $headers, $body);
-
-        return $request;
-    }
+//    private function createRequest(Task $task, string $branch, bool $await = false): Request
+//    {
+//        $endPoint = 'http://hq.attlaz.com:14810/task/execute';
+//        //$endPoint = 'https://www.google.com';
+//        //TODO: get endpoint from configuration
+//        $uri = $endPoint . '?branch=' . $branch;
+//        if ($await) {
+//            $uri = $endPoint . '?branch=' . $branch . '&wait=1';
+//        }
+//        $headers = [
+//            'Content-Type' => 'application/json',
+//        ];
+//
+//        $body = $task->__toString();
+//
+//        $request = new Request('POST', $uri, $headers, $body);
+//
+//        return $request;
+//    }
 }
