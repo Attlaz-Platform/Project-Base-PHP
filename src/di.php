@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
+use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
+use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
-use Attlaz\Project\Logger\ApiHandler;
-use Attlaz\Project\Logger\Formatter;
 use Attlaz\Project\Logger\Logger;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use DI\Container;
+use Monolog\ErrorHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Processor\IntrospectionProcessor;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
-
 use function DI\factory;
 
 //if (!defined('STDIN')) {
@@ -90,19 +90,19 @@ return [
          * Log to API
          */
         if ($environment->isInitialized()) {
-            $apiLogHandler = new ApiHandler($container->get(Client::class), \Monolog\Logger::INFO);
-            $formatter = new Formatter();
+            $apiLogHandler = new AttlazHandler($container->get(Client::class), \Monolog\Logger::INFO);
+            $formatter = new AttlazFormatter();
             $apiLogHandler->setFormatter($formatter);
             $logger->pushHandler($apiLogHandler);
         }
         /**
          * Log fatal errors
          */
-        \Monolog\ErrorHandler::register($logger);
+        ErrorHandler::register($logger);
 
         return $logger;
     }),
-    Client::class          => factory(function (Environment $environment) {
+    Client::class => factory(function (Environment $environment) {
         return new Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
     }),
 
