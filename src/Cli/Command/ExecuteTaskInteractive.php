@@ -27,10 +27,9 @@ class ExecuteTaskInteractive extends ExecuteTask
         Client $client,
         CommandManager $commandManager,
         Environment $environment,
-        StreamHandler $streamHandler,
         LoggerInterface $logger
     ) {
-        parent::__construct($taskExecutor, $client, $environment, $streamHandler, $logger);
+        parent::__construct($taskExecutor, $client, $environment, $logger);
         $this->commandManager = $commandManager;
     }
 

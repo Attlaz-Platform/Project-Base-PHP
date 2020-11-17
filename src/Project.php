@@ -1,11 +1,11 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Attlaz\Project;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Config;
+use Attlaz\Project\App\ConfigHelper;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Cli\Command\CacheClean;
@@ -15,11 +15,12 @@ use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
 use Attlaz\Project\Cli\Command\ListTasks;
 use Attlaz\Project\Cli\Command\RequestDeploy;
 use Attlaz\Project\Cli\Command\RunTests;
-use Attlaz\Project\Cli\Command\Setup;
 use Attlaz\Project\Cli\Command\SystemSetup;
 use Attlaz\Project\Cli\Command\SystemStatus;
 use Attlaz\Project\Command\CommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
+use Attlaz\Project\DI\AdapterDILoader;
+use Attlaz\Project\DI\InternalFactory;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\CLI;
 use Attlaz\Project\TaskExecution\FPM;
@@ -60,6 +61,9 @@ class Project
 
         try {
             $this->environment->init();
+
+            $client = InternalFactory::getClient($this->environment);
+            $this->logger = InternalFactory::getLogger($this->environment, $client);
             // echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) .
             //   \PHP_EOL;
 
@@ -70,7 +74,7 @@ class Project
 
             $start = \microtime(true);
             $container = $this->getDIContainer();
-            $this->logger = $container->get(LoggerInterface::class);
+//            $this->logger = $container->get(LoggerInterface::class);
 
             //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             //            $start = \microtime(true);
@@ -121,13 +125,25 @@ class Project
             // TODO: this doesn't make sense with PHP CLI
             $containerBuilder->enableDefinitionCache();
         }
+        $containerBuilder->addDefinitions([LoggerInterface::class => $this->logger]);
 
         $containerBuilder->addDefinitions([Environment::class => $this->environment]);
 
-        //        $config = new Config($container->get(CacheManager::class), $this->environment, $this->logger);
-        //        $containerBuilder->addDefinitions([Config::class => $config]);
+        $cacheManager = new CacheManager($this->environment, $this->logger);
 
-        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
+
+        $client = InternalFactory::getClient($this->environment);
+        $containerBuilder->addDefinitions([Client::class => $client]);
+
+        $configHelper = new ConfigHelper($this->logger);
+
+        $config = new Config($cacheManager, $client, $this->environment, $configHelper);
+        $containerBuilder->addDefinitions([Config::class => $config, CacheManager::class => $cacheManager]);
+
+        $adapterHelper = new AdapterDILoader($this->logger);
+        $adapterHelper->initDI($containerBuilder, $config);
+
+//        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
         if (!\is_null($definitionsFile)) {
             $containerBuilder->addDefinitions($definitionsFile);
         }
@@ -168,12 +184,12 @@ class Project
             $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
 
             if ($this->environment->isInitialized()) {
-                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
+//                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
 
                 //List tasks
                 $cliApplication->add(new ListTasks($commandManager, $this->logger));
                 //Execute task
-                $cmd = new ExecuteTask($taskHandler, $attlazClient, $environment, $cliStreamHandler, $this->logger);
+                $cmd = new ExecuteTask($taskHandler, $attlazClient, $environment, $this->logger);
                 $cliApplication->add($cmd);
                 //Execute task interactive
                 $cmd = new ExecuteTaskInteractive(
@@ -181,7 +197,6 @@ class Project
                     $attlazClient,
                     $commandManager,
                     $environment,
-                    $cliStreamHandler,
                     $this->logger
                 );
                 $cliApplication->add($cmd);
