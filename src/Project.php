@@ -29,6 +29,7 @@ use Echron\Tools\FileSystem;
 use Echron\Tools\Time;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\Console\Application;
 
 class Project
@@ -125,20 +126,28 @@ class Project
             // TODO: this doesn't make sense with PHP CLI
             $containerBuilder->enableDefinitionCache();
         }
-        $containerBuilder->addDefinitions([LoggerInterface::class => $this->logger]);
 
-        $containerBuilder->addDefinitions([Environment::class => $this->environment]);
+
+
 
         $cacheManager = new CacheManager($this->environment, $this->logger);
 
-
         $client = InternalFactory::getClient($this->environment);
-        $containerBuilder->addDefinitions([Client::class => $client]);
 
         $configHelper = new ConfigHelper($this->logger);
 
         $config = new Config($cacheManager, $client, $this->environment, $configHelper);
-        $containerBuilder->addDefinitions([Config::class => $config, CacheManager::class => $cacheManager]);
+
+        $localDefinitions = [
+            LoggerInterface::class => $this->logger,
+            Environment::class => $this->environment,
+            Config::class         => $config,
+            CacheManager::class   => $cacheManager,
+            CacheInterface::class => $cacheManager->getCache(),
+            Client::class         => $client
+        ];
+
+        $containerBuilder->addDefinitions($localDefinitions);
 
         $adapterHelper = new AdapterDILoader($this->logger);
         $adapterHelper->initDI($containerBuilder, $config);
