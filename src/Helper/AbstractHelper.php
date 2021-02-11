@@ -6,6 +6,7 @@ namespace Attlaz\Project\Helper;
 
 use Attlaz\Project\App\Config;
 use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Connections\ConnectionPool;
 use DI\Container;
 use Psr\Log\LoggerInterface;
 
@@ -35,6 +36,11 @@ class AbstractHelper
      */
     protected $outputHelper;
 
+    /**
+     * @var ConnectionPool
+     */
+    protected $connectionPool;
+
     public function __construct(HelperContext $context)
     {
         $this->logger = $context->getLogger();
@@ -42,5 +48,6 @@ class AbstractHelper
         $this->cacheManager = $context->getCacheManager();
         $this->dependencyManager = $context->getDependencyManager();
         $this->outputHelper = $context->getOutputHelper();
+        $this->connectionPool = $context->getConnectionPool();
     }
 }

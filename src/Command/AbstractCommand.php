@@ -7,6 +7,7 @@ use Attlaz\Client as AttlazClient;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
@@ -57,6 +58,11 @@ abstract class AbstractCommand
      */
     protected $outputHelper;
 
+    /**
+     * @var ConnectionPool
+     */
+    protected $connectionPool;
+
     public function __construct(CommandContext $context)
     {
         $this->logger = $context->getLogger();
@@ -65,6 +71,7 @@ abstract class AbstractCommand
         $this->cacheManager = $context->getCacheManager();
         $this->dependencyManager = $context->getDependencyManager();
         $this->outputHelper = $context->getOutputHelper();
+        $this->connectionPool = $context->getConnectionPool();
 
         $this->attlazClient = $this->dependencyManager->get(AttlazClient::class);
     }
