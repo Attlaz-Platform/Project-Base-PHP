@@ -7,19 +7,22 @@ namespace Attlaz\Project\Connections;
 use Attlaz\Adapter\Base\RemoteService\SSH2RemoteService;
 use Attlaz\Client;
 use Attlaz\Project\App\Config;
-use Attlaz\Project\Logger\Logger;
+use Attlaz\Project\App\Environment;
+use Psr\Log\LoggerInterface;
 
 class ConnectionPool
 {
     private $config;
+    private $environment;
     private $client;
     private $logger;
 
-    private $connections = [];
+    private $connections;
 
-    public function __construct(Config $config, Client $client, Logger $logger)
+    public function __construct(Config $config,Environment $environment, Client $client, LoggerInterface $logger)
     {
         $this->config = $config;
+        $this->environment = $environment;
         $this->client = $client;
         $this->logger = $logger;
 
@@ -68,7 +71,11 @@ class ConnectionPool
 
         $connectionDefinition = $this->getConnectionDefinition($key);
         if (\is_null($connectionDefinition)) {
-            throw new \Error('No connection found with id "' . $key . '"');
+            $available = [];
+            foreach ($this->connections as $connectionDefinition) {
+                $available[] = $connectionDefinition['key'];
+            }
+            throw new \Error('No connection found with id "' . $key . '", available: ' . \implode(', ', $available));
         }
 
         switch ($connectionDefinition['type']) {
@@ -88,7 +95,7 @@ class ConnectionPool
     private function getConnectionDefinition(string $key): ?array
     {
         if (\is_null($this->connections)) {
-            $this->connections = $client->getConnections($environment->getProject()->id);
+            $this->connections = $this->client->getConnections($this->environment->getProject()->id);
         }
         foreach ($this->connections as $connectionDefinition) {
             if ($connectionDefinition['key'] === $key) {
