@@ -93,14 +93,24 @@ class ConfigHelper
             $value = $configValue->value;
             if (\is_string($value)) {
                 //TODO: use regex to replace config variables
-
-                foreach ($variables as $variableKey => $variableValue) {
-                    $value = \str_replace('{{' . $variableKey . '}}', $variableValue, $value);
-                }
+                $value = $this->patchValue($value, $variables);
             }
             $configValue->value = $value;
         }
 
         return $config;
+    }
+
+    public function patchValue(string $value, array $variables): string
+    {
+//        if (\is_string($value)) {
+        //TODO: use regex to replace config variables
+
+                foreach ($variables as $variableKey => $variableValue) {
+                    $value = \str_replace('{{' . $variableKey . '}}', $variableValue, $value);
+                }
+
+        return $value;
+//        }
     }
 }
