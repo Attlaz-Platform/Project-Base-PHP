@@ -12,7 +12,7 @@
     "psr/cache": "^1.0",
     "ramsey/uuid": "3.7.*",
     "mongodb/mongodb": "1.2.*",
-    "attlaz/client": "^1.4.3",
+    "attlaz/client": "^1.5.2",
     "attlaz/attlaz-monolog": "^1.0",
     "cache/filesystem-adapter": "^1.0.0",
     "cache/array-adapter": "^1.0.1",
