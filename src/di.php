@@ -103,7 +103,9 @@ return [
         return $logger;
     }),
     Client::class => factory(function (Environment $environment) {
-        return new Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
+        $client = new Client($environment->api_client_id, $environment->api_client_secret);
+        $client->setEndPoint($environment->api_endpoint);
+        return $client;
     }),
 
     CacheInterface::class => factory(function (

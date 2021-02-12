@@ -97,7 +97,9 @@ class InternalFactory
 
     public static function getClient(Environment $environment): Client
     {
-        return new Client($environment->api_endpoint, $environment->api_client_id, $environment->api_client_secret);
+        $client = new Client($environment->api_client_id, $environment->api_client_secret);
+        $client->setEndPoint($environment->api_endpoint);
+        return $client;
     }
 
     public function getCache(): CacheInterface
