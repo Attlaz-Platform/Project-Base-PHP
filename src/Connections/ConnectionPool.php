@@ -19,7 +19,7 @@ class ConnectionPool
 
     private $connections;
 
-    public function __construct(Config $config,Environment $environment, Client $client, LoggerInterface $logger)
+    public function __construct(Config $config, Environment $environment, Client $client, LoggerInterface $logger)
     {
         $this->config = $config;
         $this->environment = $environment;
@@ -77,8 +77,7 @@ class ConnectionPool
             }
             throw new \Error('No connection found with id "' . $key . '", available: ' . \implode(', ', $available));
         }
-
-        switch ($connectionDefinition['type']) {
+        switch ($connectionDefinition['adapter']) {
             case 'ssh':
 
                 return $this->createSSHConnection($connectionDefinition);
@@ -86,7 +85,7 @@ class ConnectionPool
 
                 break;
             default:
-                throw new \Exception('Unknown connection type ' . $connectionDefinition['type']);
+                throw new \Exception('Unknown connection adapter ' . $connectionDefinition['adapter']);
         }
 
         return null;
