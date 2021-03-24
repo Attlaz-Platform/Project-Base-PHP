@@ -49,8 +49,7 @@ class RequestDeploy extends Command
 
             $environmentIdentifier = $input->getArgument('environment');
 
-            if (\is_numeric($environmentIdentifier)) {
-                $environmentIdentifier = \intval($environmentIdentifier);
+            if (\is_string($environmentIdentifier) && $environmentIdentifier !== '') {
                 $environment = $this->client->getProjectEnvironmentById($environmentIdentifier);
             } else {
                 $projectId = $this->environment->getProject()->id;
