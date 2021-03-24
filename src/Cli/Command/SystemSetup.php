@@ -94,7 +94,8 @@ class SystemSetup extends Command
 
             //TODO: handle when client is not able to connect to API
 
-            $client = new Client($apiEndpoint, $apiClientId, $apiClientSecret);
+            $client = new Client( $apiClientId, $apiClientSecret);
+            $client->setEndPoint($apiEndpoint);
             $values[Environment::ENV_API_ENDPOINT] = $apiEndpoint;
             $values[Environment::ENV_API_CLIENT_ID] = $apiClientId;
             $values[Environment::ENV_API_CLIENT_SECRET] = $apiClientSecret;

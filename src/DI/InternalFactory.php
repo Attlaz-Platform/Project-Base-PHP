@@ -1,38 +1,28 @@
 <?php
-
 declare(strict_types=1);
+
+
+namespace Attlaz\Project\DI;
+
 
 use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Logger\Logger;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
-use DI\Container;
 use Monolog\ErrorHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Processor\IntrospectionProcessor;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
-use function DI\factory;
 
-//if (!defined('STDIN')) {
-//    define('STDIN', fopen('php://stdin', 'rb'));
-//}
-//if (!defined('STDOUT')) {
-//    define('STDOUT', fopen('php://stdout', 'wb'));
-//}
-//if (!defined('STDERR')) {
-//    define('STDERR', fopen('php://stderr', 'wb'));
-//}
-//if (!defined('STDOUT')) {
-//    define('STDOUT', fopen('php://output', 'wb'));
-//}
 
-return [
-    LoggerInterface::class => factory(function (Environment $environment, Container $container) {
+class InternalFactory
+{
+    public static function getLogger(Environment $environment, Client $client): LoggerInterface
+    {
         $loggerName = 'Attlaz';
         if ($environment->isInitialized()) {
             $projectName = $environment->getProject()->name;
@@ -63,7 +53,9 @@ return [
 
         $streamHandler = new StreamHandler(STDOUT, $environment->cli_log_level);
 
-        $container->set('attlaz_streamhandler', $streamHandler);
+//        $container->set('attlaz_streamhandler', $streamHandler);
+
+
 
         $logger->pushHandler($streamHandler);
 
@@ -90,7 +82,7 @@ return [
          * Log to API
          */
         if ($environment->isInitialized()) {
-            $apiLogHandler = new AttlazHandler($container->get(Client::class), \Monolog\Logger::INFO);
+            $apiLogHandler = new AttlazHandler($client, \Monolog\Logger::INFO);
             $formatter = new AttlazFormatter();
             $apiLogHandler->setFormatter($formatter);
             $logger->pushHandler($apiLogHandler);
@@ -101,17 +93,17 @@ return [
         ErrorHandler::register($logger);
 
         return $logger;
-    }),
-    Client::class => factory(function (Environment $environment) {
+    }
+
+    public static function getClient(Environment $environment): Client
+    {
         $client = new Client($environment->api_client_id, $environment->api_client_secret);
         $client->setEndPoint($environment->api_endpoint);
         return $client;
-    }),
+    }
 
-    CacheInterface::class => factory(function (
-        CacheManager $cacheManager
-    ) {
-        return $cacheManager->getCache();
-    }),
+    public function getCache(): CacheInterface
+    {
 
-];
+    }
+}

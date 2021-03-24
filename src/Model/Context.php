@@ -7,6 +7,7 @@ namespace Attlaz\Project\Model;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cache\CacheManager;
+use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
 use DI\Container;
 use Psr\Log\LoggerInterface;
@@ -41,13 +42,19 @@ class Context
      */
     protected $outputHelper;
 
+    /**
+     * @var ConnectionPool
+     */
+    protected $connectionPool;
+
     public function __construct(
         LoggerInterface $logger,
         Environment $environment,
         Config $config,
         CacheManager $cacheManager,
         Container $dependencyManager,
-        OutputHelper $outputHelper
+        OutputHelper $outputHelper,
+        ConnectionPool  $connectionPool
     ) {
         $this->logger = $logger;
         $this->environment = $environment;
@@ -55,6 +62,7 @@ class Context
         $this->cacheManager = $cacheManager;
         $this->dependencyManager = $dependencyManager;
         $this->outputHelper = $outputHelper;
+        $this->connectionPool = $connectionPool;
     }
 
     public function getLogger(): LoggerInterface
@@ -85,5 +93,9 @@ class Context
     public function getOutputHelper(): OutputHelper
     {
         return $this->outputHelper;
+    }
+    public function getConnectionPool(): ConnectionPool
+    {
+        return $this->connectionPool;
     }
 }
