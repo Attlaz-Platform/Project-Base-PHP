@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Attlaz\Project\DI\Definition;
@@ -74,7 +73,8 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         string $key,
         ContainerInterface $container,
         string $datatype = null
-    ) {
+    )
+    {
         /** @var Config $config */
         $config = $container->get(Config::class);
 

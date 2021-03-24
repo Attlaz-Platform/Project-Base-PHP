@@ -8,7 +8,6 @@ use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\TaskExecution\AbstractTaskHandler;
-use Monolog\Handler\StreamHandler;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
@@ -22,7 +21,7 @@ class ExecuteTask extends Command
     protected $taskExecutor;
     protected $client;
     protected $environment;
-    protected $streamHandler;
+//    protected $streamHandler;
     protected $logger;
 
     private const ARG_TASK = 'task';
@@ -33,32 +32,34 @@ class ExecuteTask extends Command
         AbstractTaskHandler $taskExecutor,
         Client $client,
         Environment $environment,
-        StreamHandler $streamHandler,
+//        StreamHandler $streamHandler,
         LoggerInterface $logger
-    ) {
+    )
+    {
         parent::__construct();
 
         $this->taskExecutor = $taskExecutor;
         $this->client = $client;
         $this->environment = $environment;
-        $this->streamHandler = $streamHandler;
+//        $this->streamHandler = $streamHandler;
         $this->logger = $logger;
     }
 
     protected function configure()
     {
         $this->setName('task:execute')
-             ->setDescription('Run task.')
-             ->setHelp('This command allows you to run a task')
-             ->addArgument(self::ARG_TASK, InputArgument::REQUIRED, 'Task identifier to execute')
-             ->addOption(self::ARG_ARGUMENTS, null, InputOption::VALUE_REQUIRED, 'Pass arguments in base64 encoded JSON format', null)
-             ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the task execution id', null);
+            ->setDescription('Run task.')
+            ->setHelp('This command allows you to run a task')
+            ->addArgument(self::ARG_TASK, InputArgument::REQUIRED, 'Task identifier to execute')
+            ->addOption(self::ARG_ARGUMENTS, null, InputOption::VALUE_REQUIRED, 'Pass arguments in base64 encoded JSON format', null)
+            ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the task execution id', null);
     }
 
     protected function init(InputInterface $input)
     {
         if ($input->getOption('verbose') === true) {
-            $this->streamHandler->setLevel(LogLevel::DEBUG);
+            // TODO: fix implementation
+//            $this->streamHandler->setLevel(LogLevel::DEBUG);
         }
     }
 

@@ -80,7 +80,7 @@ class CommandParameterDefinition
         } elseif ($valueType === 'bool' || $valueType === 'boolean') {
             $valueType = 'bool';
         }
-        echo $valueType . ' = ' . $parameterDefinition->getType() . \PHP_EOL;
+//        echo $valueType . ' = ' . $parameterDefinition->getType() . \PHP_EOL;
 
         return $valueType === $parameterDefinition->getType();
         //        if ($valueType !== $parameterDefinition->getType()) {

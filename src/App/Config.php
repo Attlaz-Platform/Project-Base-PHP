@@ -98,15 +98,25 @@ class Config implements LoggerAwareInterface
                 //                }
             }
         }
-        $configVariables = [
-            'project_dir' => $this->environment->getProjectRootPath(),
-        ];
-        $result = $this->configHelper->patchConfigVariables($result, $configVariables);
+        $result = $this->configHelper->patchConfigVariables($result, $this->getConfigVariables());
         if ($this->environment->cacheConfig) {
             $cache->set($configCacheKey, $result);
         }
 
         return $result;
+    }
+
+    private function getConfigVariables(): array
+    {
+        $configVariables = [
+            'project_dir' => $this->environment->getProjectRootPath(),
+        ];
+        return $configVariables;
+    }
+
+    public function patchConfigValue(string $value): string
+    {
+        return $this->configHelper->patchValue($value, $this->getConfigVariables());
     }
 
     /**

@@ -223,8 +223,8 @@ class Environment
     {
         if ($this->isInitialized) {
             //TODO: load this from DI
-            $client = new \Attlaz\Client($this->api_endpoint, $this->api_client_id, $this->api_client_secret);
-
+            $client = new \Attlaz\Client($this->api_client_id, $this->api_client_secret);
+            $client->setEndPoint($this->api_endpoint);
             $projectId = $this->getEnvValue(self::ENV_PROJECT);
             $this->project = $client->getProjectById($projectId);
 
