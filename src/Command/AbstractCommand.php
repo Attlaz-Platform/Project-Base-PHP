@@ -108,7 +108,7 @@ abstract class AbstractCommand
     final protected function requestTaskExecution(
         string $taskId,
         array $arguments = [],
-        int $projectEnvironmentId = null
+        string $projectEnvironmentId = null
     ): TaskExecutionResult
     {
         $executeLocal = false;
@@ -131,7 +131,7 @@ abstract class AbstractCommand
 
     final private function executeLocal(string $taskId,
                                         array $arguments = [],
-                                        int $projectEnvironmentId = null): TaskExecutionResult
+                                        string $projectEnvironmentId = null): TaskExecutionResult
     {
         $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
 
