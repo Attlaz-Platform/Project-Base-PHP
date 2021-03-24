@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "58ceeab118ad2c575e532845cdb59daa",
+    "content-hash": "5bfc7d1a0c8d2677e4384719859ec6e1",
     "packages": [
         {
             "name": "attlaz/attlaz-monolog",
@@ -58,17 +58,17 @@
         },
         {
             "name": "attlaz/client",
-            "version": "1.5.4",
+            "version": "1.5.5",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/php-client.git",
-                "reference": "928bb64c16d1cfb45fbbcaa0e57c282382616f82"
+                "reference": "0a53d1b2c9cdfad469268b9e2716e12aef151228"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.5.4-c4f248.tar",
-                "reference": "928bb64c16d1cfb45fbbcaa0e57c282382616f82",
-                "shasum": "191a91891079e3265727a762cc521c29974b62f1"
+                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.5.5-30ee28.tar",
+                "reference": "0a53d1b2c9cdfad469268b9e2716e12aef151228",
+                "shasum": "a0f8323e6281925f046e94f63fca66fde886c8f6"
             },
             "require": {
                 "ext-json": "*",
@@ -91,7 +91,7 @@
             "keywords": [
                 "attlaz"
             ],
-            "time": "2021-03-24T16:22:28+00:00"
+            "time": "2021-03-24T22:02:05+00:00"
         },
         {
             "name": "cache/adapter-common",
