@@ -228,7 +228,7 @@ class Environment
             $projectId = $this->getEnvValue(self::ENV_PROJECT);
             $this->project = $client->getProjectById($projectId);
 
-            $projectEnvironmentId = $this->getNumEnvValue(self::ENV_PROJECT_ENVIRONMENT);
+            $projectEnvironmentId = $this->getEnvValue(self::ENV_PROJECT_ENVIRONMENT);
             $this->projectEnvironment = $client->getProjectEnvironmentById($projectEnvironmentId);
         }
     }
