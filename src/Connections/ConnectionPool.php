@@ -17,7 +17,8 @@ class ConnectionPool
     private $client;
     private $logger;
 
-    private $connections;
+    /** @var AdapterConnectionDefinition[] */
+    private $connectionDefinitions;
 
     public function __construct(Config $config, Environment $environment, Client $client, LoggerInterface $logger)
     {
@@ -72,32 +73,46 @@ class ConnectionPool
         $connectionDefinition = $this->getConnectionDefinition($key);
         if (\is_null($connectionDefinition)) {
             $available = [];
-            foreach ($this->connections as $connectionDefinition) {
-                $available[] = $connectionDefinition['key'];
+            foreach ($this->connectionDefinitions as $connectionDefinition) {
+                $available[] = $connectionDefinition->getKey();
             }
             throw new \Error('No connection found with id "' . $key . '", available: ' . \implode(', ', $available));
         }
-        switch ($connectionDefinition['adapter']) {
-            case 'ssh':
 
-                return $this->createSSHConnection($connectionDefinition);
+        $adapterName = $connectionDefinition->getAdapterName();
+
+        $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterName);
 
 
-                break;
-            default:
-                throw new \Exception('Unknown connection adapter ' . $connectionDefinition['adapter']);
+        if (\is_null($adapterFactoryClassName)) {
+            throw new \Exception('Unknown connection adapter ' . $adapterName . ' make sure the package is installed');
         }
 
-        return null;
+        /** @var AdapterFactory $adapterFactory */
+        $adapterFactory = new $adapterFactoryClassName();
+        $adapter = $adapterFactory->createAdapterConnection($connectionDefinition);
+        return $adapter;
+
     }
 
-    private function getConnectionDefinition(string $key): ?array
+    private function loadConnectionDefinitions(): void
     {
-        if (\is_null($this->connections)) {
-            $this->connections = $this->client->getConnections($this->environment->getProject()->id);
+        $rawConnectionDefinitions = $this->client->getConnections($this->environment->getProject()->id);
+
+        $connectionDefinitions = [];
+        foreach ($rawConnectionDefinitions as $rawConnectionDefinition) {
+            $connectionDefinitions[] = new AdapterConnectionDefinition($rawConnectionDefinition);
         }
-        foreach ($this->connections as $connectionDefinition) {
-            if ($connectionDefinition['key'] === $key) {
+        $this->connectionDefinitions = $connectionDefinitions;
+    }
+
+    private function getConnectionDefinition(string $key): ?AdapterConnectionDefinition
+    {
+        if (\is_null($this->connectionDefinitions)) {
+            $this->loadConnectionDefinitions();
+        }
+        foreach ($this->connectionDefinitions as $connectionDefinition) {
+            if ($connectionDefinition->getKey() === $key) {
                 return $connectionDefinition;
             }
         }
