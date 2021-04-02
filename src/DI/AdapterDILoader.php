@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Attlaz\Project\DI;
 
 
-use Attlaz\Adapter\Base\Model\DefinitionsFactory;
 use Attlaz\Project\App\Config;
+use Attlaz\Project\Connections\AdapterFactory;
+use Attlaz\Project\Connections\AdapterRegistrar;
 use Psr\Log\LoggerInterface;
 
 class AdapterDILoader
@@ -20,33 +21,36 @@ class AdapterDILoader
 
     public function initDI(\DI\ContainerBuilder $containerBuilder, Config $config): void
     {
-        // TODO: get list of active adapters for this environment
 
-        $activeAdapters = ['Magento2' => '0.0.1'];
+        $adapterNames = AdapterRegistrar::getAdapterNames();
 
 
-        foreach ($activeAdapters as $activeAdapter => $version) {
+        foreach ($adapterNames as $adapterName) {
 
-            $factory = $this->getDIFactory($activeAdapter);
+            $factory = $this->getDIFactory($adapterName);
             if (!\is_null($factory)) {
-                $magento2Definitions = $factory->getDefinitions($config);
-                $containerBuilder->addDefinitions($magento2Definitions);
+                $adapterDefinitions = $factory->getDefinitions($config);
+                if (!\is_null($adapterDefinitions) && count($adapterDefinitions) > 0) {
+                    $containerBuilder->addDefinitions($adapterDefinitions);
+                }
             }
 
         }
-
-
     }
 
-    private function getDIFactory(string $adapterName): ?DefinitionsFactory
+    private function getDIFactory(string $adapterName): ?AdapterFactory
     {
 
-        $className = 'Attlaz\Adapter\\' . $adapterName . '\DI';
-        if (!\class_exists($className)) {
-            $this->logger->warning('Unable to load "' . $adapterName . '" adapter, class "' . $className . '" does not exist');
-            return null;
+        $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterName);
+
+
+        if (\is_null($adapterFactoryClassName)) {
+            throw new \Exception('Unknown connection adapter ' . $adapterName . ' make sure the package is installed');
         }
-        return new $className();
+
+        /** @var AdapterFactory $adapterFactory */
+        $adapterFactory = new $adapterFactoryClassName();
+        return $adapterFactory;
     }
 
 
