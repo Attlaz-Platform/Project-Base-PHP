@@ -201,11 +201,12 @@ class Environment
     public function getFileCachePath(): string
     {
         $cachePath = FileSystem::joinPath($this->projectRootPath, self::CACHE_LOCATION);
+        if (!FileSystem::dirExists($cachePath)) {
         FileSystem::createDir($cachePath, true);
         if (!FileSystem::dirExists($cachePath)) {
             throw new \Exception('Unable to create cache directory');
         }
-
+        }
         return $cachePath;
     }
 
