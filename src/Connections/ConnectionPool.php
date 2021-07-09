@@ -29,15 +29,31 @@ class ConnectionPool
 
     }
 
-    private function createSSHConnection(array $connectionDefinition)
+    private function createSSHConnection(AdapterConnectionDefinition $connectionDefinition)
     {
 
         // TODO: move this to the connection module itself
-        $hostname = $this->getConfiguration($connectionDefinition, 'hostname');
-        $port = $this->getConfiguration($connectionDefinition, 'port');
-        $username = $this->getConfiguration($connectionDefinition, 'username');
-        $key = $this->getConfiguration($connectionDefinition, 'key');
-        $password = $this->getConfiguration($connectionDefinition, 'password');
+        $hostname = $connectionDefinition->getConfiguration('hostname');
+        if (!\is_null($hostname)) {
+            $hostname = $this->config->patchConfigValue($hostname);
+        }
+
+        $port = $connectionDefinition->getConfiguration('port');
+//        $port = $this->config->patchConfigValue($port);
+
+        $username = $connectionDefinition->getConfiguration('username');
+//        $username = $this->config->patchConfigValue($username);
+
+        $key = $connectionDefinition->getConfiguration('key');
+        if (!\is_null($key)) {
+            $key = $this->config->patchConfigValue($key);
+        }
+
+
+        $password = $connectionDefinition->getConfiguration('password');
+        if (!\is_null($password)) {
+            $password = $this->config->patchConfigValue($password);
+        }
 
         $ssh = new SSH2RemoteService($hostname, $port);
 
@@ -50,21 +66,21 @@ class ConnectionPool
         return $ssh;
     }
 
-    private function getConfiguration(array $connectionDefinition, string $key): ?string
-    {
-        $configurations = $connectionDefinition['configuration'];
-        foreach ($configurations as $configuration) {
-            if ($configuration['key'] === $key) {
-                $value = $configuration['value'];
-                if (\is_string($value)) {
-                    $value = $this->config->patchConfigValue($value);
-                }
-                return $value;
-            }
-        }
-        echo $key . ' not found' . \PHP_EOL;
-        return null;
-    }
+//    private function getConfiguration(array $connectionDefinition, string $key): ?string
+//    {
+//        $configurations = $connectionDefinition['configuration'];
+//        foreach ($configurations as $configuration) {
+//            if ($configuration['key'] === $key) {
+//                $value = $configuration['value'];
+//                if (\is_string($value)) {
+//                    $value = $this->config->patchConfigValue($value);
+//                }
+//                return $value;
+//            }
+//        }
+//        echo $key . ' not found' . \PHP_EOL;
+//        return null;
+//    }
 
 
     public function getConnection(string $key)
@@ -80,6 +96,13 @@ class ConnectionPool
         }
 
         $adapterName = $connectionDefinition->getAdapterName();
+
+
+        switch ($adapterName) {
+            case 'ssh':
+                return $this->createSSHConnection($connectionDefinition);
+                break;
+        }
 
         $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterName);
 
@@ -117,5 +140,18 @@ class ConnectionPool
             }
         }
         return null;
+    }
+
+    public function getConnectionDefinitionKeys(): array
+    {
+        if (\is_null($this->connectionDefinitions)) {
+            $this->loadConnectionDefinitions();
+        }
+        //TODO: rewrite with yield
+        $result = [];
+        foreach ($this->connectionDefinitions as $connectionDefinition) {
+            $result[] = $connectionDefinition->getKey();
+        }
+        return $result;
     }
 }
