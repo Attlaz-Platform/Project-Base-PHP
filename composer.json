@@ -3,6 +3,7 @@
   "description": "Basic set to start a Attlaz project",
   "license": "MIT",
   "type": "project",
+  "homepage": "https://attlaz.com",
   "require": {
     "php": ">=7.2 | >=8.0",
     "monolog/monolog": "^2.0",
@@ -53,5 +54,10 @@
     "test": "vendor/bin/phpunit"
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "phpro/grumphp": true
+    }
+  }
 }
