@@ -66,9 +66,9 @@ class InternalFactory
             //TODO: only show colors when in developer mode AND local mode
             //TODO: add "verbose" and "non-verbose" mode
             if (class_exists('\Bramus\Monolog\Formatter\ColoredLineFormatter')) {
-                $formatter = new ColoredLineFormatter(null, $format);
+                $formatter = new ColoredLineFormatter(null, $format, null, false, true);
             } else {
-                $formatter = new LineFormatter($format);
+                $formatter = new LineFormatter($format, null, false, true);
             }
             $formatter->allowInlineLineBreaks(true);
 
