@@ -31,14 +31,14 @@ class RequestDeploy extends Command
     protected function configure()
     {
         $this->setName('deploy:request')
-             ->setAliases([
-                 'deployment:request',
-                 'request:deploy',
-                 'deploy',
-             ])
-             ->setDescription('Request deploy.')
-             ->setHelp('This command allows you to request a deployment')
-             ->addArgument('environment', InputArgument::REQUIRED, 'Environment id or key');
+            ->setAliases([
+                'deployment:request',
+                'request:deploy',
+                'deploy',
+            ])
+            ->setDescription('Request deploy.')
+            ->setHelp('This command allows you to request a deployment')
+            ->addArgument('environment', InputArgument::OPTIONAL, 'Environment key');
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -49,21 +49,31 @@ class RequestDeploy extends Command
 
             $environmentIdentifier = $input->getArgument('environment');
 
-            if (\is_string($environmentIdentifier) && $environmentIdentifier !== '') {
-                $environment = $this->client->getProjectEnvironmentById($environmentIdentifier);
+
+            $selectedEnvironment = null;
+            if (!empty($environmentIdentifier)) {
+                $selectedEnvironment = $this->client->getProjectEnvironmentByKey($this->environment->getProject()->id, $environmentIdentifier);
             } else {
+                $environmentIdentifier = $this->environment->getProject()->defaultEnvironmentId;
+                $selectedEnvironment = $this->client->getProjectEnvironmentById($environmentIdentifier);
+            }
+
+
+            if (\is_null($selectedEnvironment)) {
+                $options = [];
                 $projectId = $this->environment->getProject()->id;
-                $environment = $this->client->getProjectEnvironmentByKey($projectId, $environmentIdentifier);
+                $environments = $this->client->getProjectEnvironments($projectId);
+                foreach ($environments as $environment) {
+                    $options[] = $environment->key;
+                }
+                throw new \Exception('Unable to request deploy: environment not found (available: ' . \implode(', ', $options) . ')');
             }
-            if (\is_null($environment)) {
-                throw new \Exception('Unable to request deploy: environment not found');
-            }
 
-            $deployId = $this->client->requestDeploy($environment->id);
+            $deployId = $this->client->requestDeploy($selectedEnvironment->id);
 
-            $deployUrl = $this->environment->getAppUrl($environment, ['manage']);
+            $deployUrl = $this->environment->getAppUrl($selectedEnvironment, ['manage']);
 
-            $this->logger->info('Deploy requested (more: ' . $deployUrl . ')');
+            $this->logger->info('Deploy requested for environment "' . $selectedEnvironment->name . '" (more: ' . $deployUrl . ')');
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 
