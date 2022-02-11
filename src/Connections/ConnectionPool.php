@@ -38,7 +38,7 @@ class ConnectionPool
             $hostname = $this->config->patchConfigValue($hostname);
         }
 
-        $port = $connectionDefinition->getConfiguration('port');
+        $port = (int)$connectionDefinition->getConfiguration('port');
 //        $port = $this->config->patchConfigValue($port);
 
         $username = $connectionDefinition->getConfiguration('username');
