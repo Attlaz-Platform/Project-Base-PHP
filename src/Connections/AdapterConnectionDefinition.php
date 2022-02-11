@@ -6,7 +6,7 @@ namespace Attlaz\Project\Connections;
 
 class AdapterConnectionDefinition
 {
-    private $data;
+    private array $data;
 
     public function __construct(array $data)
     {
@@ -28,7 +28,7 @@ class AdapterConnectionDefinition
      * @param string|null $default
      * @return string|null
      */
-    public function getConfiguration(string $key, $default = null): ?string
+    public function getConfiguration(string $key, string $default = null): ?string
     {
         $configurations = $this->data['configuration'];
         foreach ($configurations as $configuration) {
@@ -38,5 +38,17 @@ class AdapterConnectionDefinition
         }
 
         return $default;
+    }
+
+    public function getConfiguratedKeys(): array
+    {
+        $configurations = $this->data['configuration'];
+
+        $result = [];
+        foreach ($configurations as $configuration) {
+            $result[] = $configuration['key'];
+        }
+
+        return $result;
     }
 }
