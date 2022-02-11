@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 
 namespace Attlaz\Project\Connections;
 
@@ -12,13 +12,13 @@ use Psr\Log\LoggerInterface;
 
 class ConnectionPool
 {
-    private $config;
-    private $environment;
-    private $client;
-    private $logger;
+    private Config $config;
+    private Environment $environment;
+    private Client $client;
+    private LoggerInterface $logger;
 
-    /** @var AdapterConnectionDefinition[] */
-    private $connectionDefinitions;
+    /** @var AdapterConnectionDefinition[]|null */
+    private ?array $connectionDefinitions = null;
 
     public function __construct(Config $config, Environment $environment, Client $client, LoggerInterface $logger)
     {
@@ -29,7 +29,7 @@ class ConnectionPool
 
     }
 
-    private function createSSHConnection(AdapterConnectionDefinition $connectionDefinition)
+    private function createSSHConnection(AdapterConnectionDefinition $connectionDefinition): SSH2RemoteService
     {
 
         // TODO: move this to the connection module itself
@@ -112,9 +112,14 @@ class ConnectionPool
         }
 
         /** @var AdapterFactory $adapterFactory */
-        $adapterFactory = new $adapterFactoryClassName();
-        $adapter = $adapterFactory->createAdapterConnection($connectionDefinition);
-        return $adapter;
+        $adapterFactory = new $adapterFactoryClassName($this);
+        $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
+
+        if (\is_null($adapterConnection)) {
+
+        }
+
+        return $adapterConnection;
 
     }
 
@@ -151,6 +156,22 @@ class ConnectionPool
         $result = [];
         foreach ($this->connectionDefinitions as $connectionDefinition) {
             $result[] = $connectionDefinition->getKey();
+        }
+        return $result;
+    }
+
+    public function getDefinedConnections(): array
+    {
+        if (\is_null($this->connectionDefinitions)) {
+            $this->loadConnectionDefinitions();
+        }
+        //TODO: rewrite with yield
+        $result = [];
+        foreach ($this->connectionDefinitions as $connectionDefinition) {
+            $result[] = [
+                'key'  => $connectionDefinition->getKey(),
+                'type' => $connectionDefinition->getAdapterName()
+            ];
         }
         return $result;
     }
