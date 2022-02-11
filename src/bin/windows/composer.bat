@@ -1,2 +1,2 @@
 @ECHO OFF
-docker run --rm -it --init -v %cd%:/var/attlaz -w /var/attlaz prooph/composer:7.2 %*
+docker run --rm -it --init -v %cd%:/var/attlaz -w /var/attlaz hq.attlaz.com:2498/attlaz_worker:1.4.21 composer %*
