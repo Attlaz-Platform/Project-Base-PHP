@@ -8,6 +8,7 @@ namespace Attlaz\Project\DI;
 use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Client;
+use Attlaz\Model\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
@@ -82,7 +83,8 @@ class InternalFactory
          * Log to API
          */
         if ($environment->isInitialized()) {
-            $apiLogHandler = new AttlazHandler($client, \Monolog\Logger::INFO);
+            $logStreamId = new LogStreamId('environment:' . $environment->getProjectEnvironment()->id);
+            $apiLogHandler = new AttlazHandler($client,$logStreamId, \Monolog\Logger::INFO);
             $formatter = new AttlazFormatter();
             $apiLogHandler->setFormatter($formatter);
             $logger->pushHandler($apiLogHandler);
@@ -102,8 +104,5 @@ class InternalFactory
         return $client;
     }
 
-    public function getCache(): CacheInterface
-    {
 
-    }
 }

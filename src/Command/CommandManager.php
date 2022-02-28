@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\AttlazMonolog\Handler\AttlazHandler;
+use Attlaz\Model\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
-use Attlaz\Project\Logger\Processor;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Psr\Container\ContainerInterface;
@@ -36,11 +37,12 @@ class CommandManager
     //    }
 
     public function initialize(
-        CommandDiscovery $discovery,
+        CommandDiscovery   $discovery,
         ContainerInterface $diContainer,
-        Environment $environment,
-        LoggerInterface $logger
-    ) {
+        Environment        $environment,
+        LoggerInterface    $logger
+    )
+    {
         //TODO: we should check if the CommandManager is initialized an has everything loaded
         $this->discovery = $discovery;
         $this->diContainer = $diContainer;
@@ -48,13 +50,36 @@ class CommandManager
         $this->logger = $logger;
     }
 
-    public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
+    private ?LogStreamId $previousLogStreamId = null;
+
+    private function enableExecutionLogging(string $executionId): void
     {
         if ($this->logger instanceof Logger) {
-            $logProcessor = new Processor();
-            $logProcessor->setExecutionId($request->getExecutionId());
-            $this->logger->pushProcessor($logProcessor);
+            $handlers = $this->logger->getHandlers();
+            foreach ($handlers as $handler) {
+                if ($handler instanceof AttlazHandler) {
+                    $this->previousLogStreamId = $handler->getLogStreamId();
+                    $handler->setLogStreamId(new LogStreamId('execution:' . $executionId));
+                }
+            }
         }
+    }
+
+    private function disableExecutionLogging(): void
+    {
+        if ($this->previousLogStreamId !== null && $this->logger instanceof Logger) {
+            $handlers = $this->logger->getHandlers();
+            foreach ($handlers as $handler) {
+                if ($handler instanceof AttlazHandler) {
+                    $handler->setLogStreamId($this->previousLogStreamId);
+                }
+            }
+        }
+    }
+
+    public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
+    {
+        $this->enableExecutionLogging($request->getExecutionId());
 
         //TODO: make it possible to switch between app/staging app
 
@@ -106,6 +131,8 @@ class CommandManager
             $this->logger->error($ex);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
         }
+
+        $this->disableExecutionLogging();
 
         return $result;
     }

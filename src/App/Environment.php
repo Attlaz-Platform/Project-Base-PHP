@@ -48,8 +48,6 @@ class Environment
     public $cli_log_level = \Monolog\Logger::INFO;
     public $cli_log_stacktrace = true;
 
-    public $mongoDBConnectionString;
-
     private $isInitialized = false;
 
     public const ENV_PROJECT = 'project';
@@ -58,7 +56,6 @@ class Environment
     public const ENV_API_ENDPOINT = 'api_endpoint';
     public const ENV_API_CLIENT_ID = 'api_client_id';
     public const ENV_API_CLIENT_SECRET = 'api_client_secret';
-    public const ENV_STORAGE = 'storage';
 
     public const ENV_SYS_MEMORY_LIMIT = 'sys_memory_limit';
 
@@ -83,8 +80,6 @@ class Environment
             $this->api_client_secret = $this->getEnvValue(self::ENV_API_CLIENT_SECRET);
 
             $this->sys_memory_limit = $this->getEnvValue(self::ENV_SYS_MEMORY_LIMIT, $this->sys_memory_limit);
-
-            $this->mongoDBConnectionString = $this->getEnvValue(self::ENV_STORAGE);
         }
         //TODO: check if we were able to set this
         ini_set('memory_limit', $this->sys_memory_limit);
