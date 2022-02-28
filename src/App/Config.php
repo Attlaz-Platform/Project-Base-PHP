@@ -6,8 +6,8 @@ namespace Attlaz\Project\App;
 
 use Attlaz\Client;
 use Attlaz\Model\ProjectEnvironment;
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Model\Config as ProjectConfig;
+use Attlaz\Project\Storage\StorageManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
@@ -15,23 +15,24 @@ class Config implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private $cacheManager;
-    private $client;
-    private $environment;
-    private $configHelper;
+    private StorageManager $storageManager;
+    private Client $client;
+    private Environment $environment;
+    private ConfigHelper $configHelper;
 
-    private $configuration = [];
+    private array $configuration = [];
 
     private const CONFIG_CACHE_POOL = 'config';
     private const CONFIG_CACHE_PREFIX_KEY = 'config_';
 
     public function __construct(
-        CacheManager $cacheManager,
-        Client $client,
-        Environment $environment,
-        ConfigHelper $configHelper
-    ) {
-        $this->cacheManager = $cacheManager;
+        StorageManager $storageManager,
+        Client         $client,
+        Environment    $environment,
+        ConfigHelper   $configHelper
+    )
+    {
+        $this->storageManager = $storageManager;
         $this->client = $client;
         $this->environment = $environment;
         $this->configHelper = $configHelper;
@@ -52,10 +53,12 @@ class Config implements LoggerAwareInterface
     {
         $configCacheKey = self::CONFIG_CACHE_PREFIX_KEY . $projectEnvironment->id;
 
-        $cache = $this->cacheManager->getCache(self::CONFIG_CACHE_POOL);
+        $cache = $this->storageManager->cache;
 
-        if ($this->environment->cacheConfig && $cache->has($configCacheKey)) {
-            return $cache->get($configCacheKey);
+
+        if ($this->environment->cacheConfig && $cache->hasValue($configCacheKey)) {
+            $value = $cache->getValue($configCacheKey);
+            return $value->value;
         }
         $result = [];
         //TODO: read from cache if possible
@@ -100,7 +103,7 @@ class Config implements LoggerAwareInterface
         }
         $result = $this->configHelper->patchConfigVariables($result, $this->getConfigVariables());
         if ($this->environment->cacheConfig) {
-            $cache->set($configCacheKey, $result);
+            $cache->setValue($configCacheKey, $result);
         }
 
         return $result;
@@ -127,8 +130,9 @@ class Config implements LoggerAwareInterface
      */
     private function fetchApiConfigValues(
         \Attlaz\Model\Project $project,
-        ProjectEnvironment $projectEnvironment = null
-    ): array {
+        ProjectEnvironment    $projectEnvironment = null
+    ): array
+    {
         $projectEnvironmentId = null;
         if (!\is_null($projectEnvironment)) {
             $projectEnvironmentId = $projectEnvironment->id;
