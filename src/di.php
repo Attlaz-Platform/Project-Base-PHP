@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Client;
+use Attlaz\Model\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
@@ -14,7 +15,6 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Processor\IntrospectionProcessor;
 use Psr\Log\LoggerInterface;
-use Psr\SimpleCache\CacheInterface;
 use function DI\factory;
 
 return [
@@ -76,7 +76,8 @@ return [
          * Log to API
          */
         if ($environment->isInitialized()) {
-            $apiLogHandler = new AttlazHandler($container->get(Client::class), \Monolog\Logger::INFO);
+            $logStreamId = new LogStreamId('environment:' . $environment->getProjectEnvironment()->id);
+            $apiLogHandler = new AttlazHandler($container->get(Client::class), $logStreamId, \Monolog\Logger::INFO);
             $formatter = new AttlazFormatter();
             $apiLogHandler->setFormatter($formatter);
             $logger->pushHandler($apiLogHandler);
@@ -88,16 +89,16 @@ return [
 
         return $logger;
     }),
-    Client::class => factory(function (Environment $environment) {
+    Client::class          => factory(function (Environment $environment) {
         $client = new Client($environment->api_client_id, $environment->api_client_secret);
         $client->setEndPoint($environment->api_endpoint);
         return $client;
     }),
 
-//    CacheInterface::class => factory(function (
-//        CacheManager $cacheManager
-//    ) {
-//        return $cacheManager->getCache();
-//    }),
+    //    CacheInterface::class => factory(function (
+    //        CacheManager $cacheManager
+    //    ) {
+    //        return $cacheManager->getCache();
+    //    }),
 
 ];
