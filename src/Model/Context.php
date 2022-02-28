@@ -6,60 +6,36 @@ namespace Attlaz\Project\Model;
 
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
+use Attlaz\Project\Storage\StorageManager;
 use DI\Container;
 use Psr\Log\LoggerInterface;
 
 class Context
 {
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-    /**
-     * @var \Attlaz\Project\App\Environment
-     */
-    protected $environment;
-
-    /**
-     * @var Config
-     */
-    protected $config;
-    /**
-     * @var \Attlaz\Project\Cache\CacheManager
-     */
-    protected $cacheManager;
-
-    /**
-     * @var \DI\Container
-     */
-    protected $dependencyManager;
-
-    /**
-     * @var OutputHelper
-     */
-    protected $outputHelper;
-
-    /**
-     * @var ConnectionPool
-     */
-    protected $connectionPool;
+    protected LoggerInterface $logger;
+    protected \Attlaz\Project\App\Environment $environment;
+    protected Config $config;
+    protected StorageManager $storageManager;
+    protected \DI\Container $dependencyManager;
+    protected OutputHelper $outputHelper;
+    protected ConnectionPool $connectionPool;
 
     public function __construct(
         LoggerInterface $logger,
-        Environment $environment,
-        Config $config,
-        CacheManager $cacheManager,
-        Container $dependencyManager,
-        OutputHelper $outputHelper,
+        Environment     $environment,
+        Config          $config,
+        StorageManager  $storageManager,
+        Container       $dependencyManager,
+        OutputHelper    $outputHelper,
         ConnectionPool  $connectionPool
-    ) {
+    )
+    {
         $this->logger = $logger;
         $this->environment = $environment;
         $this->config = $config;
-        $this->cacheManager = $cacheManager;
+        $this->storageManager = $storageManager;
         $this->dependencyManager = $dependencyManager;
         $this->outputHelper = $outputHelper;
         $this->connectionPool = $connectionPool;
@@ -80,9 +56,9 @@ class Context
         return $this->config;
     }
 
-    public function getCacheManager(): CacheManager
+    public function getStorageManager(): StorageManager
     {
-        return $this->cacheManager;
+        return $this->storageManager;
     }
 
     public function getDependencyManager(): Container
@@ -94,6 +70,7 @@ class Context
     {
         return $this->outputHelper;
     }
+
     public function getConnectionPool(): ConnectionPool
     {
         return $this->connectionPool;

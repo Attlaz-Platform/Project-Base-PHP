@@ -6,11 +6,11 @@ namespace Attlaz\Project\Command;
 use Attlaz\Client as AttlazClient;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
+use Attlaz\Project\Storage\StorageManager;
 use DI\Container as DIContainer;
 use Psr\Log\LoggerInterface;
 
@@ -23,52 +23,21 @@ abstract class AbstractCommand
 {
 
     public const INVOKE_METHOD = 'execute';
-
-
-    /**
-     * @var AttlazClient
-     */
-    private $attlazClient;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-    /**
-     * @var Environment
-     */
-    protected $environment;
-
-    /**
-     * @var Config
-     */
-    protected $config;
-    /**
-     * @var CacheManager
-     */
-    protected $cacheManager;
-
-    /**
-     * @var DIContainer
-     */
-    protected $dependencyManager;
-
-    /**
-     * @var OutputHelper
-     */
-    protected $outputHelper;
-
-    /**
-     * @var ConnectionPool
-     */
-    protected $connectionPool;
+    private AttlazClient $attlazClient;
+    protected LoggerInterface $logger;
+    protected Environment $environment;
+    protected Config $config;
+    protected StorageManager $storageManager;
+    protected DIContainer $dependencyManager;
+    protected OutputHelper $outputHelper;
+    protected ConnectionPool $connectionPool;
 
     public function __construct(CommandContext $context)
     {
         $this->logger = $context->getLogger();
         $this->environment = $context->getEnvironment();
         $this->config = $context->getConfig();
-        $this->cacheManager = $context->getCacheManager();
+        $this->storageManager = $context->getStorageManager();
         $this->dependencyManager = $context->getDependencyManager();
         $this->outputHelper = $context->getOutputHelper();
         $this->connectionPool = $context->getConnectionPool();
@@ -107,7 +76,7 @@ abstract class AbstractCommand
 
     final protected function requestTaskExecution(
         string $taskId,
-        array $arguments = [],
+        array  $arguments = [],
         string $projectEnvironmentId = null
     ): TaskExecutionResult
     {
@@ -130,7 +99,7 @@ abstract class AbstractCommand
     }
 
     final private function executeLocal(string $taskId,
-                                        array $arguments = [],
+                                        array  $arguments = [],
                                         string $projectEnvironmentId = null): TaskExecutionResult
     {
         $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);

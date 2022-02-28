@@ -38,9 +38,9 @@ class ConfigList extends Command
     protected function configure()
     {
         $this->setName('config:list')
-             ->setDescription('List configuration')
-             ->setHelp('List configuration')
-             ->addOption(self::ARG_FORCE_ENVIRONMENT, null, InputOption::VALUE_OPTIONAL, 'Force the configuration to be fetched from this environment (id or key)', null);
+            ->setDescription('List configuration')
+            ->setHelp('List configuration')
+            ->addOption(self::ARG_FORCE_ENVIRONMENT, null, InputOption::VALUE_OPTIONAL, 'Force the configuration to be fetched from this environment (id or key)', null);
     }
 
     private function getForcedConfigProjectEnvironment(InputInterface $input): ?ProjectEnvironment
@@ -93,7 +93,7 @@ class ConfigList extends Command
             }
 
             $table->setHeaders($headers)
-                  ->setRows($rows);
+                ->setRows($rows);
             $table->render();
 
             return 0;
