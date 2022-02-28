@@ -102,8 +102,5 @@ class InternalFactory
         return $client;
     }
 
-    public function getCache(): CacheInterface
-    {
 
-    }
 }
