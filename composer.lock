@@ -4,31 +4,31 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6ea6f0fd4389ff61db00f6902aabe48d",
+    "content-hash": "1100520526e058505015cb5c50370ecd",
     "packages": [
         {
             "name": "attlaz/attlaz-monolog",
-            "version": "1.0.0",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/Monolog.git",
-                "reference": "c29caf0f0ed548c989486fab0a910d425fbf8241"
+                "reference": "8554e38af7e45962683fbb0a0e5e44119b66bb05"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/c29caf0f0ed548c989486fab0a910d425fbf8241",
-                "reference": "c29caf0f0ed548c989486fab0a910d425fbf8241",
+                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/8554e38af7e45962683fbb0a0e5e44119b66bb05",
+                "reference": "8554e38af7e45962683fbb0a0e5e44119b66bb05",
                 "shasum": ""
             },
             "require": {
-                "attlaz/client": "^1.5",
+                "attlaz/client": "^1.7.0",
                 "monolog/monolog": "^2.0",
-                "php": ">=7.2"
+                "php": ">=7.4"
             },
             "require-dev": {
                 "ext-json": "*",
-                "inpsyde/php-coding-standards": "^0.13",
-                "phpunit/phpunit": "^8"
+                "inpsyde/php-coding-standards": "^1.0.0",
+                "phpunit/phpunit": "^9"
             },
             "type": "library",
             "autoload": {
@@ -55,23 +55,23 @@
                 "monolog"
             ],
             "support": {
-                "source": "https://github.com/Attlaz-Platform/Monolog/tree/1.0.0"
+                "source": "https://github.com/Attlaz-Platform/Monolog/tree/1.1.1"
             },
-            "time": "2020-10-19T14:28:42+00:00"
+            "time": "2022-02-28T20:10:48+00:00"
         },
         {
             "name": "attlaz/client",
-            "version": "1.6.1",
+            "version": "1.7.0",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/php-client.git",
-                "reference": "e64fe717ccfc6f39c4a36465e9f247c884427ab0"
+                "reference": "f41c0289833bb197a5620d9a36ee3e09437640a3"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.6.1-1ceacd.tar",
-                "reference": "e64fe717ccfc6f39c4a36465e9f247c884427ab0",
-                "shasum": "318907acb51195de9f8f6000869b24b9676c7848"
+                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.7.0-715fd4.tar",
+                "reference": "f41c0289833bb197a5620d9a36ee3e09437640a3",
+                "shasum": "85b588bbfe2ae84d54de58424ce209dbeb8eca2c"
             },
             "require": {
                 "ext-json": "*",
@@ -97,7 +97,7 @@
                 "ipaas",
                 "synchronize"
             ],
-            "time": "2022-02-28T18:25:51+00:00"
+            "time": "2022-02-28T19:18:47+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -2749,12 +2749,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "Amp\\Serialization\\": "src"
-                },
                 "files": [
                     "src/functions.php"
-                ]
+                ],
+                "psr-4": {
+                    "Amp\\Serialization\\": "src"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
