@@ -7,7 +7,6 @@ use Attlaz\Client;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\ConfigHelper;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Cli\Command\CacheClean;
 use Attlaz\Project\Cli\Command\ConfigList;
 use Attlaz\Project\Cli\Command\ExecuteTask;
@@ -22,6 +21,8 @@ use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\DI\AdapterDILoader;
 use Attlaz\Project\DI\InternalFactory;
 use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\Storage\SimpleCacheAdapter;
+use Attlaz\Project\Storage\StorageManager;
 use Attlaz\Project\TaskExecution\CLI;
 use Attlaz\Project\TaskExecution\FPM;
 use DI\ContainerBuilder;
@@ -34,21 +35,13 @@ use Symfony\Component\Console\Application;
 
 class Project
 {
-    /** @var CommandManager */
-    private $commandManager;
 
-    /** @var ContainerInterface */
-    private $diContainer;
-
-    /** @var LoggerInterface */
-    private $logger;
-
-    private $startTime;
-
-    /** @var Environment */
-    private $environment;
-
-    private $projectRootPath;
+    private CommandManager $commandManager;
+    private ContainerInterface $diContainer;
+    private LoggerInterface $logger;
+    private float $startTime;
+    private Environment $environment;
+    private string $projectRootPath;
 
     public function __construct(string $projectRootPath, Environment $environment = null)
     {
@@ -116,7 +109,6 @@ class Project
             throw new \Exception($strErrorMessage);
         }
 
-        /** @var \DI\ContainerBuilder $containerBuilder */
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->useAnnotations(true);
         if ($this->environment->compileDi) {
@@ -127,24 +119,21 @@ class Project
             $containerBuilder->enableDefinitionCache();
         }
 
-
-
-
-        $cacheManager = new CacheManager($this->environment, $this->logger);
-
         $client = InternalFactory::getClient($this->environment);
+
+        $storageManager = new StorageManager($client, $this->environment);
 
         $configHelper = new ConfigHelper($this->logger);
 
-        $config = new Config($cacheManager, $client, $this->environment, $configHelper);
+        $config = new Config($storageManager, $client, $this->environment, $configHelper);
 
         $localDefinitions = [
             LoggerInterface::class => $this->logger,
-            Environment::class => $this->environment,
-            Config::class         => $config,
-            CacheManager::class   => $cacheManager,
-            CacheInterface::class => $cacheManager->getCache(),
-            Client::class         => $client
+            Environment::class     => $this->environment,
+            Config::class          => $config,
+            StorageManager::class  => $storageManager,
+            CacheInterface::class  => new SimpleCacheAdapter($storageManager->cache),
+            Client::class          => $client
         ];
 
         $containerBuilder->addDefinitions($localDefinitions);
@@ -212,8 +201,8 @@ class Project
                 //Config list
                 $cliApplication->add(new ConfigList($config, $environment, $attlazClient, $this->logger));
                 //Clean cache
-                $cmd = new CacheClean($config, $this->diContainer->get(CacheManager::class), $this->logger);
-                $cliApplication->add($cmd);
+                $clearCacheCommand = new CacheClean($config, $this->diContainer->get(StorageManager::class), $this->logger);
+                $cliApplication->add($clearCacheCommand);
                 //Request deploy
                 $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
                 //Run tests

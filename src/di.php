@@ -6,7 +6,6 @@ use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Cache\CacheManager;
 use Attlaz\Project\Logger\Logger;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use DI\Container;
@@ -17,19 +16,6 @@ use Monolog\Processor\IntrospectionProcessor;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use function DI\factory;
-
-//if (!defined('STDIN')) {
-//    define('STDIN', fopen('php://stdin', 'rb'));
-//}
-//if (!defined('STDOUT')) {
-//    define('STDOUT', fopen('php://stdout', 'wb'));
-//}
-//if (!defined('STDERR')) {
-//    define('STDERR', fopen('php://stderr', 'wb'));
-//}
-//if (!defined('STDOUT')) {
-//    define('STDOUT', fopen('php://output', 'wb'));
-//}
 
 return [
     LoggerInterface::class => factory(function (Environment $environment, Container $container) {
@@ -108,10 +94,10 @@ return [
         return $client;
     }),
 
-    CacheInterface::class => factory(function (
-        CacheManager $cacheManager
-    ) {
-        return $cacheManager->getCache();
-    }),
+//    CacheInterface::class => factory(function (
+//        CacheManager $cacheManager
+//    ) {
+//        return $cacheManager->getCache();
+//    }),
 
 ];

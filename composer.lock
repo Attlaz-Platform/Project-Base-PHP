@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a27b1be8467a2f27a0a818ed552acef",
+    "content-hash": "6ea6f0fd4389ff61db00f6902aabe48d",
     "packages": [
         {
             "name": "attlaz/attlaz-monolog",
@@ -61,23 +61,23 @@
         },
         {
             "name": "attlaz/client",
-            "version": "1.5.6",
+            "version": "1.6.1",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/php-client.git",
-                "reference": "9c889d1c9abe99de56100aab20bfdf07012ed077"
+                "reference": "e64fe717ccfc6f39c4a36465e9f247c884427ab0"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.5.6-0eefeb.tar",
-                "reference": "9c889d1c9abe99de56100aab20bfdf07012ed077",
-                "shasum": "fefd483d81f637ab8994ed1bb80d5015dba9a0fe"
+                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.6.1-1ceacd.tar",
+                "reference": "e64fe717ccfc6f39c4a36465e9f247c884427ab0",
+                "shasum": "318907acb51195de9f8f6000869b24b9676c7848"
             },
             "require": {
                 "ext-json": "*",
                 "ext-openssl": "*",
                 "league/oauth2-client": "^2.6.0",
-                "php": ">=7.2 | >=8.0",
+                "php": ">=7.4 | >=8.0",
                 "psr/log": "1.*"
             },
             "type": "library",
@@ -97,7 +97,7 @@
                 "ipaas",
                 "synchronize"
             ],
-            "time": "2021-12-20T15:39:35+00:00"
+            "time": "2022-02-28T18:25:51+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -1431,6 +1431,57 @@
                 "source": "https://github.com/php-fig/log/tree/1.1.4"
             },
             "time": "2021-05-03T11:20:27+00:00"
+        },
+        {
+            "name": "psr/simple-cache",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/simple-cache.git",
+                "reference": "408d5eafb83c57f6365a3ca330ff23aa4a5fa39b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/408d5eafb83c57f6365a3ca330ff23aa4a5fa39b",
+                "reference": "408d5eafb83c57f6365a3ca330ff23aa4a5fa39b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for simple caching",
+            "keywords": [
+                "cache",
+                "caching",
+                "psr",
+                "psr-16",
+                "simple-cache"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/simple-cache/tree/master"
+            },
+            "time": "2017-10-23T01:57:42+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
