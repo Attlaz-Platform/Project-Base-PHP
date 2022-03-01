@@ -16,7 +16,7 @@ class SimpleCacheAdapter implements CacheInterface
 
     public function get($key, $default = null)
     {
-        $result = $this->storageEngine->getValue($key);
+        $result = $this->storageEngine->getItem($key);
         if (!\is_null($result)) {
             return $result->value;
         }
@@ -25,36 +25,44 @@ class SimpleCacheAdapter implements CacheInterface
 
     public function set($key, $value, $ttl = null)
     {
-        return $this->storageEngine->setValue($key, $value, $ttl);
+        return $this->storageEngine->setItem($key, $value, $ttl);
     }
 
     public function delete($key)
     {
-        return $this->storageEngine->delValue($key);
+        return $this->storageEngine->deleteItem($key);
     }
 
     public function clear()
     {
-        return $this->storageEngine->clear();
+        return $this->storageEngine->clearPool('default');
     }
 
     public function getMultiple($keys, $default = null)
     {
-        // TODO: Implement getMultiple() method.
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = $this->get($key, $default);
+        }
+        return $result;
     }
 
     public function setMultiple($values, $ttl = null)
     {
-        // TODO: Implement setMultiple() method.
+        foreach ($values as $key => $value) {
+            $this->set($key, $value);
+        }
     }
 
     public function deleteMultiple($keys)
     {
-        // TODO: Implement deleteMultiple() method.
+        foreach ($keys as $key) {
+            $this->delete($key);
+        }
     }
 
     public function has($key)
     {
-        return $this->storageEngine->hasValue($key);
+        return $this->storageEngine->hasItem($key);
     }
 }
