@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1100520526e058505015cb5c50370ecd",
+    "content-hash": "4ed02e7ddf380a7dd44c47644f6e3932",
     "packages": [
         {
             "name": "attlaz/attlaz-monolog",
-            "version": "1.1.1",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/Monolog.git",
-                "reference": "8554e38af7e45962683fbb0a0e5e44119b66bb05"
+                "reference": "7192561ac493a65beae59b221eef9ed99f36ee1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/8554e38af7e45962683fbb0a0e5e44119b66bb05",
-                "reference": "8554e38af7e45962683fbb0a0e5e44119b66bb05",
+                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/7192561ac493a65beae59b221eef9ed99f36ee1e",
+                "reference": "7192561ac493a65beae59b221eef9ed99f36ee1e",
                 "shasum": ""
             },
             "require": {
@@ -55,9 +55,9 @@
                 "monolog"
             ],
             "support": {
-                "source": "https://github.com/Attlaz-Platform/Monolog/tree/1.1.1"
+                "source": "https://github.com/Attlaz-Platform/Monolog/tree/1.1.2"
             },
-            "time": "2022-02-28T20:10:48+00:00"
+            "time": "2022-03-01T00:17:41+00:00"
         },
         {
             "name": "attlaz/client",
