@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4ed02e7ddf380a7dd44c47644f6e3932",
+    "content-hash": "8f3913ced0dee0f073dbe1b52b9ec8ee",
     "packages": [
         {
             "name": "attlaz/attlaz-monolog",
-            "version": "1.1.2",
+            "version": "1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/Monolog.git",
-                "reference": "7192561ac493a65beae59b221eef9ed99f36ee1e"
+                "reference": "00473e41b0151a7a1f8c48482a4be2062839d97f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/7192561ac493a65beae59b221eef9ed99f36ee1e",
-                "reference": "7192561ac493a65beae59b221eef9ed99f36ee1e",
+                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/00473e41b0151a7a1f8c48482a4be2062839d97f",
+                "reference": "00473e41b0151a7a1f8c48482a4be2062839d97f",
                 "shasum": ""
             },
             "require": {
@@ -55,30 +55,29 @@
                 "monolog"
             ],
             "support": {
-                "source": "https://github.com/Attlaz-Platform/Monolog/tree/1.1.2"
+                "source": "https://github.com/Attlaz-Platform/Monolog/tree/1.1.3"
             },
-            "time": "2022-03-01T00:17:41+00:00"
+            "time": "2022-03-02T21:10:10+00:00"
         },
         {
             "name": "attlaz/client",
-            "version": "1.7.0",
+            "version": "1.7.1",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/php-client.git",
-                "reference": "f41c0289833bb197a5620d9a36ee3e09437640a3"
+                "reference": "1c3724ff1fa15065bec612b0934368ee8f630976"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.7.0-715fd4.tar",
-                "reference": "f41c0289833bb197a5620d9a36ee3e09437640a3",
-                "shasum": "85b588bbfe2ae84d54de58424ce209dbeb8eca2c"
+                "url": "https://packagist.echron.be/dist/attlaz/client/attlaz-client-1.7.1-0ab080.tar",
+                "reference": "1c3724ff1fa15065bec612b0934368ee8f630976",
+                "shasum": "d883003723fc8854192c3d0e8cc8936373a9a32a"
             },
             "require": {
                 "ext-json": "*",
                 "ext-openssl": "*",
                 "league/oauth2-client": "^2.6.0",
-                "php": ">=7.4 | >=8.0",
-                "psr/log": "1.*"
+                "php": ">=7.4 | >=8.0"
             },
             "type": "library",
             "autoload": {
@@ -97,7 +96,7 @@
                 "ipaas",
                 "synchronize"
             ],
-            "time": "2022-02-28T19:18:47+00:00"
+            "time": "2022-03-01T15:59:19+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -3209,28 +3208,29 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.10.2",
+            "version": "1.10.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "776f831124e9c62e1a2c601ecc52e776d8bb7220"
+                "reference": "c6a951b75d684fd43fbbd69617488e1e2e8924ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/776f831124e9c62e1a2c601ecc52e776d8bb7220",
-                "reference": "776f831124e9c62e1a2c601ecc52e776d8bb7220",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/c6a951b75d684fd43fbbd69617488e1e2e8924ba",
+                "reference": "c6a951b75d684fd43fbbd69617488e1e2e8924ba",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0"
             },
-            "replace": {
-                "myclabs/deep-copy": "self.version"
+            "conflict": {
+                "doctrine/collections": "<1.6.8",
+                "doctrine/common": "<2.13.3 || >=3,<3.2.2"
             },
             "require-dev": {
-                "doctrine/collections": "^1.0",
-                "doctrine/common": "^2.6",
-                "phpunit/phpunit": "^7.1"
+                "doctrine/collections": "^1.6.8",
+                "doctrine/common": "^2.13.3 || ^3.2.2",
+                "phpunit/phpunit": "^7.5.20 || ^8.5.23 || ^9.5.13"
             },
             "type": "library",
             "autoload": {
@@ -3255,7 +3255,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.10.2"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.10.3"
             },
             "funding": [
                 {
@@ -3263,7 +3263,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-11-13T09:40:50+00:00"
+            "time": "2022-03-02T14:16:47+00:00"
         },
         {
             "name": "nikic/php-parser",
