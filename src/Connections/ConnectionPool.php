@@ -29,42 +29,12 @@ class ConnectionPool
 
     }
 
-    private function createSSHConnection(AdapterConnectionDefinition $connectionDefinition): SSH2RemoteService
+    public function patchConfigValue(string $value): string
     {
-
-        // TODO: move this to the connection module itself
-        $hostname = $connectionDefinition->getConfiguration('hostname');
-        if (!\is_null($hostname)) {
-            $hostname = $this->config->patchConfigValue($hostname);
-        }
-
-        $port = (int)$connectionDefinition->getConfiguration('port');
-//        $port = $this->config->patchConfigValue($port);
-
-        $username = $connectionDefinition->getConfiguration('username');
-//        $username = $this->config->patchConfigValue($username);
-
-        $key = $connectionDefinition->getConfiguration('key');
-        if (!\is_null($key)) {
-            $key = $this->config->patchConfigValue($key);
-        }
-
-
-        $password = $connectionDefinition->getConfiguration('password');
-        if (!\is_null($password)) {
-            $password = $this->config->patchConfigValue($password);
-        }
-
-        $ssh = new SSH2RemoteService($hostname, $port);
-
-        if (!empty($key)) {
-            $ssh->authenticateWithKeyFile($username, $key);
-        } else {
-            $ssh->authenticate($username, $password);
-        }
-
-        return $ssh;
+        return $this->config->patchConfigValue($value);
     }
+
+  
 
 //    private function getConfiguration(array $connectionDefinition, string $key): ?string
 //    {
