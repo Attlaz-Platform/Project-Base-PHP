@@ -15,26 +15,11 @@ use Psr\Log\LoggerInterface;
 
 class CommandManager
 {
-    /** @var CommandDiscovery */
-    private $discovery;
-    /** @var ContainerInterface */
-    private $diContainer;
-    /** @var Environment */
-    private $environment;
-    /** @var LoggerInterface */
-    private $logger;
-
-    //    public function __construct(
-    //        CommandDiscovery $discovery,
-    //        ContainerInterface $diContainer,
-    //        Environment $environment,
-    //        LoggerInterface $logger
-    //    ) {
-    //        $this->discovery = $discovery;
-    //        $this->diContainer = $diContainer;
-    //        $this->environment = $environment;
-    //        $this->logger = $logger;
-    //    }
+    private CommandDiscovery $discovery;
+    private ContainerInterface $diContainer;
+    private Environment $environment;
+    private LoggerInterface $logger;
+    private ?LogStreamId $previousLogStreamId = null;
 
     public function initialize(
         CommandDiscovery   $discovery,
@@ -50,7 +35,6 @@ class CommandManager
         $this->logger = $logger;
     }
 
-    private ?LogStreamId $previousLogStreamId = null;
 
     private function enableExecutionLogging(string $executionId): void
     {
@@ -79,13 +63,7 @@ class CommandManager
 
     public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
     {
-
-
         //TODO: make it possible to switch between app/staging app
-
-        $teamKey = $this->environment->getProject()->team;
-        $projectKey = $this->environment->getProject()->key;
-        $environmentKey = $this->environment->getProjectEnvironment()->key;
         $taskKey = $request->getTask();
         $taskExecutionKey = $request->getExecutionId();
 
@@ -122,11 +100,9 @@ class CommandManager
 
             $result = new TaskExecutionResult($request->getTask(), $result, true);
 
-//            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ') ';
             $this->logger->info('Execution complete', $context);
 
         } catch (\Throwable $ex) {
-
             $context['error'] = $ex;
             $this->logger->error('Execution failed (' . $ex->getMessage() . ')', $context);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
