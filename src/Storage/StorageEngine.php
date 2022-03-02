@@ -36,7 +36,11 @@ class StorageEngine
     {
         // TODO: expiration seconds is required for cache
         // TODO: how to handle overrides?
-        if ($expirationSeconds <= 0) {
+
+        if (!\is_null($expirationSeconds) && $expirationSeconds <= 0) {
+            if ($this->storageType !== 'cache') {
+                // TODO: is this expected behaviour?
+            }
             return;
         }
         $item = new StorageItem();
