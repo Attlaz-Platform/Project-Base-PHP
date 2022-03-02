@@ -15,9 +15,7 @@ use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Monolog\ErrorHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
-use Monolog\Processor\IntrospectionProcessor;
 use Psr\Log\LoggerInterface;
-use Psr\SimpleCache\CacheInterface;
 
 
 class InternalFactory
@@ -34,12 +32,14 @@ class InternalFactory
 
         $logger = new Logger($loggerName);
 
-        $ignoreDirectories = [
-            '/var/attlaz/',
-            '/var/attlaz/project/vendor/attlaz/project/src',
-        ];
-        $introspectionProcessor = new IntrospectionProcessor(\Monolog\Logger::DEBUG, $ignoreDirectories);
-        $logger->pushProcessor($introspectionProcessor);
+//        $skipClassesPartials = [
+//            'Attlaz\\Project\\Logger',
+//            //            '/var/attlaz/',
+//            //            '/var/attlaz/project/vendor/attlaz/project',
+//            //            '/var/attlaz/project/vendor/attlaz/project/src',
+//        ];
+        //   $introspectionProcessor = new IntrospectionProcessor(\Monolog\Logger::DEBUG, $skipClassesPartials);
+        //    $logger->pushProcessor($introspectionProcessor);
 
         /**
          * Log to stream
@@ -55,7 +55,6 @@ class InternalFactory
         $streamHandler = new StreamHandler(STDOUT, $environment->cli_log_level);
 
 //        $container->set('attlaz_streamhandler', $streamHandler);
-
 
 
         $logger->pushHandler($streamHandler);
@@ -84,7 +83,7 @@ class InternalFactory
          */
         if ($environment->isInitialized()) {
             $logStreamId = new LogStreamId('environment:' . $environment->getProjectEnvironment()->id);
-            $apiLogHandler = new AttlazHandler($client,$logStreamId, \Monolog\Logger::INFO);
+            $apiLogHandler = new AttlazHandler($client, $logStreamId, \Monolog\Logger::INFO);
             $formatter = new AttlazFormatter();
             $apiLogHandler->setFormatter($formatter);
             $logger->pushHandler($apiLogHandler);
