@@ -34,7 +34,7 @@ class ConnectionPool
         return $this->config->patchConfigValue($value);
     }
 
-  
+
 
 //    private function getConfiguration(array $connectionDefinition, string $key): ?string
 //    {
@@ -66,13 +66,6 @@ class ConnectionPool
         }
 
         $adapterName = $connectionDefinition->getAdapterName();
-
-
-        switch ($adapterName) {
-            case 'ssh':
-                return $this->createSSHConnection($connectionDefinition);
-                break;
-        }
 
         $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterName);
 
