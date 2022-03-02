@@ -79,7 +79,7 @@ class CommandManager
 
     public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
     {
-        $this->enableExecutionLogging($request->getExecutionId());
+
 
         //TODO: make it possible to switch between app/staging app
 
@@ -96,18 +96,15 @@ class CommandManager
             $taskExecutionKey,
         ];
         $dashboardUrl = $this->environment->getAppUrl(null, $urlSegments);
+        // Only log this to console
+        $this->logger->info('More info: ' . $dashboardUrl, [AttlazHandler::CONTEXT_SKIP => true]);
+        $this->enableExecutionLogging($request->getExecutionId());
 
-        $strArguments = \json_encode($request->getArguments());
-        if ($strArguments === false) {
-            $strArguments = '[INVALID ARGUMENTS]';
+        $context = [];
+        if (count($request->getArguments()) > 0) {
+            $context['arguments'] = $request->getArguments();
         }
-        if (\strlen($strArguments) > 1000) {
-            $strArguments = \substr($strArguments, 0, 1000) . ' ...';
-        }
-
-        $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . $strArguments . ') ';
-
-        $this->logger->info($strLogMessage, ['more' => $dashboardUrl]);
+        $this->logger->info('Execution started', $context);
 
         try {
             $commandDefinition = $this->getCommandDefinitionByTask($request);
@@ -125,17 +122,21 @@ class CommandManager
 
             $result = new TaskExecutionResult($request->getTask(), $result, true);
 
-            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ') ';
-            $this->logger->info($strLogMessage, ['more' => $dashboardUrl]);
+//            $strLogMessage = 'Task: ' . $request->getTask() . ' execution complete (' . $strArguments . ') ';
+            $this->logger->info('Execution complete', $context);
+
         } catch (\Throwable $ex) {
-            $this->logger->error($ex);
+
+            $context['error'] = $ex;
+            $this->logger->error('Execution failed (' . $ex->getMessage() . ')', $context);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
         }
 
         $this->disableExecutionLogging();
-
+        $this->logger->info('More info: ' . $dashboardUrl, [AttlazHandler::CONTEXT_SKIP => true]);
         return $result;
     }
+
 
     private function getCommandDefinitionByTask(TaskExecutionRequest $taskExecutionRequest): CommandDefinition
     {
