@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cache;
 
+use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Cache\Adapter\Filesystem\FilesystemCachePool;
-use Cache\Adapter\MongoDB\MongoDBCachePool;
-use Cache\Adapter\PHPArray\ArrayCachePool;
+use Attlaz\Project\Storage\StorageCachePool;
+use Attlaz\Project\Storage\StorageEngine;
 use Echron\Tools\Normalize\Normalizer;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\Filesystem;
-use MongoDB\Collection;
-use MongoDB\Driver\Manager;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
@@ -30,21 +26,29 @@ class CacheManager
     public const DEFAULT_NAMESPACE = 'default';
 
     public const KEY_SYSTEM = '_sys';
+    /** @var Client */
+    private $attlazClient;
+
+    /** @var StorageEngine */
+    private $storageEngine;
 
     public function __construct(
-        Environment $environment,
+        Environment     $environment,
+        Client          $attlazClient,
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->environment = $environment;
+        $this->attlazClient = $attlazClient;
         $this->logger = $logger;
 
         $this->fileCachePath = $environment->getFileCachePath();
 
         $this->pools = [];
 
-        if ($environment->isInitialized()) {
-            $this->getExternalCachePoolKeys();
-        }
+        $this->storageEngine = new StorageEngine($this->attlazClient, $this->environment, 'cache');
+
+
     }
 
     public function getCache(string $key = self::DEFAULT_NAMESPACE): CacheInterface
@@ -66,7 +70,7 @@ class CacheManager
     public function getCachePoolKeys(bool $inclExternal = false, bool $inclSys = false): array
     {
         if ($inclExternal) {
-            $cachePoolKeys = $this->getExternalCachePoolKeys();
+            $cachePoolKeys = $this->storageEngine->getPoolKeys();
             if ($inclSys) {
                 $cachePoolKeys[] = self::KEY_SYSTEM;
             }
@@ -84,6 +88,7 @@ class CacheManager
         return $cachePool->clear();
     }
 
+
     private function createCachePool(string $key): FailOverCachePool
     {
         //TODO: is it possible to instantiate this trought the DI?
@@ -94,65 +99,41 @@ class CacheManager
 
         $failOverCachePool->setLogger($this->logger);
 
-        /**
-         * MongoDB
-         */
-        if (extension_loaded("mongodb")) {
-            $mongoDBManager = new Manager($this->environment->mongoDBConnectionString, ['readPreference' => 'nearest']);
-            $collection = new Collection($mongoDBManager, 'cache_' . $this->environment->getCacheName(), $key);
-            $mongoDBCache = new MongoDBCachePool($collection);
+        $storageCachePool = new StorageCachePool($this->storageEngine);
+        $failOverCachePool->addCachePool('storage', $storageCachePool);
 
-            $mongoDBCache->setLogger($this->logger);
 
-            $failOverCachePool->addCachePool('mongodb', $mongoDBCache);
-        }
-
-        /**
-         * File
-         */
-        $filesystemAdapter = new Local($this->fileCachePath);
-        $filesystem = new Filesystem($filesystemAdapter);
-
-        $fileCacheLocation = \Echron\Tools\FileSystem::joinPath($this->environment->getCacheName(), $key);
-        $fileCachePool = new FilesystemCachePool($filesystem, $fileCacheLocation);
-        $failOverCachePool->addCachePool('file', $fileCachePool);
-        /**
-         * Memory
-         */
-        $memoryCache = new ArrayCachePool(null);
-        $failOverCachePool->addCachePool('memory', $memoryCache);
-
-        if ($key !== self::KEY_SYSTEM) {
-            $this->addExternalCachePoolKeys($key);
-        }
+//        if ($key !== self::KEY_SYSTEM) {
+//            $this->addExternalCachePoolKeys($key);
+//        }
 
         return $failOverCachePool;
     }
 
-    private function getExternalCachePoolKeys(): array
-    {
-        $sysCachePool = $this->createCachePool(self::KEY_SYSTEM);
+//    private function getExternalCachePoolKeys(): array
+//    {
+//        $sysCachePool = $this->createCachePool(self::KEY_SYSTEM);
+//
+//        $cachePools = $sysCachePool->get('cache_pools');
+//        if (\is_null($cachePools) || !\is_array($cachePools)) {
+//            $cachePools = [];
+//        }
+//
+//        return $cachePools;
+//    }
 
-        $cachePools = $sysCachePool->get('cache_pools');
-        if (\is_null($cachePools) || !\is_array($cachePools)) {
-            $cachePools = [];
-        }
-
-        return $cachePools;
-    }
-
-    private function addExternalCachePoolKeys(string $key): array
-    {
-        $sysCachePool = $this->createCachePool(self::KEY_SYSTEM);
-
-        $cachePools = $this->getExternalCachePoolKeys();
-
-        if (!\in_array($key, $cachePools)) {
-            $cachePools[] = $key;
-
-            $sysCachePool->set('cache_pools', $cachePools);
-        }
-
-        return $cachePools;
-    }
+//    private function addExternalCachePoolKeys(string $key): array
+//    {
+//        $sysCachePool = $this->createCachePool(self::KEY_SYSTEM);
+//
+//        $cachePools = $this->getExternalCachePoolKeys();
+//
+//        if (!\in_array($key, $cachePools)) {
+//            $cachePools[] = $key;
+//
+//            $sysCachePool->set('cache_pools', $cachePools);
+//        }
+//
+//        return $cachePools;
+//    }
 }

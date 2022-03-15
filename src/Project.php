@@ -130,9 +130,9 @@ class Project
 
 
 
-        $cacheManager = new CacheManager($this->environment, $this->logger);
-
         $client = InternalFactory::getClient($this->environment);
+        $cacheManager = new CacheManager($this->environment,$client, $this->logger);
+
 
         $configHelper = new ConfigHelper($this->logger);
 
