@@ -1,20 +1,20 @@
 #    docker run --rm -it -w /var/attlaz -v %cd%:/var/attlaz hq.attlaz.com:2498/attlaz_worker:08-11-19_00h48  php vendor/bin/grumphp run
-parameters:
+grumphp:
     git_dir: .
     bin_dir: vendor/bin
     tasks:
         phpstan:
             level: 7
-            ignore_patterns: ["*Test.php"]
+            ignore_patterns: [ "*Test.php" ]
             configuration: "phpstan.neon"
 
         phpcs:
             standard: PSR12
-            ignore_patterns: ["*Test.php"]
+            ignore_patterns: [ "*Test.php" ]
 
         phplint:
-            exclude: []
+            exclude: [ ]
             jobs: ~
             short_open_tag: false
-            ignore_patterns: ["*Test.php"]
-            triggered_by: ['php']
+            ignore_patterns: [ "*Test.php" ]
+            triggered_by: [ 'php' ]
