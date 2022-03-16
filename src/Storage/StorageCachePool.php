@@ -17,7 +17,7 @@ class StorageCachePool extends AbstractCachePool
 
     protected function storeItemInCache(PhpCacheItem $item, $ttl)
     {
-        $this->storageEngine->setItem($item->getKey(), $item, $ttl, 'default');
+        $this->storageEngine->setItem($item->getKey(), $item->get(), $ttl, 'default');
     }
 
     protected function fetchObjectFromCache($key)
