@@ -84,7 +84,7 @@ class Environment
 
             $this->sys_memory_limit = $this->getEnvValue(self::ENV_SYS_MEMORY_LIMIT, $this->sys_memory_limit);
 
-            $this->mongoDBConnectionString = $this->getEnvValue(self::ENV_STORAGE);
+//            $this->mongoDBConnectionString = $this->getEnvValue(self::ENV_STORAGE);
         }
         //TODO: check if we were able to set this
         ini_set('memory_limit', $this->sys_memory_limit);

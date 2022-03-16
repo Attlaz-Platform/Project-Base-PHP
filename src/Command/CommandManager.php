@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\AttlazMonolog\Handler\AttlazHandler;
+use Attlaz\Model\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Logger\Processor;
@@ -36,11 +38,12 @@ class CommandManager
     //    }
 
     public function initialize(
-        CommandDiscovery $discovery,
+        CommandDiscovery   $discovery,
         ContainerInterface $diContainer,
-        Environment $environment,
-        LoggerInterface $logger
-    ) {
+        Environment        $environment,
+        LoggerInterface    $logger
+    )
+    {
         //TODO: we should check if the CommandManager is initialized an has everything loaded
         $this->discovery = $discovery;
         $this->diContainer = $diContainer;
@@ -83,7 +86,7 @@ class CommandManager
         $strLogMessage = 'Execute task: ' . $request->getTask() . ' (' . $strArguments . ') ';
 
         $this->logger->info($strLogMessage, ['more' => $dashboardUrl]);
-
+        $this->enableExecutionLogging($request->getExecutionId());
         try {
             $commandDefinition = $this->getCommandDefinitionByTask($request);
 
@@ -106,7 +109,7 @@ class CommandManager
             $this->logger->error($ex);
             $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
         }
-
+        $this->disableExecutionLogging();
         return $result;
     }
 
@@ -184,5 +187,30 @@ class CommandManager
     public function getCommandDefinitions(): array
     {
         return $this->discovery->getCommands();
+    }
+
+    private function enableExecutionLogging(string $executionId): void
+    {
+        if ($this->logger instanceof Logger) {
+            $handlers = $this->logger->getHandlers();
+            foreach ($handlers as $handler) {
+                if ($handler instanceof AttlazHandler) {
+                    $this->previousLogStreamId = $handler->getLogStreamId();
+                    $handler->setLogStreamId(new LogStreamId('execution:' . $executionId));
+                }
+            }
+        }
+    }
+
+    private function disableExecutionLogging(): void
+    {
+        if ($this->previousLogStreamId !== null && $this->logger instanceof Logger) {
+            $handlers = $this->logger->getHandlers();
+            foreach ($handlers as $handler) {
+                if ($handler instanceof AttlazHandler) {
+                    $handler->setLogStreamId($this->previousLogStreamId);
+                }
+            }
+        }
     }
 }
