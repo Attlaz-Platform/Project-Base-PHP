@@ -7,26 +7,26 @@ namespace Attlaz\Project\Connections;
 
 class AdapterRegistrar
 {
-    private static $adapters = [];
+    private static array $adapters = [];
 
-    public static function register(string $adapterName, string $path, string $factoryClassName): void
+    public static function register(string $adapterId, string $path, string $factoryClassName): void
     {
-        $formattedAdapterName = self::formatAdapterName($adapterName);
-        if (isset(self::$adapters[$formattedAdapterName])) {
-            throw new \LogicException($adapterName . '\' from \'' . $path . '\' '
-                . 'has been already defined in \'' . self::$adapters[$formattedAdapterName] . '\'.'
+        $formattedAdapterId = self::formatAdapterId($adapterId);
+        if (isset(self::$adapters[$formattedAdapterId])) {
+            throw new \LogicException($adapterId . '\' from \'' . $path . '\' '
+                . 'has been already defined in \'' . self::$adapters[$formattedAdapterId] . '\'.'
             );
         } else {
-            self::$adapters[$formattedAdapterName] = ['path' => str_replace('\\', '/', $path), 'factory' => $factoryClassName];
+            self::$adapters[$formattedAdapterId] = ['path' => str_replace('\\', '/', $path), 'factory' => $factoryClassName];
         }
     }
 
-    public static function getFactoryClassName(string $adapterName): ?string
+    public static function getFactoryClassName(string $adapterId): ?string
     {
         // TODO: class should be instance of AdapterFactory
-        $formattedAdapterName = self::formatAdapterName($adapterName);
-        if (isset(self::$adapters[$formattedAdapterName])) {
-            return self::$adapters[$formattedAdapterName]['factory'];
+        $formattedAdapterId = self::formatAdapterId($adapterId);
+        if (isset(self::$adapters[$formattedAdapterId])) {
+            return self::$adapters[$formattedAdapterId]['factory'];
         }
         return null;
     }
@@ -36,9 +36,9 @@ class AdapterRegistrar
         return \array_keys(self::$adapters);
     }
 
-    private static function formatAdapterName(string $adapterName): string
+    private static function formatAdapterId(string $adapterId): string
     {
-        return \strtolower($adapterName);
+        return \strtolower($adapterId);
     }
 
 }

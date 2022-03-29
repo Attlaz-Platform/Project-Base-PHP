@@ -4,20 +4,23 @@ declare(strict_types=1);
 namespace Attlaz\Project\Connections;
 
 
-use Attlaz\Adapter\Base\RemoteService\SSH2RemoteService;
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionFactory;
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
 use Attlaz\Client;
+use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Psr\Log\LoggerInterface;
 
-class ConnectionPool
+class ConnectionPool implements AdapterConnectionPool
 {
     private Config $config;
     private Environment $environment;
     private Client $client;
     private LoggerInterface $logger;
 
-    /** @var AdapterConnectionDefinition[]|null */
+    /** @var AdapterConnection[]|null */
     private ?array $connectionDefinitions = null;
 
     public function __construct(Config $config, Environment $environment, Client $client, LoggerInterface $logger)
@@ -29,53 +32,62 @@ class ConnectionPool
 
     }
 
-    public function patchConfigValue(string $value): string
+    /**
+     * @return AdapterConnection[]
+     */
+    private function getConnectionDefinitions(): array
     {
-        return $this->config->patchConfigValue($value);
+        if (\is_null($this->connectionDefinitions)) {
+            $this->loadConnectionDefinitions();
+        }
+        return $this->connectionDefinitions;
     }
 
+    private function patchAdapterConnectionConfigurationValues(AdapterConnection $adapterConnection): AdapterConnection
+    {
+        $keys = $adapterConnection->getConfiguratedKeys();
 
+        foreach ($keys as $key) {
+            $value = $adapterConnection->getConfiguration($key);
+            if (!\is_null($value)) {
+                $value = $this->config->patchConfigValue($value);
+                $adapterConnection->setConfiguration($key, $value);
+            }
+        }
+        return $adapterConnection;
+    }
 
-//    private function getConfiguration(array $connectionDefinition, string $key): ?string
-//    {
-//        $configurations = $connectionDefinition['configuration'];
-//        foreach ($configurations as $configuration) {
-//            if ($configuration['key'] === $key) {
-//                $value = $configuration['value'];
-//                if (\is_string($value)) {
-//                    $value = $this->config->patchConfigValue($value);
-//                }
-//                return $value;
-//            }
-//        }
-//        echo $key . ' not found' . \PHP_EOL;
-//        return null;
-//    }
-
-
-    public function getConnection(string $key)
+    public function getConnection(string $key): ?AdapterConnectionInstance
     {
 
         $connectionDefinition = $this->getConnectionDefinition($key);
         if (\is_null($connectionDefinition)) {
+            // TODO: only show this additional information when in local mode
+            $connectionDefinitions = $this->getConnectionDefinitions();
             $available = [];
             foreach ($this->connectionDefinitions as $connectionDefinition) {
-                $available[] = $connectionDefinition->getKey();
+                $available[] = $connectionDefinition->getName() . ' (' . $connectionDefinition->getKey() . ')';
+
             }
             throw new \Error('No connection found with id "' . $key . '", available: ' . \implode(', ', $available));
         }
 
-        $adapterName = $connectionDefinition->getAdapterName();
+        $adapterId = $connectionDefinition->getAdapterId();
 
-        $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterName);
+        $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterId);
 
 
         if (\is_null($adapterFactoryClassName)) {
-            throw new \Exception('Unknown connection adapter ' . $adapterName . ' make sure the package is installed');
+            throw new \Exception('Unknown connection adapter ' . $adapterId . ' make sure the package is installed');
         }
 
-        /** @var AdapterFactory $adapterFactory */
+        /** @var AdapterConnectionFactory $adapterFactory */
         $adapterFactory = new $adapterFactoryClassName($this);
+
+
+        $connectionDefinition = $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
+
+        /** @var AdapterConnectionInstance|null $adapterConnection */
         $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
 
         if (\is_null($adapterConnection)) {
@@ -88,36 +100,20 @@ class ConnectionPool
 
     private function loadConnectionDefinitions(): void
     {
-        $rawConnectionDefinitions = $this->client->getConnections($this->environment->getProject()->id);
-
-        $connectionDefinitions = [];
-        foreach ($rawConnectionDefinitions as $rawConnectionDefinition) {
-            $connectionDefinitions[] = new AdapterConnectionDefinition($rawConnectionDefinition);
-        }
-        $this->connectionDefinitions = $connectionDefinitions;
+        $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
     }
 
-    private function getConnectionDefinition(string $key): ?AdapterConnectionDefinition
+    private function getConnectionDefinition(string $connectionKey): ?AdapterConnection
     {
-        if (\is_null($this->connectionDefinitions)) {
-            $this->loadConnectionDefinitions();
-        }
-        foreach ($this->connectionDefinitions as $connectionDefinition) {
-            if ($connectionDefinition->getKey() === $key) {
-                return $connectionDefinition;
-            }
-        }
-        return null;
+
+        return $this->client->getConnectionEndpoint()->getConnection($connectionKey);
     }
 
     public function getConnectionDefinitionKeys(): array
     {
-        if (\is_null($this->connectionDefinitions)) {
-            $this->loadConnectionDefinitions();
-        }
         //TODO: rewrite with yield
         $result = [];
-        foreach ($this->connectionDefinitions as $connectionDefinition) {
+        foreach ($this->getConnectionDefinitions() as $connectionDefinition) {
             $result[] = $connectionDefinition->getKey();
         }
         return $result;
@@ -125,15 +121,12 @@ class ConnectionPool
 
     public function getDefinedConnections(): array
     {
-        if (\is_null($this->connectionDefinitions)) {
-            $this->loadConnectionDefinitions();
-        }
         //TODO: rewrite with yield
         $result = [];
-        foreach ($this->connectionDefinitions as $connectionDefinition) {
+        foreach ($this->getConnectionDefinitions() as $connectionDefinition) {
             $result[] = [
                 'key'  => $connectionDefinition->getKey(),
-                'type' => $connectionDefinition->getAdapterName()
+                'type' => $connectionDefinition->getAdapterId()
             ];
         }
         return $result;

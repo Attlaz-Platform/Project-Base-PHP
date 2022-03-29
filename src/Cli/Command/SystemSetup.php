@@ -17,9 +17,9 @@ use Symfony\Component\Console\Question\Question;
 class SystemSetup extends Command
 {
 
-    protected $client;
-    protected $environment;
-    protected $logger;
+    protected Client $client;
+    protected Environment $environment;
+    protected LoggerInterface $logger;
 
     public function __construct(Client $client, Environment $environment, LoggerInterface $logger)
     {
@@ -33,8 +33,8 @@ class SystemSetup extends Command
     protected function configure()
     {
         $this->setName('system:setup')
-             ->setDescription('Setup the system')
-             ->setHelp('Use this command to setup the system');
+            ->setDescription('Setup the system')
+            ->setHelp('Use this command to setup the system');
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -94,7 +94,7 @@ class SystemSetup extends Command
 
             //TODO: handle when client is not able to connect to API
 
-            $client = new Client( $apiClientId, $apiClientSecret);
+            $client = new Client($apiClientId, $apiClientSecret);
             $client->setEndPoint($apiEndpoint);
             $values[Environment::ENV_API_ENDPOINT] = $apiEndpoint;
             $values[Environment::ENV_API_CLIENT_ID] = $apiClientId;
@@ -156,18 +156,6 @@ class SystemSetup extends Command
 
             $values[Environment::ENV_MODE] = $questionHelper->ask($input, $output, $question);
 
-            /**
-             * Storage
-             */ //            $question = new Question('Storage');
-            //            $question->setValidator(function ($answer) {
-            //                if (!is_string($answer) || empty($answer)) {
-            //                    throw new \RuntimeException('The storage key cannot be empty');
-            //                }
-            //
-            //                return $answer;
-            //            });
-
-            $values[Environment::ENV_STORAGE] = 'mongodb://mongo-admin:UCGJbmQ25Kdx@hq.attlaz.com:7285';
 
             $this->saveEnv($values);
 

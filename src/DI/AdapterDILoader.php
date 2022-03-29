@@ -48,8 +48,14 @@ class AdapterDILoader
             throw new \Exception('Unknown connection adapter ' . $adapterName . ' make sure the package is installed');
         }
 
+
         /** @var AdapterFactory $adapterFactory */
         $adapterFactory = new $adapterFactoryClassName();
+
+        if (!$adapterFactory instanceof AdapterFactory) {
+            return null;
+            throw new \Exception('Invalid factory');
+        }
         return $adapterFactory;
     }
 
