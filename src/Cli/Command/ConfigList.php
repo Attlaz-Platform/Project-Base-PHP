@@ -51,7 +51,7 @@ class ConfigList extends Command
             $identifier = trim($value);
 
             if (\is_numeric($identifier)) {
-                $id = \intval($identifier);
+                $id = \intval($identifier) . '';
 
                 return $this->attlazClient->getProjectEnvironmentById($id);
             } else {

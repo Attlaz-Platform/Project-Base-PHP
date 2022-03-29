@@ -56,9 +56,11 @@ class Config implements LoggerAwareInterface
         $cache = $this->storageManager->cache;
 
 
-        if ($this->environment->cacheConfig && $cache->hasValue($configCacheKey)) {
-            $value = $cache->getValue($configCacheKey);
-            return $value->value;
+        if ($this->environment->cacheConfig && $cache->hasItem($configCacheKey)) {
+            $value = $cache->getItem($configCacheKey);
+            if (!\is_null($value)) {
+                return $value->value;
+            }
         }
         $result = [];
         //TODO: read from cache if possible
@@ -103,7 +105,7 @@ class Config implements LoggerAwareInterface
         }
         $result = $this->configHelper->patchConfigVariables($result, $this->getConfigVariables());
         if ($this->environment->cacheConfig) {
-            $cache->setValue($configCacheKey, $result);
+            $cache->setItem($configCacheKey, $result);
         }
 
         return $result;

@@ -8,6 +8,4 @@ use Attlaz\Project\App\Config;
 interface AdapterFactory
 {
     public function getDefinitions(Config $config = null): array;
-
-    public function createAdapterConnection(AdapterConnectionDefinition $adapterConfiguration);
 }

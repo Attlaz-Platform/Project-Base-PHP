@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
-use Attlaz\Model\LogStreamId;
+use Attlaz\Model\Log\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
