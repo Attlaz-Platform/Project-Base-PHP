@@ -103,14 +103,10 @@ class ConfigHelper
 
     public function patchValue(string $value, array $variables): string
     {
-//        if (\is_string($value)) {
-        //TODO: use regex to replace config variables
-
-                foreach ($variables as $variableKey => $variableValue) {
-                    $value = \str_replace('{{' . $variableKey . '}}', $variableValue, $value);
-                }
-
+        // TODO: use regex to replace config variables
+        foreach ($variables as $variableKey => $variableValue) {
+            $value = \str_replace('{{' . $variableKey . '}}', $variableValue, $value);
+        }
         return $value;
-//        }
     }
 }
