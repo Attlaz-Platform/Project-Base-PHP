@@ -8,7 +8,7 @@ namespace Attlaz\Project\DI;
 use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Client;
-use Attlaz\Model\LogStreamId;
+use Attlaz\Model\Log\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
