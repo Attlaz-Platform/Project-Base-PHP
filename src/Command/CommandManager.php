@@ -12,6 +12,7 @@ use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 class CommandManager
 {
@@ -20,6 +21,7 @@ class CommandManager
     private Environment $environment;
     private LoggerInterface $logger;
     private ?LogStreamId $previousLogStreamId = null;
+    private ?LogLevel $previousLogLevel = null;
 
     public function initialize(
         CommandDiscovery   $discovery,
@@ -43,7 +45,9 @@ class CommandManager
             foreach ($handlers as $handler) {
                 if ($handler instanceof AttlazHandler) {
                     $this->previousLogStreamId = $handler->getLogStreamId();
+                    $this->previousLogLevel = $handler->getLevel();
                     $handler->setLogStreamId(new LogStreamId('execution:' . $executionId));
+                    $handler->setLevel(LogLevel::DEBUG);
                 }
             }
         }
@@ -56,6 +60,7 @@ class CommandManager
             foreach ($handlers as $handler) {
                 if ($handler instanceof AttlazHandler) {
                     $handler->setLogStreamId($this->previousLogStreamId);
+                    $handler->setLevel($this->previousLogLevel);
                 }
             }
         }
