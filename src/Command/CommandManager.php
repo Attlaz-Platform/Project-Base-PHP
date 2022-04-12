@@ -21,7 +21,7 @@ class CommandManager
     private Environment $environment;
     private LoggerInterface $logger;
     private ?LogStreamId $previousLogStreamId = null;
-    private ?LogLevel $previousLogLevel = null;
+    private ?int $previousLogLevel = null;
 
     public function initialize(
         CommandDiscovery   $discovery,
