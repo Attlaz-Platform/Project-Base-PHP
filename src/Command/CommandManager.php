@@ -12,7 +12,6 @@ use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 
 class CommandManager
 {
@@ -47,7 +46,7 @@ class CommandManager
                     $this->previousLogStreamId = $handler->getLogStreamId();
                     $this->previousLogLevel = $handler->getLevel();
                     $handler->setLogStreamId(new LogStreamId('execution:' . $executionId));
-                    $handler->setLevel(LogLevel::DEBUG);
+                    $handler->setLevel($this->environment->api_log_level_flow_run);
                 }
             }
         }
