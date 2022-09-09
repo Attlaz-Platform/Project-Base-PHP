@@ -65,7 +65,7 @@ class ConnectionPool implements AdapterConnectionPool
             // TODO: only show this additional information when in local mode
             $connectionDefinitions = $this->getConnectionDefinitions();
             $available = [];
-            foreach ($this->connectionDefinitions as $connectionDefinition) {
+            foreach ($connectionDefinitions as $connectionDefinition) {
                 $available[] = $connectionDefinition->getName() . ' (' . $connectionDefinition->getKey() . ')';
 
             }
@@ -85,8 +85,6 @@ class ConnectionPool implements AdapterConnectionPool
         $adapterFactory = new $adapterFactoryClassName($this);
 
 
-        $connectionDefinition = $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
-
         /** @var AdapterConnectionInstance|null $adapterConnection */
         $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
 
@@ -103,10 +101,14 @@ class ConnectionPool implements AdapterConnectionPool
         $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
     }
 
-    private function getConnectionDefinition(string $connectionKey): ?AdapterConnection
+    public function getConnectionDefinition(string $connectionKey): ?AdapterConnection
     {
 
-        return $this->client->getConnectionEndpoint()->getConnection($connectionKey);
+        $connectionDefinition = $this->client->getConnectionEndpoint()->getConnection($connectionKey);
+        if (!\is_null($connectionDefinition)) {
+            $connectionDefinition = $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
+        }
+        return $connectionDefinition;
     }
 
     public function getConnectionDefinitionKeys(): array
