@@ -7,6 +7,7 @@ namespace Attlaz\Project\Connections;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionFactory;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
+use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Client;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
