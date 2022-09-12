@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Attlaz\Project\DI;
 
 
+use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\Connections\AdapterFactory;
-use Attlaz\Project\Connections\AdapterRegistrar;
 use Psr\Log\LoggerInterface;
 
 class AdapterDILoader
@@ -22,7 +22,7 @@ class AdapterDILoader
     public function initDI(\DI\ContainerBuilder $containerBuilder, Config $config): void
     {
 
-        $adapterNames = AdapterRegistrar::getAdapterNames();
+        $adapterNames = AdapterRegistrar::getAdapterIds();
 
 
         foreach ($adapterNames as $adapterName) {

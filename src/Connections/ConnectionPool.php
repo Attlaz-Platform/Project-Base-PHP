@@ -7,6 +7,7 @@ namespace Attlaz\Project\Connections;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionFactory;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
+use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Client;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
@@ -65,7 +66,7 @@ class ConnectionPool implements AdapterConnectionPool
             // TODO: only show this additional information when in local mode
             $connectionDefinitions = $this->getConnectionDefinitions();
             $available = [];
-            foreach ($this->connectionDefinitions as $connectionDefinition) {
+            foreach ($connectionDefinitions as $connectionDefinition) {
                 $available[] = $connectionDefinition->getName() . ' (' . $connectionDefinition->getKey() . ')';
 
             }
@@ -78,14 +79,13 @@ class ConnectionPool implements AdapterConnectionPool
 
 
         if (\is_null($adapterFactoryClassName)) {
-            throw new \Exception('Unknown connection adapter ' . $adapterId . ' make sure the package is installed');
+            $availableAdapterIds = AdapterRegistrar::getAdapterIds();
+            throw new \Exception('Unknown connection adapter "' . $adapterId . '" (available: ' . \implode(', ', $availableAdapterIds) . ') make sure the package is installed');
         }
 
         /** @var AdapterConnectionFactory $adapterFactory */
         $adapterFactory = new $adapterFactoryClassName($this);
 
-
-        $connectionDefinition = $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
 
         /** @var AdapterConnectionInstance|null $adapterConnection */
         $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
@@ -103,10 +103,14 @@ class ConnectionPool implements AdapterConnectionPool
         $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
     }
 
-    private function getConnectionDefinition(string $connectionKey): ?AdapterConnection
+    public function getConnectionDefinition(string $connectionKey): ?AdapterConnection
     {
 
-        return $this->client->getConnectionEndpoint()->getConnection($connectionKey);
+        $connectionDefinition = $this->client->getConnectionEndpoint()->getConnection($connectionKey);
+        if (!\is_null($connectionDefinition)) {
+            $connectionDefinition = $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
+        }
+        return $connectionDefinition;
     }
 
     public function getConnectionDefinitionKeys(): array

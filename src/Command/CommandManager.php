@@ -20,6 +20,7 @@ class CommandManager
     private Environment $environment;
     private LoggerInterface $logger;
     private ?LogStreamId $previousLogStreamId = null;
+    private ?int $previousLogLevel = null;
 
     public function initialize(
         CommandDiscovery   $discovery,
@@ -43,7 +44,9 @@ class CommandManager
             foreach ($handlers as $handler) {
                 if ($handler instanceof AttlazHandler) {
                     $this->previousLogStreamId = $handler->getLogStreamId();
+                    $this->previousLogLevel = $handler->getLevel();
                     $handler->setLogStreamId(new LogStreamId('execution:' . $executionId));
+                    $handler->setLevel($this->environment->api_log_level_flow_run);
                 }
             }
         }
@@ -56,6 +59,7 @@ class CommandManager
             foreach ($handlers as $handler) {
                 if ($handler instanceof AttlazHandler) {
                     $handler->setLogStreamId($this->previousLogStreamId);
+                    $handler->setLevel($this->previousLogLevel);
                 }
             }
         }
