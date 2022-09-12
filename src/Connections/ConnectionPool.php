@@ -79,7 +79,8 @@ class ConnectionPool implements AdapterConnectionPool
 
 
         if (\is_null($adapterFactoryClassName)) {
-            throw new \Exception('Unknown connection adapter ' . $adapterId . ' make sure the package is installed');
+            $availableAdapterIds = AdapterRegistrar::getAdapterIds();
+            throw new \Exception('Unknown connection adapter "' . $adapterId . '" (available: ' . \implode(', ', $availableAdapterIds) . ') make sure the package is installed');
         }
 
         /** @var AdapterConnectionFactory $adapterFactory */
