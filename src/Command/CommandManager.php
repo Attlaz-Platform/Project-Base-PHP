@@ -68,7 +68,7 @@ class CommandManager
     public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
     {
         //TODO: make it possible to switch between app/staging app
-        $taskKey = $request->getTask();
+        $taskKey = $request->getTaskId();
         $taskExecutionKey = $request->getExecutionId();
 
         $urlSegments = [
@@ -102,14 +102,14 @@ class CommandManager
                 AbstractCommand::INVOKE_METHOD,
             ], $parameterValues);
 
-            $result = new TaskExecutionResult($request->getTask(), $result, true);
+            $result = new TaskExecutionResult($request->getTaskId(), $result, true);
 
             $this->logger->info('Execution complete', $context);
 
         } catch (\Throwable $ex) {
             $context['error'] = $ex;
             $this->logger->error('Execution failed (' . $ex->getMessage() . ')', $context);
-            $result = new TaskExecutionResult($request->getTask(), $ex->getMessage(), false);
+            $result = new TaskExecutionResult($request->getTaskId(), $ex->getMessage(), false);
         }
 
         $this->disableExecutionLogging();
@@ -123,11 +123,11 @@ class CommandManager
         $commands = $this->discovery->getCommands();
 
         foreach ($commands as $command) {
-            if ($command->task === $taskExecutionRequest->getTask()) {
+            if ($command->task === $taskExecutionRequest->getTaskId()) {
                 return $command;
             }
         }
-        throw new \Exception('No command found for task "' . $taskExecutionRequest->getTask() . '"');
+        throw new \Exception('No command found for task "' . $taskExecutionRequest->getTaskId() . '"');
     }
 
     private function getMethodArguments(TaskExecutionRequest $request, CommandDefinition $commandDefinition): array

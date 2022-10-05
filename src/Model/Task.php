@@ -6,10 +6,10 @@ namespace Attlaz\Project\Model;
 
 class Task implements \JsonSerializable
 {
-    public $id;
-    public $branch;
-    public $command;
-    public $name;
+    public string $id;
+    public string $branch;
+    public string $command;
+    public string $name;
 
     public function __construct(string $id, string $branch, string $command, string $name)
     {
@@ -24,7 +24,7 @@ class Task implements \JsonSerializable
         return $this->command;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'command' => $this->command,
@@ -43,22 +43,22 @@ class Task implements \JsonSerializable
 
     public static function fromArray(array $input): self
     {
-        if (!\key_exists('id', $input)) {
+        if (!\array_key_exists('id', $input)) {
             throw new \InvalidArgumentException('Unable to deserialize Task, id is not defined');
         }
         $id = $input['id'];
 
-        if (!\key_exists('branch', $input)) {
+        if (!\array_key_exists('branch', $input)) {
             throw new \InvalidArgumentException('Unable to deserialize Task, branch is not defined');
         }
         $branch = $input['branch'];
 
-        if (!\key_exists('command', $input)) {
+        if (!\array_key_exists('command', $input)) {
             throw new \InvalidArgumentException('Unable to deserialize Task, command is not defined');
         }
         $command = $input['command'];
 
-        if (!\key_exists('name', $input)) {
+        if (!\array_key_exists('name', $input)) {
             throw new \InvalidArgumentException('Unable to deserialize Task, name is not defined');
         }
         $name = $input['name'];

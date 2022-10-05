@@ -15,10 +15,10 @@ use Psr\Log\LoggerInterface;
 class Context
 {
     protected LoggerInterface $logger;
-    protected \Attlaz\Project\App\Environment $environment;
+    protected Environment $environment;
     protected Config $config;
     protected StorageManager $storageManager;
-    protected \DI\Container $dependencyManager;
+    protected Container $dependencyManager;
     protected OutputHelper $outputHelper;
     protected ConnectionPool $connectionPool;
 

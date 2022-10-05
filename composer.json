@@ -1,4 +1,4 @@
- {
+{
   "name": "attlaz/project-base",
   "description": "Basic set to start a Attlaz project",
   "license": "MIT",
@@ -7,11 +7,11 @@
   "require": {
     "php": ">=7.4 | >=8.0 | >=8.1",
     "monolog/monolog": "^2.0",
-    "echron/tools": "^1.4.1",
+    "echron/tools": "^1.5.0",
     "echron/datatypes": "^1.4.0",
     "php-di/php-di": "^6.3.0",
     "psr/simple-cache": "^1 || ^2 || ^3",
-    "attlaz/client": "^1.7.7",
+    "attlaz/client": "^1.8.0",
     "attlaz/attlaz-monolog": "^1.1.5",
     "attlaz/adapter-base": "^1.4.0 | dev-develop",
     "doctrine/annotations": "^1.13.2",
