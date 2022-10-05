@@ -1,15 +1,13 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
 class TaskExecutionRequest
 {
-    private $task;
-
-    private $arguments;
-    private $executionId;
+    private string $taskId;
+    private array $arguments;
+    private ?string $executionId;
 
     public function __construct(string $task, array $arguments = [], string $executionId = null)
     {
@@ -17,14 +15,14 @@ class TaskExecutionRequest
             throw new \InvalidArgumentException('Task cannot be empty');
         }
 
-        $this->task = $task;
+        $this->taskId = $task;
         $this->arguments = $arguments;
         $this->executionId = $executionId;
     }
 
-    public function getTask(): string
+    public function getTaskId(): string
     {
-        return $this->task;
+        return $this->taskId;
     }
 
     public function getArguments(): array

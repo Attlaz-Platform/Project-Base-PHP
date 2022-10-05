@@ -1,31 +1,27 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
 class TaskExecutionResult implements \JsonSerializable
 {
-    private $task;
+    private string $taskId;
     private $data;
-    /** @var bool */
-    private $success;
+    private bool $success;
 
-    /** @var  \DateTime */
-    private $received;
-    /** @var  \DateTime */
-    private $responded;
+    private \DateTime $received;
+    private \DateTime $responded;
 
-    public function __construct(string $task, $data, $success = true)
+    public function __construct(string $taskId, $data, bool $success = true)
     {
-        $this->task = $task;
+        $this->taskId = $taskId;
         $this->data = $data;
         $this->success = $success;
     }
 
     public function getTaskId(): string
     {
-        return $this->task;
+        return $this->taskId;
     }
 
     public function getData()
@@ -53,7 +49,7 @@ class TaskExecutionResult implements \JsonSerializable
         return $this->responded;
     }
 
-    public function setResponded(\DateTime $responded)
+    public function setResponded(\DateTime $responded): void
     {
         $this->responded = $responded;
     }
@@ -61,7 +57,7 @@ class TaskExecutionResult implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'task'      => $this->task,
+            'task'      => $this->taskId,
             'data'      => $this->data,
             'success'   => $this->success,
             'received'  => $this->received,

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
@@ -9,8 +8,8 @@ use Echron\DataTypes\BasicCollection;
 class TaskCollection extends BasicCollection
 {
 
-    public function addTask(Task $taskResult)
+    public function addTask(Task $taskResult): int
     {
-        parent::addToCollection($taskResult);
+        return parent::addToCollection($taskResult);
     }
 }
