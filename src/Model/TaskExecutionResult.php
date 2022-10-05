@@ -58,7 +58,7 @@ class TaskExecutionResult implements \JsonSerializable
         $this->responded = $responded;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'task'      => $this->task,
