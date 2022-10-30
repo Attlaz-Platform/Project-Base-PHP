@@ -98,9 +98,9 @@ abstract class AbstractCommand
         }
     }
 
-    final private function executeLocal(string $taskId,
-                                        array  $arguments = [],
-                                        string $projectEnvironmentId = null): TaskExecutionResult
+    private function executeLocal(string $taskId,
+                                  array  $arguments = [],
+                                  string $projectEnvironmentId = null): TaskExecutionResult
     {
         $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
 

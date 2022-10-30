@@ -31,7 +31,7 @@ class Task implements \JsonSerializable
         ];
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $result = json_encode($this->jsonSerialize());
         if (!\is_string($result)) {

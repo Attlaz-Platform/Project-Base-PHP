@@ -35,7 +35,7 @@ class TaskExecutionRequest
         return isset($this->arguments[$name]);
     }
 
-    public function getArgument(string $name)
+    public function getArgument(string $name): mixed
     {
         return $this->arguments[$name];
     }

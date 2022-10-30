@@ -6,13 +6,13 @@ namespace Attlaz\Project\Model;
 class TaskExecutionResult implements \JsonSerializable
 {
     private string $taskId;
-    private $data;
+    private mixed $data;
     private bool $success;
 
-    private \DateTime $received;
-    private \DateTime $responded;
+    private \DateTime|null $received = null;
+    private \DateTime|null $responded = null;
 
-    public function __construct(string $taskId, $data, bool $success = true)
+    public function __construct(string $taskId, mixed $data, bool $success = true)
     {
         $this->taskId = $taskId;
         $this->data = $data;
@@ -24,7 +24,7 @@ class TaskExecutionResult implements \JsonSerializable
         return $this->taskId;
     }
 
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -34,17 +34,17 @@ class TaskExecutionResult implements \JsonSerializable
         return $this->success;
     }
 
-    public function getReceived(): \DateTime
+    public function getReceived(): \DateTime|null
     {
         return $this->received;
     }
 
-    public function setReceived(\DateTime $received)
+    public function setReceived(\DateTime $received): void
     {
         $this->received = $received;
     }
 
-    public function getResponded(): \DateTime
+    public function getResponded(): \DateTime|null
     {
         return $this->responded;
     }
