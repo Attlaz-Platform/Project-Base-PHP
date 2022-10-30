@@ -96,11 +96,16 @@ class InternalFactory
         return $logger;
     }
 
+    private static ?Client $client = null;
+
     public static function getClient(Environment $environment): Client
     {
-        $client = new Client($environment->api_client_id, $environment->api_client_secret);
-        $client->setEndPoint($environment->api_endpoint);
-        return $client;
+        if (InternalFactory::$client === null) {
+            InternalFactory::$client = new Client($environment->api_client_id, $environment->api_client_secret);
+            InternalFactory::$client->setEndPoint($environment->api_endpoint);
+        }
+
+        return InternalFactory::$client;
     }
 
 
