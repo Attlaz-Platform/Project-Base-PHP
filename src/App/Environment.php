@@ -17,7 +17,7 @@ class Environment
     public const MODE_PRODUCTION = 'production';
     public const MODE_DEVELOPMENT = 'development';
 
-    private $projectRootPath;
+    private string $projectRootPath;
 
     public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
     private const CACHE_LOCATION = 'var/cache';
@@ -28,8 +28,8 @@ class Environment
     /**
      * Config values
      */
-    public $compileDi = false;
-    public $cacheConfig = false;
+    public bool $compileDi = false;
+    public bool $cacheConfig = false;
 
     private $project;
     private $projectEnvironment;
@@ -37,20 +37,20 @@ class Environment
     public $mode;
     public $definitionsFile;
 
-    public $api_endpoint = 'https://api.attlaz.com';
-    public $api_client_id = 'public_client_id';
-    public $api_client_secret = 'public_client_secret';
+    public string $api_endpoint = 'https://api.attlaz.com';
+    public string $api_client_id = 'public_client_id';
+    public string $api_client_secret = 'public_client_secret';
 
-    public $sys_memory_limit = '2G';
-    public $sys_timezone = 'Europe/Brussels';
+    public string $sys_memory_limit = '2G';
+    public string $sys_timezone = 'Europe/Brussels';
 
-    public $cli_log_verbose = true;
+    public bool $cli_log_verbose = true;
     public $cli_log_level = \Monolog\Logger::INFO;
-    public $cli_log_stacktrace = true;
+    public bool $cli_log_stacktrace = true;
 
     public $api_log_level_flow_run = \Monolog\Logger::INFO;
 
-    private $isInitialized = false;
+    private bool $isInitialized = false;
 
     public const ENV_PROJECT = 'project';
     public const ENV_PROJECT_ENVIRONMENT = 'project_environment';
@@ -115,7 +115,7 @@ class Environment
     private function loadEnvSettingsFromFile(): void
     {
         try {
-            $dotenv = new Dotenv($this->projectRootPath);
+            $dotenv = Dotenv::createImmutable($this->projectRootPath);
             $dotenv->load();
 
             $this->isInitialized = true;
