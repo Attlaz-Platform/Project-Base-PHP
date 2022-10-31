@@ -10,6 +10,7 @@ use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidPathException;
 use Echron\Tools\FileSystem;
 use Echron\Tools\Normalize\Normalizer;
+use Monolog\Logger;
 
 class Environment
 {
@@ -45,10 +46,10 @@ class Environment
     public string $sys_timezone = 'Europe/Brussels';
 
     public bool $cli_log_verbose = true;
-    public $cli_log_level = \Monolog\Logger::INFO;
+    public int $cli_log_level = Logger::INFO;
     public bool $cli_log_stacktrace = true;
 
-    public $api_log_level_flow_run = \Monolog\Logger::INFO;
+    public int $api_log_level_flow_run = Logger::INFO;
 
     private bool $isInitialized = false;
 
@@ -115,11 +116,13 @@ class Environment
     private function loadEnvSettingsFromFile(): void
     {
         try {
-            $dotenv = Dotenv::createImmutable($this->projectRootPath);
+
+            $dotenv = Dotenv::createMutable($this->projectRootPath, '.env');
             $dotenv->load();
 
             $this->isInitialized = true;
         } catch (InvalidPathException $ex) {
+
             $this->isInitialized = false;
         }
     }
@@ -131,9 +134,14 @@ class Environment
 
     private function getEnvValue(string $key, string $failback = null): string
     {
-        $value = \getenv($key);
+        $value = false;
+
+        if (\array_key_exists($key, $_SERVER)) {
+            $value = $_SERVER[$key];
+        }
+
         if ($value === false) {
-            if (\is_null($failback)) {
+            if ($failback === null) {
                 throw new \Exception('Environment variable "' . $key . '" not defined');
             } else {
                 $value = $failback;
@@ -141,7 +149,7 @@ class Environment
         }
 
         if (!\is_string($value)) {
-            $value = strval($value);
+            $value = (string)$value;
         }
 
         return $value;
@@ -151,7 +159,7 @@ class Environment
     {
         $value = $this->getEnvValue($key);
 
-        return \intval($value);
+        return (int)$value;
     }
 
     public function getCacheName(): string

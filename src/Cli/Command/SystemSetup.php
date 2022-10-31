@@ -174,7 +174,7 @@ class SystemSetup extends Command
         $strEnv = '';
 
         foreach ($values as $key => $value) {
-            $strEnv .= $key . '=' . $value . \PHP_EOL;
+            $strEnv .= $key . '="' . $value . '"' . \PHP_EOL;
         }
 
         \file_put_contents($this->environment->getEnvFilePath(), $strEnv);
