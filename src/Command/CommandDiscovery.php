@@ -6,6 +6,7 @@ namespace Attlaz\Project\Command;
 
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\Annotation\Command as CommandAnnotation;
+use Attlaz\Project\Command\Annotation\FlowStepCommand;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
@@ -103,6 +104,42 @@ class CommandDiscovery
         return $class;
     }
 
+
+    private function detectFlowStepDetails(\ReflectionClass $reflectionClass): array|null
+    {
+
+
+        $attributes = $reflectionClass->getAttributes(FlowStepCommand::class);
+        if (!empty($attributes)) {
+            $attribute = $attributes[0];
+
+
+
+            /** @var FlowStepCommand $flowStepCommandInfo */
+            $flowStepCommandInfo = $attribute->newInstance();
+
+
+            return [
+                'flowStepId' => $flowStepCommandInfo->flowStepId
+            ];
+        }
+
+
+        /**
+         * Try (deprecated) ComandAnnotation method
+         */
+        /** @var CommandAnnotation|null $annotation */
+        $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, CommandAnnotation::class);
+        if (is_null($annotation)) {
+            return null;
+        }
+        return [
+            'flowStepId' => $annotation->getTask()
+        ];
+
+
+    }
+
     private function registerCommand(string $className): ?CommandDefinition
     {
         try {
@@ -114,9 +151,8 @@ class CommandDiscovery
 
             $reflectionClass = new \ReflectionClass($className);
 
-            /** @var CommandAnnotation|null $annotation */
-            $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, CommandAnnotation::class);
-            if (is_null($annotation)) {
+            $flowStepDetails = $this->detectFlowStepDetails($reflectionClass);
+            if (is_null($flowStepDetails)) {
                 return null;
             }
 
@@ -141,7 +177,7 @@ class CommandDiscovery
             $commandParameters = $this->getCommandParameters($invokeMethodReflection);
 
             $commandDefinition = new CommandDefinition();
-            $commandDefinition->task = $annotation->getTask();
+            $commandDefinition->task = $flowStepDetails['flowStepId'];
             $commandDefinition->className = $className;
 
             foreach ($commandParameters as $commandParameter) {
