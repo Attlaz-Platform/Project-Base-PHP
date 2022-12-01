@@ -1,2 +1,2 @@
 @ECHO OFF
-docker run --rm -it --init -v %cd%:/var/attlaz -w /var/attlaz hq.attlaz.com:2498/php7_4:1.1.0 composer %*
+docker run --rm -it --init -v %cd%:/var/attlaz -w /var/attlaz attlaz/php:8.1 composer %*
