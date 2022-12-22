@@ -6,9 +6,9 @@ namespace Attlaz\Project\Command;
 
 class CommandParameterDefinition
 {
-    private $name;
-    private $type;
-    private $required = true;
+    private string $name;
+    private string $type;
+    private bool $required = true;
     private $default = null;
 
     public function __construct(string $name, string $type = null, bool $required = true, $default = null)

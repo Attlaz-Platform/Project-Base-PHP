@@ -12,11 +12,9 @@ use Psr\Log\LoggerInterface;
 
 class AdapterDILoader
 {
-    private $logger;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(private LoggerInterface $logger)
     {
-        $this->logger = $logger;
     }
 
     public function initDI(\DI\ContainerBuilder $containerBuilder, Config $config): void

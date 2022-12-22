@@ -15,6 +15,7 @@ use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Monolog\ErrorHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 use Psr\Log\LoggerInterface;
 
 
@@ -83,7 +84,7 @@ class InternalFactory
          */
         if ($environment->isInitialized()) {
             $logStreamId = new LogStreamId('environment:' . $environment->getProjectEnvironment()->id);
-            $apiLogHandler = new AttlazHandler($client, $logStreamId, \Monolog\Logger::INFO);
+            $apiLogHandler = new AttlazHandler($client, $logStreamId, Level::Info);
             $formatter = new AttlazFormatter();
             $apiLogHandler->setFormatter($formatter);
             $logger->pushHandler($apiLogHandler);
@@ -100,12 +101,12 @@ class InternalFactory
 
     public static function getClient(Environment $environment): Client
     {
-        if (InternalFactory::$client === null) {
-            InternalFactory::$client = new Client($environment->api_client_id, $environment->api_client_secret);
-            InternalFactory::$client->setEndPoint($environment->api_endpoint);
+        if (self::$client === null) {
+            self::$client = new Client($environment->api_client_id, $environment->api_client_secret);
+            self::$client->setEndPoint($environment->api_endpoint);
         }
 
-        return InternalFactory::$client;
+        return self::$client;
     }
 
 

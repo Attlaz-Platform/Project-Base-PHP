@@ -10,6 +10,7 @@ use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\TaskExecutionRequest;
 use Attlaz\Project\Model\TaskExecutionResult;
+use Monolog\Level;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -19,8 +20,8 @@ class CommandManager
     private ContainerInterface $diContainer;
     private Environment $environment;
     private LoggerInterface $logger;
-    private ?LogStreamId $previousLogStreamId = null;
-    private ?int $previousLogLevel = null;
+    private LogStreamId|null $previousLogStreamId = null;
+    private int|null|Level $previousLogLevel = null;
 
     public function initialize(
         CommandDiscovery   $discovery,

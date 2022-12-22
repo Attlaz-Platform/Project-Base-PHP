@@ -6,9 +6,9 @@ namespace Attlaz\Project\Command;
 
 class CommandDefinition
 {
-    public $task;
-    public $className;
-    private $parameters = [];
+    public string $task;
+    public string $className;
+    private array $parameters = [];
 
     public function addParameter(CommandParameterDefinition $parameterDefinition)
     {

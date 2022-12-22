@@ -22,8 +22,8 @@ class FPM extends AbstractTaskHandler
             throw new \Exception('Unable to get input content');
         } else {
             $values = json_decode($json, true);
-            var_dump($json);
-            var_dump($values);
+//            var_dump($json);
+//            var_dump($values);
 
             $taskId = $values['taskId'];
             $arguments = $values['arguments'];

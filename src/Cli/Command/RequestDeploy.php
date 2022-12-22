@@ -74,6 +74,8 @@ class RequestDeploy extends Command
             $deployUrl = $this->environment->getAppUrl($selectedEnvironment, ['manage']);
 
             $this->logger->info('Deploy requested for environment "' . $selectedEnvironment->name . '" (more: ' . $deployUrl . ')');
+
+            return 0;
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 
