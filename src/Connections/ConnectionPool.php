@@ -16,20 +16,13 @@ use Psr\Log\LoggerInterface;
 
 class ConnectionPool implements AdapterConnectionPool
 {
-    private Config $config;
-    private Environment $environment;
-    private Client $client;
-    private LoggerInterface $logger;
+
 
     /** @var AdapterConnection[]|null */
-    private ?array $connectionDefinitions = null;
+    private array|null $connectionDefinitions = null;
 
-    public function __construct(Config $config, Environment $environment, Client $client, LoggerInterface $logger)
+    public function __construct(private Config $config, private Environment $environment, private Client $client, private LoggerInterface $logger)
     {
-        $this->config = $config;
-        $this->environment = $environment;
-        $this->client = $client;
-        $this->logger = $logger;
 
     }
 

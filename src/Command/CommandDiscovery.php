@@ -7,10 +7,6 @@ namespace Attlaz\Project\Command;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\Annotation\Command as CommandAnnotation;
 use Attlaz\Project\Command\Annotation\FlowStepCommand;
-use Doctrine\Common\Annotations\AnnotationException;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Doctrine\Common\Annotations\Reader;
 use Echron\Tools\FileSystem;
 
 class CommandDiscovery
@@ -21,10 +17,6 @@ class CommandDiscovery
      */
     private $directory;
 
-    /**
-     * @var Reader
-     */
-    private $annotationReader;
 
     /**
      * @var CommandDefinition[]
@@ -36,11 +28,7 @@ class CommandDiscovery
     {
         $this->directory = $sourcePath;
 
-        $this->annotationReader = new AnnotationReader();
 
-        //TODO: this can be removed in Doctrine Annotations v2
-        /** @noinspection PhpDeprecationInspection */
-        AnnotationRegistry::registerLoader('class_exists');
     }
 
     /**
@@ -114,7 +102,6 @@ class CommandDiscovery
             $attribute = $attributes[0];
 
 
-
             /** @var FlowStepCommand $flowStepCommandInfo */
             $flowStepCommandInfo = $attribute->newInstance();
 
@@ -125,72 +112,62 @@ class CommandDiscovery
         }
 
 
-        /**
-         * Try (deprecated) ComandAnnotation method
-         */
-        /** @var CommandAnnotation|null $annotation */
-        $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, CommandAnnotation::class);
-        if (is_null($annotation)) {
-            return null;
-        }
-        return [
-            'flowStepId' => $annotation->getTask()
-        ];
+        return null;
 
 
     }
 
     private function registerCommand(string $className): ?CommandDefinition
     {
-        try {
-            //TODO: if the className is actually a file, the file is included by calling "class_exists",
-            //  putting "autoload" to false doesn't help and make the function returns false
-            if (!class_exists($className, true)) {
-                return null;
-            }
-
-            $reflectionClass = new \ReflectionClass($className);
-
-            $flowStepDetails = $this->detectFlowStepDetails($reflectionClass);
-            if (is_null($flowStepDetails)) {
-                return null;
-            }
-
-            //Check if class extends AbstractCommand
-            if (!$reflectionClass->isSubclassOf(AbstractCommand::class)) {
-                $strErrorMessage = 'Unable to register command "' . $className . '": ';
-                $strErrorMessage .= 'must extend "' . AbstractCommand::class . '" class';
-                throw new \Exception($strErrorMessage);
-            }
-            //Check if invoke method exists
-            if (!$reflectionClass->hasMethod(AbstractCommand::INVOKE_METHOD)) {
-                $strErrorMessage = 'Unable to register command "' . $className . '": ';
-                $strErrorMessage .= 'must have "' . AbstractCommand::INVOKE_METHOD . '" method';
-                throw new \Exception($strErrorMessage);
-            }
-            $invokeMethodReflection = $reflectionClass->getMethod(AbstractCommand::INVOKE_METHOD);
-
-            //TODO: add information about return type
-            // $invokeMethodReflection->getReturnType()
-            //TODO: make sure that we don't have duplicate task definitions
-
-            $commandParameters = $this->getCommandParameters($invokeMethodReflection);
-
-            $commandDefinition = new CommandDefinition();
-            $commandDefinition->task = $flowStepDetails['flowStepId'];
-            $commandDefinition->className = $className;
-
-            foreach ($commandParameters as $commandParameter) {
-                $commandDefinition->addParameter($commandParameter);
-            }
-
-            return $commandDefinition;
-        } catch (AnnotationException $ex) {
-            $strErrorMessage = 'Unable to register command "' . $className . '":' . $ex->getMessage();
-            throw new \Exception($strErrorMessage);
-            //TODO: handle invalid/incomplete annotations,
-            // maybe make it possible to validate the project before building it?
+//        try {
+        //TODO: if the className is actually a file, the file is included by calling "class_exists",
+        //  putting "autoload" to false doesn't help and make the function returns false
+        if (!class_exists($className, true)) {
+            return null;
         }
+
+        $reflectionClass = new \ReflectionClass($className);
+
+        $flowStepDetails = $this->detectFlowStepDetails($reflectionClass);
+        if (is_null($flowStepDetails)) {
+            return null;
+        }
+
+        //Check if class extends AbstractCommand
+        if (!$reflectionClass->isSubclassOf(AbstractCommand::class)) {
+            $strErrorMessage = 'Unable to register command "' . $className . '": ';
+            $strErrorMessage .= 'must extend "' . AbstractCommand::class . '" class';
+            throw new \Exception($strErrorMessage);
+        }
+        //Check if invoke method exists
+        if (!$reflectionClass->hasMethod(AbstractCommand::INVOKE_METHOD)) {
+            $strErrorMessage = 'Unable to register command "' . $className . '": ';
+            $strErrorMessage .= 'must have "' . AbstractCommand::INVOKE_METHOD . '" method';
+            throw new \Exception($strErrorMessage);
+        }
+        $invokeMethodReflection = $reflectionClass->getMethod(AbstractCommand::INVOKE_METHOD);
+
+        //TODO: add information about return type
+        // $invokeMethodReflection->getReturnType()
+        //TODO: make sure that we don't have duplicate task definitions
+
+        $commandParameters = $this->getCommandParameters($invokeMethodReflection);
+
+        $commandDefinition = new CommandDefinition();
+        $commandDefinition->task = $flowStepDetails['flowStepId'];
+        $commandDefinition->className = $className;
+
+        foreach ($commandParameters as $commandParameter) {
+            $commandDefinition->addParameter($commandParameter);
+        }
+
+        return $commandDefinition;
+//        } catch (AnnotationException $ex) {
+//            $strErrorMessage = 'Unable to register command "' . $className . '":' . $ex->getMessage();
+//            throw new \Exception($strErrorMessage);
+//            //TODO: handle invalid/incomplete annotations,
+//            // maybe make it possible to validate the project before building it?
+//        }
     }
 
     private function getCommandParameters(\ReflectionMethod $invokeMethodReflection): array

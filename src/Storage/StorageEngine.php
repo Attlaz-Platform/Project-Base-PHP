@@ -22,17 +22,17 @@ class StorageEngine
         $this->storageType = $storageType;
     }
 
-    public function getItem(string $key, ?string $pool = null): ?StorageItem
+    public function getItem(string $key, string|null $pool = null): StorageItem|null
     {
         return $this->attlazClient->getStorageEndpoint()->getItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $pool);
     }
 
-    public function hasItem(string $key, ?string $pool = null): bool
+    public function hasItem(string $key, string|null $pool = null): bool
     {
         return $this->attlazClient->getStorageEndpoint()->hasItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $pool);
     }
 
-    public function setItem(string $key, $value, ?int $expirationSeconds = null, ?string $pool = null)
+    public function setItem(string $key, $value, int|null $expirationSeconds = null, string|null $pool = null): bool
     {
         // TODO: expiration seconds is required for cache
         // TODO: how to handle overrides?
@@ -41,7 +41,7 @@ class StorageEngine
             if ($this->storageType !== 'cache') {
                 // TODO: is this expected behaviour?
             }
-            return;
+            return false;
         }
         $item = new StorageItem();
         $item->key = $key;
@@ -59,17 +59,17 @@ class StorageEngine
      * @return string[]
      * @throws \Exception
      */
-    public function getItemKeys(?string $pool = null): array
+    public function getItemKeys(string|null $pool = null): array
     {
         return $this->attlazClient->getStorageEndpoint()->getItemKeys($this->environment->getProjectEnvironment()->id, $this->storageType, $pool);
     }
 
-    public function deleteItem(string $key, ?string $pool = null): bool
+    public function deleteItem(string $key, string|null $pool = null): bool
     {
         return $this->attlazClient->getStorageEndpoint()->deleteItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $pool);
     }
 
-    public function deleteItems(array $keys, ?string $pool = null): array
+    public function deleteItems(array $keys, string|null $pool = null): array
     {
         return $this->attlazClient->getStorageEndpoint()->deleteItems($this->environment->getProjectEnvironment()->id, $this->storageType, $keys, $pool);
     }

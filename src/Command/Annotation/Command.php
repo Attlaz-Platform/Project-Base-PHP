@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command\Annotation;
 
-use Doctrine\Common\Annotations\Annotation\Required;
+
 
 /**
  * "Command" annotation.
