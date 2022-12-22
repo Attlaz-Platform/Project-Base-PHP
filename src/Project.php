@@ -110,7 +110,7 @@ class Project
         }
 
         $containerBuilder = new ContainerBuilder();
-        $containerBuilder->useAnnotations(true);
+        //$containerBuilder->useAnnotations(true);
         if ($this->environment->compileDi) {
             $compilationCacheDir = FileSystem::joinPath($this->projectRootPath, 'var', 'cache');
 

@@ -7,11 +7,11 @@ namespace Attlaz\Project\Command;
 class CommandParameterDefinition
 {
     private string $name;
-    private string $type;
+    private string|null $type;
     private bool $required = true;
     private $default = null;
 
-    public function __construct(string $name, string $type = null, bool $required = true, $default = null)
+    public function __construct(string $name, string|null $type = null, bool $required = true, $default = null)
     {
         $this->name = $name;
         $this->type = $type;
