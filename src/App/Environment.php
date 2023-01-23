@@ -47,7 +47,7 @@ class Environment
     public string $sys_timezone = 'Europe/Brussels';
 
     public bool $cli_log_verbose = true;
-    public Level $cli_log_level = Level::Info;
+    public Level $cli_log_level = Level::Debug;
     public bool $cli_log_stacktrace = true;
 
     public Level $api_log_level_flow_run = Level::Info;
