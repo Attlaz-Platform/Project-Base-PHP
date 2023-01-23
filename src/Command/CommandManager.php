@@ -8,8 +8,8 @@ use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Model\Log\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
-use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\Model\TaskExecutionResult;
+use Attlaz\Project\Model\FlowRunRequest;
+use Attlaz\Project\Model\FlowRunResult;
 use Monolog\Level;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -66,11 +66,11 @@ class CommandManager
         }
     }
 
-    public function executeTask(TaskExecutionRequest $request): TaskExecutionResult
+    public function runFlow(FlowRunRequest $request): FlowRunResult
     {
         //TODO: make it possible to switch between app/staging app
-        $taskKey = $request->getTaskId();
-        $taskExecutionKey = $request->getExecutionId();
+        $taskKey = $request->getFlowId();
+        $taskExecutionKey = $request->getRunId();
 
         $urlSegments = [
             'tasks',
@@ -81,7 +81,7 @@ class CommandManager
         $dashboardUrl = $this->environment->getAppUrl(null, $urlSegments);
         // Only log this to console
         $this->logger->info('More info: ' . $dashboardUrl, [AttlazHandler::CONTEXT_SKIP => true]);
-        $this->enableExecutionLogging($request->getExecutionId());
+        $this->enableExecutionLogging($request->getRunId());
 
         $context = [];
         if (count($request->getArguments()) > 0) {
@@ -103,14 +103,14 @@ class CommandManager
                 AbstractCommand::INVOKE_METHOD,
             ], $parameterValues);
 
-            $result = new TaskExecutionResult($request->getTaskId(), $result, true);
+            $result = new FlowRunResult($request->getFlowId(), $result, true);
 
             $this->logger->info('Execution complete', $context);
 
         } catch (\Throwable $ex) {
             $context['error'] = $ex;
             $this->logger->error('Execution failed (' . $ex->getMessage() . ')', $context);
-            $result = new TaskExecutionResult($request->getTaskId(), $ex->getMessage(), false);
+            $result = new FlowRunResult($request->getFlowId(), $ex->getMessage(), false);
         }
 
         $this->disableExecutionLogging();
@@ -119,19 +119,19 @@ class CommandManager
     }
 
 
-    private function getCommandDefinitionByTask(TaskExecutionRequest $taskExecutionRequest): CommandDefinition
+    private function getCommandDefinitionByTask(FlowRunRequest $taskExecutionRequest): CommandDefinition
     {
         $commands = $this->discovery->getCommands();
 
         foreach ($commands as $command) {
-            if ($command->task === $taskExecutionRequest->getTaskId()) {
+            if ($command->task === $taskExecutionRequest->getFlowId()) {
                 return $command;
             }
         }
-        throw new \Exception('No command found for task "' . $taskExecutionRequest->getTaskId() . '"');
+        throw new \Exception('No command found for task "' . $taskExecutionRequest->getFlowId() . '"');
     }
 
-    private function getMethodArguments(TaskExecutionRequest $request, CommandDefinition $commandDefinition): array
+    private function getMethodArguments(FlowRunRequest $request, CommandDefinition $commandDefinition): array
     {
         $parameterValues = [];
         $commandDefinitionParameters = $commandDefinition->getParameters();
@@ -142,7 +142,7 @@ class CommandManager
         return $parameterValues;
     }
 
-    private function getArgumentValue(TaskExecutionRequest $request, CommandParameterDefinition $parameter)
+    private function getArgumentValue(FlowRunRequest $request, CommandParameterDefinition $parameter)
     {
         $parameterName = $parameter->getName();
 

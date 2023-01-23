@@ -8,8 +8,8 @@ use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
-use Attlaz\Project\Model\TaskExecutionRequest;
-use Attlaz\Project\Model\TaskExecutionResult;
+use Attlaz\Project\Model\FlowRunRequest;
+use Attlaz\Project\Model\FlowRunResult;
 use Attlaz\Project\Storage\StorageManager;
 use DI\Container as DIContainer;
 use Psr\Log\LoggerInterface;
@@ -78,7 +78,7 @@ abstract class AbstractCommand
         string $taskId,
         array  $arguments = [],
         string $projectEnvironmentId = null
-    ): TaskExecutionResult
+    ): FlowRunResult
     {
         $executeLocal = false;
 
@@ -94,21 +94,21 @@ abstract class AbstractCommand
             return $this->executeLocal($taskId, $arguments, $projectEnvironmentId);
         } else {
             $result = $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
-            return new TaskExecutionResult($taskId, $result->result, true);
+            return new FlowRunResult($taskId, $result->result, true);
         }
     }
 
     private function executeLocal(string $taskId,
                                   array  $arguments = [],
-                                  string $projectEnvironmentId = null): TaskExecutionResult
+                                  string $projectEnvironmentId = null): FlowRunResult
     {
         $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
 
-        $request = new TaskExecutionRequest($taskId, $arguments, $executionId);
+        $request = new FlowRunRequest($taskId, $arguments, $executionId);
 
         $commandManager = $this->dependencyManager->get(CommandManager::class);
 
-        return $commandManager->executeTask($request);
+        return $commandManager->runFlow($request);
     }
 
     /** @deprecated */

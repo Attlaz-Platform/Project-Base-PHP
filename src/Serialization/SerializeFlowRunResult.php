@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Serialization;
 
-use Attlaz\Project\Model\TaskExecutionResult;
+use Attlaz\Project\Model\FlowRunResult;
 
-class SerializeTaskResult
+class SerializeFlowRunResult
 {
-    public function __invoke(TaskExecutionResult $taskResult): string
+    public function __invoke(FlowRunResult $flowRunResult): string
     {
-        $serialized = json_encode($taskResult);
+        $serialized = json_encode($flowRunResult, JSON_THROW_ON_ERROR);
 
         if (!\is_string($serialized)) {
             throw new \Exception('Unable to encode task result');

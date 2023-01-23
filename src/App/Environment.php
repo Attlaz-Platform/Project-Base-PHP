@@ -10,6 +10,7 @@ use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidPathException;
 use Echron\Tools\FileSystem;
 use Echron\Tools\Normalize\Normalizer;
+use Monolog\Level;
 use Monolog\Logger;
 
 class Environment
@@ -32,11 +33,11 @@ class Environment
     public bool $compileDi = false;
     public bool $cacheConfig = false;
 
-    private $project;
-    private $projectEnvironment;
+    private ProjectModel|null $project = null;
+    private ProjectEnvironment|null $projectEnvironment = null;
 
     public $mode;
-    public $definitionsFile;
+    public string $definitionsFile;
 
     public string $api_endpoint = 'https://api.attlaz.com';
     public string $api_client_id = 'public_client_id';
@@ -46,10 +47,10 @@ class Environment
     public string $sys_timezone = 'Europe/Brussels';
 
     public bool $cli_log_verbose = true;
-    public int $cli_log_level = Logger::INFO;
+    public Level $cli_log_level = Level::Info;
     public bool $cli_log_stacktrace = true;
 
-    public int $api_log_level_flow_run = Logger::INFO;
+    public Level $api_log_level_flow_run = Level::Info;
 
     private bool $isInitialized = false;
 
@@ -132,7 +133,7 @@ class Environment
         return $this->projectRootPath . \DIRECTORY_SEPARATOR . '.env';
     }
 
-    private function getEnvValue(string $key, string $failback = null): string
+    private function getEnvValue(string $key, string|null $fallback = null): string
     {
         $value = false;
 
@@ -141,10 +142,10 @@ class Environment
         }
 
         if ($value === false) {
-            if ($failback === null) {
+            if ($fallback === null) {
                 throw new \Exception('Environment variable "' . $key . '" not defined');
             } else {
-                $value = $failback;
+                $value = $fallback;
             }
         }
 
@@ -232,10 +233,10 @@ class Environment
             $client = new \Attlaz\Client($this->api_client_id, $this->api_client_secret);
             $client->setEndPoint($this->api_endpoint);
             $projectId = $this->getEnvValue(self::ENV_PROJECT);
-            $this->project = $client->getProjectById($projectId);
+            $this->project = $client->getProjectEndpoint()->getProjectById($projectId);
 
             $projectEnvironmentId = $this->getEnvValue(self::ENV_PROJECT_ENVIRONMENT);
-            $this->projectEnvironment = $client->getProjectEnvironmentById($projectEnvironmentId);
+            $this->projectEnvironment = $client->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($projectEnvironmentId);
         }
     }
 
@@ -246,7 +247,7 @@ class Environment
 
     public function getAppUrl(ProjectEnvironment $environment = null, array $segments = []): string
     {
-        $teamKey = $this->getProject()->team;
+        $workspaceId = $this->getProject()->workspaceId;
         $projectKey = $this->getProject()->key;
 
         if (\is_null($environment)) {
@@ -256,7 +257,7 @@ class Environment
 
         $urlSegments = [
             'https://app.attlaz.com',
-            $teamKey,
+            $workspaceId,
             $projectKey,
             $environmentKey,
 

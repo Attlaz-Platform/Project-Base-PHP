@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\TaskExecution;
 
-use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\Model\FlowRunRequest;
 
 class FPM extends AbstractTaskHandler
 {
@@ -15,7 +15,7 @@ class FPM extends AbstractTaskHandler
         return $this->execute($taskExecutionRequest);
     }
 
-    private function getTaskExecutionRequest(): TaskExecutionRequest
+    private function getTaskExecutionRequest(): FlowRunRequest
     {
         $json = file_get_contents('php://input');
         if (!\is_string($json)) {
@@ -30,7 +30,7 @@ class FPM extends AbstractTaskHandler
 
             $executionId = $values['executionId'];
 
-            return new TaskExecutionRequest($taskId, $arguments, $executionId);
+            return new FlowRunRequest($taskId, $arguments, $executionId);
         }
     }
 }

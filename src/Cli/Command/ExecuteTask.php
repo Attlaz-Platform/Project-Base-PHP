@@ -6,7 +6,7 @@ namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\TaskExecution\AbstractTaskHandler;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -30,10 +30,10 @@ class ExecuteTask extends Command
 
     public function __construct(
         AbstractTaskHandler $taskExecutor,
-        Client $client,
-        Environment $environment,
+        Client              $client,
+        Environment         $environment,
 //        StreamHandler $streamHandler,
-        LoggerInterface $logger
+        LoggerInterface     $logger
     )
     {
         parent::__construct();
@@ -79,7 +79,7 @@ class ExecuteTask extends Command
         }
     }
 
-    private function getRequestFromInput(InputInterface $input): TaskExecutionRequest
+    private function getRequestFromInput(InputInterface $input): FlowRunRequest
     {
         $taskId = $input->getArgument(self::ARG_TASK);
         if (!\is_string($taskId)) {
@@ -93,7 +93,7 @@ class ExecuteTask extends Command
             if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
                 $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
-                $taskExecutionId = $this->client->createTaskExecution($taskId, $projectEnvironmentId);
+                $taskExecutionId = $this->client->getFlowEndpoint()->createFlowRun($taskId, $projectEnvironmentId);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
@@ -103,12 +103,12 @@ class ExecuteTask extends Command
             }
         }
 
-        return new TaskExecutionRequest($taskId, $arguments, $taskExecutionId);
+        return new FlowRunRequest($taskId, $arguments, $taskExecutionId);
     }
 
     private function getArgumentsFromStorage(string $taskExecutionId): array
     {
-        $taskExecution = $this->client->getTaskExecution($taskExecutionId);
+        $taskExecution = $this->client->getFlowEndpoint()->getFlowRun($taskExecutionId);
         if (\is_null($taskExecution)) {
             throw new \Exception('Unable to execute task: unable to get arguments from storage');
         }

@@ -139,7 +139,7 @@ class Config implements LoggerAwareInterface
         if (!\is_null($projectEnvironment)) {
             $projectEnvironmentId = $projectEnvironment->id;
         }
-        $configValues = $this->client->getConfigByProject($project->id, $projectEnvironmentId);
+        $configValues = $this->client->getConfigEndpoint()->getConfigByProject($project->id, $projectEnvironmentId);
 
         $result = [];
 

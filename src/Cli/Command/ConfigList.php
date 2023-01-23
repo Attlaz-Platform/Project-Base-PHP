@@ -51,11 +51,11 @@ class ConfigList extends Command
             $identifier = trim($value);
 
             if (\is_numeric($identifier)) {
-                $id = \intval($identifier) . '';
+                $id = (int)$identifier . '';
 
-                return $this->attlazClient->getProjectEnvironmentById($id);
+                return $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($id);
             } else {
-                return $this->attlazClient->getProjectEnvironmentByKey($this->environment->getProject()->id, $identifier);
+                return $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironmentByKey($this->environment->getProject()->id, $identifier);
             }
         }
 
@@ -66,7 +66,7 @@ class ConfigList extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $environments = $this->attlazClient->getProjectEnvironments($this->environment->getProject()->id);
+            $environments = $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironments($this->environment->getProject()->id);
 
             $totalConfigValues = [];
             foreach ($environments as $environment) {

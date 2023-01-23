@@ -20,7 +20,7 @@ use Attlaz\Project\Command\CommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\DI\AdapterDILoader;
 use Attlaz\Project\DI\InternalFactory;
-use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Storage\SimpleCacheAdapter;
 use Attlaz\Project\Storage\StorageManager;
 use Attlaz\Project\TaskExecution\CLI;
@@ -227,9 +227,9 @@ class Project
         }
     }
 
-    protected function executeTaskExecutionRequest(TaskExecutionRequest $taskExecutionRequest): int
+    protected function executeTaskExecutionRequest(FlowRunRequest $taskExecutionRequest): int
     {
-        $taskExecutionResult = $this->commandManager->executeTask($taskExecutionRequest);
+        $taskExecutionResult = $this->commandManager->runFlow($taskExecutionRequest);
 
         //$this->sendResponse($taskExecutionResult);
 

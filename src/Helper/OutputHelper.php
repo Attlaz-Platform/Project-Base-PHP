@@ -11,9 +11,9 @@ class OutputHelper
     /**
      * @var LoggerInterface
      */
-    private $logger;
+    private LoggerInterface $logger;
 
-    private $lastProgressOutput = [];
+    private array $lastProgressOutput = [];
 
     private const LIMIT_PROGRESS_SECONDS = 2.5;
 
@@ -40,11 +40,7 @@ class OutputHelper
 
         $lastOutputSeconds = \microtime(true) - $this->lastProgressOutput[$key];
 
-        if ($lastOutputSeconds > self::LIMIT_PROGRESS_SECONDS) {
-            return true;
-        }
-
-        return false;
+        return $lastOutputSeconds > self::LIMIT_PROGRESS_SECONDS;
     }
 
     private function markOutput(string $key): void
