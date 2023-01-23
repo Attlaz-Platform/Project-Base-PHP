@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "272c4e08e956d5c83163dd05372602c2",
+    "content-hash": "858e23a40e1fc6b1d5c7f4934ff9e1f0",
     "packages": [
         {
             "name": "attlaz/adapter-base",
@@ -116,16 +116,16 @@
         },
         {
             "name": "attlaz/client",
-            "version": "1.9.0",
+            "version": "1.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/PHP-Client.git",
-                "reference": "908bb9865fa9897ba56b26b51da254306410eabc"
+                "reference": "3fad29f141c26bd15c2f532159642706bf3e0691"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/908bb9865fa9897ba56b26b51da254306410eabc",
-                "reference": "908bb9865fa9897ba56b26b51da254306410eabc",
+                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/3fad29f141c26bd15c2f532159642706bf3e0691",
+                "reference": "3fad29f141c26bd15c2f532159642706bf3e0691",
                 "shasum": ""
             },
             "require": {
@@ -158,9 +158,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Attlaz-Platform/PHP-Client/issues",
-                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.9.0"
+                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.9.2"
             },
-            "time": "2023-01-23T11:17:47+00:00"
+            "time": "2023-01-23T15:17:17+00:00"
         },
         {
             "name": "echron/datatypes",

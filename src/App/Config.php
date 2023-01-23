@@ -67,7 +67,7 @@ class Config implements LoggerAwareInterface
         //TODO: when to flush cache (new build?)
 
         //TODO: read database/API config values
-        $apiConfigValues = $this->fetchApiConfigValues($this->environment->getProject(), $projectEnvironment);
+        $apiConfigValues = $this->fetchApiConfigValues($projectEnvironment);
 
         foreach ($apiConfigValues as $apiConfigValue) {
             $result[$apiConfigValue->key] = $apiConfigValue;
@@ -131,15 +131,11 @@ class Config implements LoggerAwareInterface
      * @throws \Attlaz\Model\Exception\RequestException
      */
     private function fetchApiConfigValues(
-        \Attlaz\Model\Project $project,
-        ProjectEnvironment    $projectEnvironment = null
+        ProjectEnvironment $projectEnvironment
     ): array
     {
-        $projectEnvironmentId = null;
-        if (!\is_null($projectEnvironment)) {
-            $projectEnvironmentId = $projectEnvironment->id;
-        }
-        $configValues = $this->client->getConfigEndpoint()->getConfigByProject($project->id, $projectEnvironmentId);
+
+        $configValues = $this->client->getConfigEndpoint()->getConfigByProject($projectEnvironment->id);
 
         $result = [];
 
