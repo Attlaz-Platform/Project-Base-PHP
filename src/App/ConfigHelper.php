@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class ConfigHelper
 {
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(LoggerInterface $logger)
     {

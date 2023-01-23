@@ -103,7 +103,7 @@ class SystemSetup extends Command
             /**
              * Project
              */
-            $projects = $client->getProjects();
+            $projects = $client->getProjectEndpoint()->getProjects();
             $arrProjectOptions = [];
             foreach ($projects as $project) {
                 $arrProjectOptions[$project->id] = $project->name;
@@ -131,7 +131,7 @@ class SystemSetup extends Command
             /**
              * Project environment
              */
-            $projectEnvironments = $client->getProjectEnvironments((string)$values[Environment::ENV_PROJECT]);
+            $projectEnvironments = $client->getProjectEnvironmentEndpoint()->getProjectEnvironments((string)$values[Environment::ENV_PROJECT]);
             $arrProjectEnvironmentOptions = [];
             foreach ($projectEnvironments as $projectEnvironment) {
                 $arrProjectEnvironmentOptions[$projectEnvironment->id] = $projectEnvironment->name;

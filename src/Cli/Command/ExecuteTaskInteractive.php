@@ -8,7 +8,7 @@ use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\CommandParameterDefinition;
-use Attlaz\Project\Model\TaskExecutionRequest;
+use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\TaskExecution\CLI;
 use Monolog\Handler\StreamHandler;
 use Psr\Log\LoggerInterface;
@@ -99,7 +99,7 @@ class ExecuteTaskInteractive extends ExecuteTask
                 $parameterValues[$parameter->getName()] = $parameterValue;
             }
 
-            $taskExecutionRequest = new TaskExecutionRequest($taskId, $parameterValues, 'soe');
+            $taskExecutionRequest = new FlowRunRequest($taskId, $parameterValues, 'soe');
 
             return $this->taskExecutor->execute($taskExecutionRequest);
         } catch (\Throwable $ex) {

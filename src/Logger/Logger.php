@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Logger;
 
 use Attlaz\Project\Exception\RuntimeException;
+use Monolog\Level;
 use Psr\Log\LoggerInterface;
 
 class Logger extends \Monolog\Logger implements LoggerInterface
@@ -15,49 +16,49 @@ class Logger extends \Monolog\Logger implements LoggerInterface
     public function emergency($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::EMERGENCY, $message, $context);
+        $this->addRecord(\Monolog\Level::Emergency, $message, $context);
     }
 
     public function alert($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::ALERT, $message, $context);
+        $this->addRecord(\Monolog\Level::Alert, $message, $context);
     }
 
     public function critical($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::CRITICAL, $message, $context);
+        $this->addRecord(\Monolog\Level::Critical, $message, $context);
     }
 
     public function error($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::ERROR, $message, $context);
+        $this->addRecord(\Monolog\Level::Error, $message, $context);
     }
 
     public function warning($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::WARNING, $message, $context);
+        $this->addRecord(\Monolog\Level::Warning, $message, $context);
     }
 
     public function notice($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::NOTICE, $message, $context);
+        $this->addRecord(\Monolog\Level::Notice, $message, $context);
     }
 
     public function info($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::INFO, $message, $context);
+        $this->addRecord(\Monolog\Level::Info, $message, $context);
     }
 
     public function debug($message, array $context = array()): void
     {
         list($message, $context) = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(static::DEBUG, $message, $context);
+        $this->addRecord(\Monolog\Level::Debug, $message, $context);
     }
 
 
@@ -107,9 +108,9 @@ class Logger extends \Monolog\Logger implements LoggerInterface
     {
         $prefix = self::CONTEXT_ERROR_PREFIX;
         $errCount = 1;
-        while (\key_exists($prefix, $context)) {
+        while (\array_key_exists($prefix, $context)) {
             $errCount++;
-            $prefix = $prefix . ' ' . $errCount;
+            $prefix .= ' ' . $errCount;
         }
         return $prefix;
     }
@@ -123,39 +124,4 @@ class Logger extends \Monolog\Logger implements LoggerInterface
 
         return \array_merge($context, $runtimeException->getContext());
     }
-
-//    private function removeSecrets($input)
-//    {
-//        if (\is_string($input)) {
-//            return \str_replace(['/var/attlaz/'], '***', $input);
-//        }
-//        if (\is_array($input)) {
-//
-//            array_walk($input, function (&$value, &$key) {
-//                $key = $this->removeSecrets($key);
-//                $value = $this->removeSecrets($value);
-//            });
-//            return $input;
-//
-//        }
-//        if (\is_object($input)) {
-//            $result = [];
-//
-////            $vars = get_object_vars($input);
-////            \var_dump($input);
-////            \var_dump($vars);
-////            die('--');
-//            foreach ($input as $key => $value) {
-//                $key = $this->removeSecrets($key);
-//                $value = $this->removeSecrets($value);
-//
-//                $result[$key] = $value;
-//            }
-//            \var_dump($result);
-//            die('--');
-//            return $result;
-//        }
-//
-//        return $input;
-//    }
 }

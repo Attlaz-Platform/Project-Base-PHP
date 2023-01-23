@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Command\Annotation\Command as CommandAnnotation;
 use Attlaz\Project\Command\Annotation\FlowStepCommand;
 use Echron\Tools\FileSystem;
 
@@ -15,14 +14,14 @@ class CommandDiscovery
     /**
      * @var string
      */
-    private $directory;
+    private string $directory;
 
 
     /**
      * @var CommandDefinition[]
      */
-    private $commands = [];
-    private $commandsLoaded = false;
+    private array $commands = [];
+    private bool $commandsLoaded = false;
 
     public function __construct(string $sourcePath)
     {

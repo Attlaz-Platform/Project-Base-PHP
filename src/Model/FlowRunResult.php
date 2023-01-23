@@ -3,25 +3,25 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
-class TaskExecutionResult implements \JsonSerializable
+class FlowRunResult implements \JsonSerializable
 {
-    private string $taskId;
+    private string $flowId;
     private mixed $data;
     private bool $success;
 
     private \DateTime|null $received = null;
     private \DateTime|null $responded = null;
 
-    public function __construct(string $taskId, mixed $data, bool $success = true)
+    public function __construct(string $flowId, mixed $data, bool $success = true)
     {
-        $this->taskId = $taskId;
+        $this->flowId = $flowId;
         $this->data = $data;
         $this->success = $success;
     }
 
-    public function getTaskId(): string
+    public function getFlowId(): string
     {
-        return $this->taskId;
+        return $this->flowId;
     }
 
     public function getData(): mixed
@@ -57,7 +57,7 @@ class TaskExecutionResult implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'task'      => $this->taskId,
+            'flow'      => $this->flowId,
             'data'      => $this->data,
             'success'   => $this->success,
             'received'  => $this->received,

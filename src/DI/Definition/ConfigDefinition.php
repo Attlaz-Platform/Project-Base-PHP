@@ -14,13 +14,10 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
      * Entry name.
      * @var string
      */
-    private $name = '';
+    private string $name = '';
 
-    /**
-     * @var string
-     */
-    private $key;
-    private $datatype;
+    private string $key;
+    private string|null $datatype;
 
     public function __construct(string $key, string $datatype = null)
     {
@@ -69,17 +66,15 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
      * Resolve a string expression.
      */
     public static function resolveExpression(
-        string $entryName,
-        string $key,
+        string             $entryName,
+        string             $key,
         ContainerInterface $container,
-        string $datatype = null
+        string             $datatype = null
     )
     {
         /** @var Config $config */
         $config = $container->get(Config::class);
 
-        $value = $config->get($key, $datatype);
-
-        return $value;
+        return $config->get($key, $datatype);
     }
 }

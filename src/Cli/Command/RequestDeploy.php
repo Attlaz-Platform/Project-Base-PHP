@@ -52,24 +52,24 @@ class RequestDeploy extends Command
 
             $selectedEnvironment = null;
             if (!empty($environmentIdentifier)) {
-                $selectedEnvironment = $this->client->getProjectEnvironmentByKey($this->environment->getProject()->id, $environmentIdentifier);
+                $selectedEnvironment = $this->client->getProjectEnvironmentEndpoint()->getProjectEnvironmentByKey($this->environment->getProject()->id, $environmentIdentifier);
             } else {
                 $environmentIdentifier = $this->environment->getProject()->defaultEnvironmentId;
-                $selectedEnvironment = $this->client->getProjectEnvironmentById($environmentIdentifier);
+                $selectedEnvironment = $this->client->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($environmentIdentifier);
             }
 
 
             if (\is_null($selectedEnvironment)) {
                 $options = [];
                 $projectId = $this->environment->getProject()->id;
-                $environments = $this->client->getProjectEnvironments($projectId);
+                $environments = $this->client->getProjectEnvironmentEndpoint()->getProjectEnvironments($projectId);
                 foreach ($environments as $environment) {
                     $options[] = $environment->key;
                 }
                 throw new \Exception('Unable to request deploy: environment not found (available: ' . \implode(', ', $options) . ')');
             }
 
-            $deployId = $this->client->requestDeploy($selectedEnvironment->id);
+            $deployId = $this->client->getDeployEndpoint()->requestDeploy($selectedEnvironment->id);
 
             $deployUrl = $this->environment->getAppUrl($selectedEnvironment, ['manage']);
 
