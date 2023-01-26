@@ -46,7 +46,7 @@ class CommandManager
                 if ($handler instanceof AttlazHandler) {
                     $this->previousLogStreamId = $handler->getLogStreamId();
                     $this->previousLogLevel = $handler->getLevel();
-                    $handler->setLogStreamId(new LogStreamId('execution:' . $executionId));
+                    $handler->setLogStreamId(new LogStreamId('flow_run:' . $executionId));
                     $handler->setLevel($this->environment->api_log_level_flow_run);
                 }
             }
