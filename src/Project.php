@@ -9,14 +9,14 @@ use Attlaz\Project\App\ConfigHelper;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cli\Command\CacheClean;
 use Attlaz\Project\Cli\Command\ConfigList;
-use Attlaz\Project\Cli\Command\ExecuteTask;
-use Attlaz\Project\Cli\Command\ExecuteTaskInteractive;
-use Attlaz\Project\Cli\Command\ListTasks;
+use Attlaz\Project\Cli\Command\RunFlow;
+use Attlaz\Project\Cli\Command\RunFlowInteractive;
+use Attlaz\Project\Cli\Command\ListFlows;
 use Attlaz\Project\Cli\Command\RequestDeploy;
 use Attlaz\Project\Cli\Command\RunTests;
 use Attlaz\Project\Cli\Command\SystemSetup;
 use Attlaz\Project\Cli\Command\SystemStatus;
-use Attlaz\Project\Command\CommandDiscovery;
+use Attlaz\Project\Command\FlowCommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\DI\AdapterDILoader;
 use Attlaz\Project\DI\InternalFactory;
@@ -81,7 +81,7 @@ class Project
             //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             // $start = \microtime(true);
             if ($this->environment->isInitialized()) {
-                $discovery = new CommandDiscovery($this->projectRootPath);
+                $discovery = new FlowCommandDiscovery($this->projectRootPath);
                 //Pre fetch commands
                 $discovery->getCommands();
 
@@ -185,12 +185,12 @@ class Project
 //                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
 
                 //List tasks
-                $cliApplication->add(new ListTasks($commandManager, $this->logger));
+                $cliApplication->add(new ListFlows($commandManager, $this->logger));
                 //Execute task
-                $cmd = new ExecuteTask($taskHandler, $attlazClient, $environment, $this->logger);
+                $cmd = new RunFlow($taskHandler, $attlazClient, $environment, $this->logger);
                 $cliApplication->add($cmd);
                 //Execute task interactive
-                $cmd = new ExecuteTaskInteractive(
+                $cmd = new RunFlowInteractive(
                     $taskHandler,
                     $attlazClient,
                     $commandManager,

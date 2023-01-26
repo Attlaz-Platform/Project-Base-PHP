@@ -12,20 +12,19 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RunTests extends Command
 {
 
-    protected $logger;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(protected LoggerInterface $logger)
     {
         parent::__construct();
 
-        $this->logger = $logger;
+
     }
 
     protected function configure()
     {
         $this->setName('test:run')
-             ->setDescription('Run tests')
-             ->setHelp('This command allows you to run tests');
+            ->setDescription('Run tests')
+            ->setHelp('This command allows you to run tests');
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */

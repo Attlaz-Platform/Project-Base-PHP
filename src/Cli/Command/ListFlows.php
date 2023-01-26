@@ -13,24 +13,20 @@ use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ListTasks extends Command
+class ListFlows extends Command
 {
-    private $commandManager;
-    private $logger;
 
-    public function __construct(CommandManager $commandManager, LoggerInterface $logger)
+
+    public function __construct(private CommandManager $commandManager, private LoggerInterface $logger)
     {
         parent::__construct();
-
-        $this->commandManager = $commandManager;
-        $this->logger = $logger;
     }
 
     protected function configure()
     {
-        $this->setName('task:list')
-             ->setDescription('List tasks.')
-             ->setHelp('This command allows you to list available tasks');
+        $this->setName('flow:list')
+            ->setDescription('List flows.')
+            ->setHelp('This command allows you to list available flows');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -46,7 +42,7 @@ class ListTasks extends Command
                 $parameters = $this->formatParameters($command);
 
                 $rows[] = [
-                    $command->task,
+                    $command->flowId,
                     $command->className,
                     new TableCell(\implode("\n", $parameters), ['rowspan' => count($parameters)]),
                 ];
@@ -59,7 +55,7 @@ class ListTasks extends Command
                 'Class',
                 'Parameters',
             ])
-                  ->setRows($rows);
+                ->setRows($rows);
             $table->render();
         }
     }

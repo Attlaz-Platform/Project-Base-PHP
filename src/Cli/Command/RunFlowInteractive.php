@@ -18,26 +18,25 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 
-class ExecuteTaskInteractive extends ExecuteTask
+class RunFlowInteractive extends RunFlow
 {
-    private $commandManager;
-
     public function __construct(
-        CLI $taskExecutor,
-        Client $client,
-        CommandManager $commandManager,
-        Environment $environment,
-        LoggerInterface $logger
-    ) {
+        CLI                             $taskExecutor,
+        Client                          $client,
+        private readonly CommandManager $commandManager,
+        Environment                     $environment,
+        LoggerInterface                 $logger
+    )
+    {
         parent::__construct($taskExecutor, $client, $environment, $logger);
-        $this->commandManager = $commandManager;
     }
 
     protected function configure()
     {
         $this->setName('task:execute:interactive')
-             ->setDescription('Run task.')
-             ->setHelp('This command allows you to run a task interactively');
+            ->setAliases(['flow:run:interactive'])
+            ->setDescription('Run task.')
+            ->setHelp('This command allows you to run a task interactively');
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -47,9 +46,9 @@ class ExecuteTaskInteractive extends ExecuteTask
         try {
             $commands = $this->commandManager->getCommandDefinitions();
 
-            $taskIds = [];
+            $flowIds = [];
             foreach ($commands as $command) {
-                $taskIds[$command->task] = '' . $command->className . '';
+                $flowIds[$command->flowId] = $command->className;
             }
 
             $questionHelper = new QuestionHelper();
@@ -57,8 +56,8 @@ class ExecuteTaskInteractive extends ExecuteTask
             /**
              * Request taskId
              */
-            $question = new ChoiceQuestion('Please select a task:', $taskIds);
-            $question->setErrorMessage('Task %s is invalid.');
+            $question = new ChoiceQuestion('Please select a flow:', $flowIds);
+            $question->setErrorMessage('Flow %s is invalid.');
 
             $taskId = $questionHelper->ask($input, $output, $question);
 
@@ -66,7 +65,7 @@ class ExecuteTaskInteractive extends ExecuteTask
 
             $selectedCommand = null;
             foreach ($commands as $command) {
-                if ($taskId === $command->task) {
+                if ($taskId === $command->flowId) {
                     $selectedCommand = $command;
                 }
             }

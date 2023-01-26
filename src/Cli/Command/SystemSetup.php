@@ -48,14 +48,14 @@ class SystemSetup extends Command
              * API Endpoint
              */
             $apiEndpoints = [
-                'production' => 'https://api.attlaz.com',
-                'staging'    => 'https://api2.attlaz.com',
+                'latest' => 'https://api.attlaz.com',
+                'beta'   => 'https://api.attlaz.com/beta',
             ];
-            $question = new ChoiceQuestion('API endpoint?', $apiEndpoints, $apiEndpoints['production']);
+            $question = new ChoiceQuestion('API endpoint?', $apiEndpoints, $apiEndpoints['latest']);
 
             $answer = $questionHelper->ask($input, $output, $question);
 
-            $apiEndpoint = $apiEndpoints['production'];
+            $apiEndpoint = $apiEndpoints['latest'];
             foreach ($apiEndpoints as $key => $value) {
                 if ($answer === $key || $answer === $value) {
                     $apiEndpoint = $value;

@@ -20,19 +20,14 @@ class ConfigList extends Command
 {
     private const ARG_FORCE_ENVIRONMENT = 'force-config-environment';
 
-    protected $config;
-    protected $environment;
-    protected $attlazClient;
-    protected $logger;
-
-    public function __construct(Config $config, Environment $environment, Client $attlazClient, LoggerInterface $logger)
+    public function __construct(
+        protected readonly Config          $config,
+        protected readonly Environment     $environment,
+        protected readonly Client          $attlazClient,
+        protected readonly LoggerInterface $logger
+    )
     {
         parent::__construct();
-
-        $this->config = $config;
-        $this->environment = $environment;
-        $this->attlazClient = $attlazClient;
-        $this->logger = $logger;
     }
 
     protected function configure()

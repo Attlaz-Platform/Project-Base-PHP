@@ -14,24 +14,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SystemStatus extends Command
 {
 
-    protected $client;
-    protected $environment;
-    protected $logger;
 
-    public function __construct(Client $client, Environment $environment, LoggerInterface $logger)
+    public function __construct(private Client $client, private Environment $environment, private LoggerInterface $logger)
     {
         parent::__construct();
-
-        $this->client = $client;
-        $this->environment = $environment;
-        $this->logger = $logger;
     }
 
     protected function configure()
     {
         $this->setName('system:status')
-             ->setDescription('Get the status')
-             ->setHelp('Use this command to get the status');
+            ->setDescription('Get the status')
+            ->setHelp('Use this command to get the status');
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */

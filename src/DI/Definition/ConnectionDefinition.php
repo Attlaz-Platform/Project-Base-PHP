@@ -34,7 +34,7 @@ class ConnectionDefinition implements Definition, SelfResolvingDefinition
         return $this->name;
     }
 
-    public function setName(string $name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -44,7 +44,7 @@ class ConnectionDefinition implements Definition, SelfResolvingDefinition
         return $this->connectionIdentifier;
     }
 
-    public function resolve(ContainerInterface $container)
+    public function resolve(ContainerInterface $container): mixed
     {
         /** @var ConnectionPool $connectionPool */
         $connectionPool = $container->get(ConnectionPool::class);
@@ -62,12 +62,12 @@ class ConnectionDefinition implements Definition, SelfResolvingDefinition
         return \array_key_exists($this->connectionIdentifier, $keys);
     }
 
-    public function replaceNestedDefinitions(callable $replacer)
+    public function replaceNestedDefinitions(callable $replacer): void
     {
         // no nested definitions
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return 'Connection: ' . $this->connectionIdentifier;
     }
