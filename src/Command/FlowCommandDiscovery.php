@@ -8,7 +8,7 @@ use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\Annotation\FlowStepCommand;
 use Echron\Tools\FileSystem;
 
-class CommandDiscovery
+class FlowCommandDiscovery
 {
 
     /**
@@ -64,14 +64,14 @@ class CommandDiscovery
 
                 $commandDefinition = $this->registerCommand($className);
                 if (!\is_null($commandDefinition)) {
-                    if (isset($commands[$commandDefinition->task])) {
+                    if (isset($commands[$commandDefinition->flowId])) {
                         $strErrorMessage = 'Unable to register command: ';
-                        $strErrorMessage .= 'There is already a command defined for task ';
-                        $strErrorMessage .= '"' . $commandDefinition->task . '"';
+                        $strErrorMessage .= 'There is already a command defined for flow ';
+                        $strErrorMessage .= '"' . $commandDefinition->flowId . '"';
 
                         throw new \Exception($strErrorMessage);
                     }
-                    $commands[$commandDefinition->task] = $commandDefinition;
+                    $commands[$commandDefinition->flowId] = $commandDefinition;
                 }
             }
         }
@@ -153,7 +153,7 @@ class CommandDiscovery
         $commandParameters = $this->getCommandParameters($invokeMethodReflection);
 
         $commandDefinition = new CommandDefinition();
-        $commandDefinition->task = $flowStepDetails['flowStepId'];
+        $commandDefinition->flowId = $flowStepDetails['flowStepId'];
         $commandDefinition->className = $className;
 
         foreach ($commandParameters as $commandParameter) {

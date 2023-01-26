@@ -30,7 +30,7 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         return $this->name;
     }
 
-    public function setName(string $name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -40,7 +40,7 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         return $this->key;
     }
 
-    public function resolve(ContainerInterface $container)
+    public function resolve(ContainerInterface $container): mixed
     {
         return self::resolveExpression($this->name, $this->key, $container, $this->datatype);
     }
@@ -52,12 +52,12 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         return $config->has($this->key);
     }
 
-    public function replaceNestedDefinitions(callable $replacer)
+    public function replaceNestedDefinitions(callable $replacer): void
     {
         // no nested definitions
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return 'Config: ' . $this->key;
     }

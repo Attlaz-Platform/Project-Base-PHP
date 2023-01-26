@@ -14,18 +14,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RequestDeploy extends Command
 {
-    protected $taskExecutor;
-    protected $client;
-    protected $environment;
-    protected $logger;
 
-    public function __construct(Environment $environment, Client $client, LoggerInterface $logger)
+    public function __construct(
+        private readonly Environment     $environment,
+        private readonly Client          $client,
+        private readonly LoggerInterface $logger
+    )
     {
         parent::__construct();
-        $this->environment = $environment;
-        $this->client = $client;
 
-        $this->logger = $logger;
     }
 
     protected function configure()

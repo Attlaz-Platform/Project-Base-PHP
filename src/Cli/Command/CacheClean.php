@@ -12,17 +12,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CacheClean extends Command
 {
-    protected Config $config;
-    protected StorageManager $storageManager;
-    protected LoggerInterface $logger;
 
-    public function __construct(Config $config, StorageManager $storageManager, LoggerInterface $logger)
+
+    public function __construct(
+        protected readonly Config          $config,
+        protected readonly StorageManager  $storageManager,
+        protected readonly LoggerInterface $logger
+    )
     {
         parent::__construct();
 
-        $this->config = $config;
-        $this->storageManager = $storageManager;
-        $this->logger = $logger;
+
     }
 
     protected function configure()

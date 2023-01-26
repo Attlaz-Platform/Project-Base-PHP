@@ -6,7 +6,7 @@ namespace Attlaz\Project\Command;
 
 class CommandDefinition
 {
-    public string $task;
+    public string $flowId;
     public string $className;
     private array $parameters = [];
 

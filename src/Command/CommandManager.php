@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
 
 class CommandManager
 {
-    private CommandDiscovery $discovery;
+    private FlowCommandDiscovery $discovery;
     private ContainerInterface $diContainer;
     private Environment $environment;
     private LoggerInterface $logger;
@@ -24,10 +24,10 @@ class CommandManager
     private int|null|Level $previousLogLevel = null;
 
     public function initialize(
-        CommandDiscovery   $discovery,
-        ContainerInterface $diContainer,
-        Environment        $environment,
-        LoggerInterface    $logger
+        FlowCommandDiscovery $discovery,
+        ContainerInterface   $diContainer,
+        Environment          $environment,
+        LoggerInterface      $logger
     )
     {
         //TODO: we should check if the CommandManager is initialized an has everything loaded
@@ -124,7 +124,7 @@ class CommandManager
         $commands = $this->discovery->getCommands();
 
         foreach ($commands as $command) {
-            if ($command->task === $taskExecutionRequest->getFlowId()) {
+            if ($command->flowId === $taskExecutionRequest->getFlowId()) {
                 return $command;
             }
         }

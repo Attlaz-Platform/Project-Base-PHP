@@ -1,13 +1,12 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Attlaz\Project\DI;
-
 
 use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\Connections\AdapterFactory;
+use DI\ContainerBuilder;
 use Psr\Log\LoggerInterface;
 
 class AdapterDILoader
@@ -17,7 +16,7 @@ class AdapterDILoader
     {
     }
 
-    public function initDI(\DI\ContainerBuilder $containerBuilder, Config $config): void
+    public function initDI(ContainerBuilder $containerBuilder, Config $config): void
     {
 
         $adapterNames = AdapterRegistrar::getAdapterIds();
@@ -28,7 +27,7 @@ class AdapterDILoader
             $factory = $this->getDIFactory($adapterName);
             if (!\is_null($factory)) {
                 $adapterDefinitions = $factory->getDefinitions($config);
-                if (!\is_null($adapterDefinitions) && count($adapterDefinitions) > 0) {
+                if (count($adapterDefinitions) > 0) {
                     $containerBuilder->addDefinitions($adapterDefinitions);
                 }
             }
@@ -36,7 +35,7 @@ class AdapterDILoader
         }
     }
 
-    private function getDIFactory(string $adapterName): ?AdapterFactory
+    private function getDIFactory(string $adapterName): AdapterFactory|null
     {
 
         $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterName);
@@ -52,7 +51,6 @@ class AdapterDILoader
 
         if (!$adapterFactory instanceof AdapterFactory) {
             return null;
-            throw new \Exception('Invalid factory');
         }
         return $adapterFactory;
     }

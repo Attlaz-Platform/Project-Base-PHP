@@ -16,43 +16,32 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ExecuteTask extends Command
+class RunFlow extends Command
 {
-    protected $taskExecutor;
-    protected $client;
-    protected $environment;
-//    protected $streamHandler;
-    protected $logger;
 
     private const ARG_TASK = 'task';
     private const ARG_ARGUMENTS = 'arguments';
     private const ARG_EXECUTION = 'execution';
 
     public function __construct(
-        AbstractTaskHandler $taskExecutor,
-        Client              $client,
-        Environment         $environment,
-//        StreamHandler $streamHandler,
-        LoggerInterface     $logger
+        protected AbstractTaskHandler $taskExecutor,
+        protected Client              $client,
+        protected Environment         $environment,
+        protected LoggerInterface     $logger
     )
     {
         parent::__construct();
-
-        $this->taskExecutor = $taskExecutor;
-        $this->client = $client;
-        $this->environment = $environment;
-//        $this->streamHandler = $streamHandler;
-        $this->logger = $logger;
     }
 
     protected function configure()
     {
         $this->setName('task:execute')
-            ->setDescription('Run task.')
-            ->setHelp('This command allows you to run a task')
-            ->addArgument(self::ARG_TASK, InputArgument::REQUIRED, 'Task identifier to execute')
+            ->setAliases(['flow:run'])
+            ->setDescription('Run flow.')
+            ->setHelp('This command allows you to run a flow')
+            ->addArgument(self::ARG_TASK, InputArgument::REQUIRED, 'Flow identifier to execute')
             ->addOption(self::ARG_ARGUMENTS, null, InputOption::VALUE_REQUIRED, 'Pass arguments in base64 encoded JSON format', null)
-            ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the task execution id', null);
+            ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the flow run id', null);
     }
 
     protected function init(InputInterface $input)
