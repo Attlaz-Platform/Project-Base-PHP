@@ -32,6 +32,8 @@ abstract class AbstractCommand
     protected OutputHelper $outputHelper;
     protected ConnectionPool $connectionPool;
 
+    private array $profiles = [];
+
     public function __construct(CommandContext $context)
     {
         $this->logger = $context->getLogger();
@@ -56,6 +58,40 @@ abstract class AbstractCommand
     public function progress(string $key, int $current, int $total, string $label): void
     {
         $this->outputHelper->progress($key, $current, $total, $label);
+    }
+
+
+    public function startProfile(string $key, string $label = ''): void
+    {
+        if (empty($label)) {
+            $label = $key;
+        }
+        if (isset($this->profiles[$key])) {
+            $this->logger->warning('Unable to start profile `' . $key . '`: already started');
+        }
+        $this->profiles[$key] = [
+            'key'   => $key,
+            'label' => $label,
+            'start' => microtime(true),
+            'end'   => null,
+        ];
+    }
+
+    public function endProfile(string $key): void
+    {
+        if (!isset($this->profiles[$key])) {
+            $this->logger->warning('Unable to end profile `' . $key . '`: not found (make sure it is started)');
+        }
+        $this->profiles[$key]['end'] = microtime(true);
+        $this->profiles[$key]['elapse'] = $this->profiles[$key]['end'] - $this->profiles[$key]['start'];
+    }
+
+    public function getProfile(string $key): array
+    {
+        if (!isset($this->profiles[$key])) {
+            $this->logger->warning('Unable to get profile `' . $key . '`: not found (make sure it is started)');
+        }
+        return $this->profiles[$key];
     }
 
 //    /** @deprecated */
