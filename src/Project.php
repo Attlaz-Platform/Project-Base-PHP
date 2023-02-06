@@ -41,13 +41,11 @@ class Project
     private LoggerInterface $logger;
     private float $startTime;
     private Environment $environment;
-    private string $projectRootPath;
 
-    public function __construct(string $projectRootPath, Environment $environment = null)
+
+    public function __construct(private readonly string $projectRootPath, Environment $environment = null)
     {
         $this->startTime = \microtime(true);
-
-        $this->projectRootPath = $projectRootPath;
         if (\is_null($environment)) {
             $environment = new Environment($projectRootPath);
         }

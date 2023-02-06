@@ -11,7 +11,6 @@ use Dotenv\Exception\InvalidPathException;
 use Echron\Tools\FileSystem;
 use Echron\Tools\Normalize\Normalizer;
 use Monolog\Level;
-use Monolog\Logger;
 
 class Environment
 {
@@ -36,8 +35,7 @@ class Environment
     private ProjectModel|null $project = null;
     private ProjectEnvironment|null $projectEnvironment = null;
 
-    public $mode;
-    public string $definitionsFile;
+    public string|null $definitionsFile = null;
 
     public string $api_endpoint = 'https://api.attlaz.com';
     public string $api_client_id = 'public_client_id';
