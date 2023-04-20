@@ -8,10 +8,12 @@ use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
+use Attlaz\Project\Helper\Profiler;
 use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Model\FlowRunResult;
 use Attlaz\Project\Storage\StorageManager;
 use DI\Container as DIContainer;
+use Echron\Tools\Time;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -31,8 +33,7 @@ abstract class AbstractCommand
     protected DIContainer $dependencyManager;
     protected OutputHelper $outputHelper;
     protected ConnectionPool $connectionPool;
-
-    private array $profiles = [];
+    protected Profiler $profiler;
 
     public function __construct(CommandContext $context)
     {
@@ -43,6 +44,7 @@ abstract class AbstractCommand
         $this->dependencyManager = $context->getDependencyManager();
         $this->outputHelper = $context->getOutputHelper();
         $this->connectionPool = $context->getConnectionPool();
+        $this->profiler = $context->getProfiler();
 
         $this->attlazClient = $this->dependencyManager->get(AttlazClient::class);
     }
@@ -63,35 +65,17 @@ abstract class AbstractCommand
 
     public function startProfile(string $key, string $label = ''): void
     {
-        if (empty($label)) {
-            $label = $key;
-        }
-        if (isset($this->profiles[$key])) {
-            $this->logger->warning('Unable to start profile `' . $key . '`: already started');
-        }
-        $this->profiles[$key] = [
-            'key'   => $key,
-            'label' => $label,
-            'start' => microtime(true),
-            'end'   => null,
-        ];
+        $this->profiler->startProfile($key, $label);
     }
 
     public function endProfile(string $key): void
     {
-        if (!isset($this->profiles[$key])) {
-            $this->logger->warning('Unable to end profile `' . $key . '`: not found (make sure it is started)');
-        }
-        $this->profiles[$key]['end'] = microtime(true);
-        $this->profiles[$key]['elapse'] = $this->profiles[$key]['end'] - $this->profiles[$key]['start'];
+        $this->profiler->endProfile($key);
     }
 
     public function getProfile(string $key): array
     {
-        if (!isset($this->profiles[$key])) {
-            $this->logger->warning('Unable to get profile `' . $key . '`: not found (make sure it is started)');
-        }
-        return $this->profiles[$key];
+        return $this->profiler->getProfile($key);
     }
 
 //    /** @deprecated */

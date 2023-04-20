@@ -19,6 +19,7 @@ class AbstractHelper
     protected Container $dependencyManager;
     protected OutputHelper $outputHelper;
     protected ConnectionPool $connectionPool;
+    protected Profiler $profiler;
 
     public function __construct(HelperContext $context)
     {
@@ -28,5 +29,6 @@ class AbstractHelper
         $this->dependencyManager = $context->getDependencyManager();
         $this->outputHelper = $context->getOutputHelper();
         $this->connectionPool = $context->getConnectionPool();
+        $this->profiler = $context->getProfiler();
     }
 }
