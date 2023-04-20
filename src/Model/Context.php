@@ -8,37 +8,25 @@ use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
+use Attlaz\Project\Helper\Profiler;
 use Attlaz\Project\Storage\StorageManager;
 use DI\Container;
 use Psr\Log\LoggerInterface;
 
 class Context
 {
-    protected LoggerInterface $logger;
-    protected Environment $environment;
-    protected Config $config;
-    protected StorageManager $storageManager;
-    protected Container $dependencyManager;
-    protected OutputHelper $outputHelper;
-    protected ConnectionPool $connectionPool;
 
     public function __construct(
-        LoggerInterface $logger,
-        Environment     $environment,
-        Config          $config,
-        StorageManager  $storageManager,
-        Container       $dependencyManager,
-        OutputHelper    $outputHelper,
-        ConnectionPool  $connectionPool
+        protected LoggerInterface $logger,
+        protected Environment     $environment,
+        protected Config          $config,
+        protected StorageManager  $storageManager,
+        protected Container       $dependencyManager,
+        protected OutputHelper    $outputHelper,
+        protected ConnectionPool  $connectionPool,
+        protected Profiler        $profiler
     )
     {
-        $this->logger = $logger;
-        $this->environment = $environment;
-        $this->config = $config;
-        $this->storageManager = $storageManager;
-        $this->dependencyManager = $dependencyManager;
-        $this->outputHelper = $outputHelper;
-        $this->connectionPool = $connectionPool;
     }
 
     public function getLogger(): LoggerInterface
@@ -74,5 +62,10 @@ class Context
     public function getConnectionPool(): ConnectionPool
     {
         return $this->connectionPool;
+    }
+
+    public function getProfiler(): Profiler
+    {
+        return $this->profiler;
     }
 }
