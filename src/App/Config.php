@@ -31,8 +31,7 @@ class Config implements LoggerAwareInterface
         Client         $client,
         Environment    $environment,
         ConfigHelper   $configHelper
-    )
-    {
+    ) {
         $this->storageManager = $storageManager;
         $this->client = $client;
         $this->environment = $environment;

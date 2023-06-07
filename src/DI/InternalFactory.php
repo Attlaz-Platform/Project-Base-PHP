@@ -1,9 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
-
 namespace Attlaz\Project\DI;
-
 
 use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
@@ -17,7 +16,6 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Psr\Log\LoggerInterface;
-
 
 class InternalFactory
 {
@@ -33,12 +31,12 @@ class InternalFactory
 
         $logger = new Logger($loggerName);
 
-//        $skipClassesPartials = [
-//            'Attlaz\\Project\\Logger',
-//            //            '/var/attlaz/',
-//            //            '/var/attlaz/project/vendor/attlaz/project',
-//            //            '/var/attlaz/project/vendor/attlaz/project/src',
-//        ];
+        //        $skipClassesPartials = [
+        //            'Attlaz\\Project\\Logger',
+        //            //            '/var/attlaz/',
+        //            //            '/var/attlaz/project/vendor/attlaz/project',
+        //            //            '/var/attlaz/project/vendor/attlaz/project/src',
+        //        ];
         //   $introspectionProcessor = new IntrospectionProcessor(\Monolog\Logger::DEBUG, $skipClassesPartials);
         //    $logger->pushProcessor($introspectionProcessor);
 
@@ -55,7 +53,7 @@ class InternalFactory
 
         $streamHandler = new StreamHandler(STDOUT, $environment->cli_log_level);
 
-//        $container->set('attlaz_streamhandler', $streamHandler);
+        //        $container->set('attlaz_streamhandler', $streamHandler);
 
 
         $logger->pushHandler($streamHandler);

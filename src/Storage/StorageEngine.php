@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Storage;
@@ -10,8 +11,6 @@ use Safe\DateTime;
 
 class StorageEngine
 {
-
-
     private Client $attlazClient;
     private Environment $environment;
     private string $storageType;

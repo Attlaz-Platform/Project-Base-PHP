@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
@@ -7,7 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 class SerializeTaskResultTest extends TestCase
 {
-
     public function testSerialization()
     {
         //        $task = new Task('method', []);
@@ -44,7 +44,7 @@ class SerializeTaskResultTest extends TestCase
 
     public function testDeserialization()
     {
-//        $serializedTaskResult = '{"task":{"method":"method","arguments":[]},"data":"DATA","success":true,"received":{"date":"2017-08-11 21:58:58.512276","timezone_type":3,"timezone":"UTC"},"responded":{"date":"2017-08-11 21:58:58.512276","timezone_type":3,"timezone":"UTC"}}';
+        //        $serializedTaskResult = '{"task":{"method":"method","arguments":[]},"data":"DATA","success":true,"received":{"date":"2017-08-11 21:58:58.512276","timezone_type":3,"timezone":"UTC"},"responded":{"date":"2017-08-11 21:58:58.512276","timezone_type":3,"timezone":"UTC"}}';
         //        $time = new \DateTime('2017-08-11 21:58:58.512276');
         //
         //        $cmd = new DeserializeTaskResult();

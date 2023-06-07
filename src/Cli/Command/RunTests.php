@@ -11,8 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RunTests extends Command
 {
-
-
     public function __construct(protected LoggerInterface $logger)
     {
         parent::__construct();

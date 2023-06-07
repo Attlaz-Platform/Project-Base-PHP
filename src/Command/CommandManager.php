@@ -28,8 +28,7 @@ class CommandManager
         ContainerInterface   $diContainer,
         Environment          $environment,
         LoggerInterface      $logger
-    )
-    {
+    ) {
         //TODO: we should check if the CommandManager is initialized an has everything loaded
         $this->discovery = $discovery;
         $this->diContainer = $diContainer;

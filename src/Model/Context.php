@@ -15,7 +15,6 @@ use Psr\Log\LoggerInterface;
 
 class Context
 {
-
     public function __construct(
         protected LoggerInterface $logger,
         protected Environment     $environment,
@@ -25,8 +24,7 @@ class Context
         protected OutputHelper    $outputHelper,
         protected ConnectionPool  $connectionPool,
         protected Profiler        $profiler
-    )
-    {
+    ) {
     }
 
     public function getLogger(): LoggerInterface

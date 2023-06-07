@@ -12,7 +12,6 @@ use Psr\Log\LoggerInterface;
 
 class AbstractHelper
 {
-
     protected LoggerInterface $logger;
     protected Config $config;
     protected StorageManager $storageManager;

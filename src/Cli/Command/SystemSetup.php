@@ -13,11 +13,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
+
 use function Safe\file_put_contents;
 
 class SystemSetup extends Command
 {
-
     protected Client $client;
     protected Environment $environment;
     protected LoggerInterface $logger;

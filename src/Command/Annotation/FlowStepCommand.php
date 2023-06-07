@@ -1,8 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command\Annotation;
-
 
 /**
  * FlowStepCommand
@@ -13,13 +13,12 @@ namespace Attlaz\Project\Command\Annotation;
  */
 #[\Attribute(\Attribute::TARGET_CLASS)] final class FlowStepCommand
 {
-
     /**
      * Id of the flow step
      */
     public string $flowStepId;
     public array $connections;
-    
+
     public function __construct(string $flowStepId, array $connections = [])
     {
         $this->flowStepId = $flowStepId;

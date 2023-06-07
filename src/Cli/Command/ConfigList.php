@@ -17,15 +17,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConfigList extends Command
 {
-//    private const ARG_FORCE_ENVIRONMENT = 'force-config-environment';
+    //    private const ARG_FORCE_ENVIRONMENT = 'force-config-environment';
 
     public function __construct(
         protected readonly Config          $config,
         protected readonly Environment     $environment,
         protected readonly Client          $attlazClient,
         protected readonly LoggerInterface $logger
-    )
-    {
+    ) {
         parent::__construct();
     }
 

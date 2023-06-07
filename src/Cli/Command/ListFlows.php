@@ -14,8 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ListFlows extends Command
 {
-
-
     public function __construct(private CommandManager $commandManager)
     {
         parent::__construct();

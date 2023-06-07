@@ -11,12 +11,12 @@ use Dotenv\Exception\InvalidPathException;
 use Echron\Tools\FileSystem;
 use Echron\Tools\Normalize\Normalizer;
 use Monolog\Level;
+
 use function Safe\ini_set;
 use function Safe\realpath;
 
 class Environment
 {
-
     public const MODE_PRODUCTION = 'production';
     public const MODE_DEVELOPMENT = 'development';
 
@@ -165,9 +165,9 @@ class Environment
 
     public function getCacheName(): string
     {
-//        if (!$this->isInitialized()) {
-//            return \strtolower(Normalizer::normalize('x'));
-//        }
+        //        if (!$this->isInitialized()) {
+        //            return \strtolower(Normalizer::normalize('x'));
+        //        }
 
         return \strtolower(Normalizer::normalize($this->getProject()->key . '_' . $this->getProjectEnvironment()->key));
     }

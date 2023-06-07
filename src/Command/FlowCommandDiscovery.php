@@ -10,7 +10,6 @@ use Echron\Tools\FileSystem;
 
 class FlowCommandDiscovery
 {
-
     /**
      * @var string
      */
@@ -120,7 +119,7 @@ class FlowCommandDiscovery
 
     private function registerCommand(string $className): ?CommandDefinition
     {
-//        try {
+        //        try {
         //TODO: if the className is actually a file, the file is included by calling "class_exists",
         //  putting "autoload" to false doesn't help and make the function returns false
         if (!class_exists($className, true)) {
@@ -163,12 +162,12 @@ class FlowCommandDiscovery
         }
 
         return $commandDefinition;
-//        } catch (AnnotationException $ex) {
-//            $strErrorMessage = 'Unable to register command "' . $className . '":' . $ex->getMessage();
-//            throw new \Exception($strErrorMessage);
-//            //TODO: handle invalid/incomplete annotations,
-//            // maybe make it possible to validate the project before building it?
-//        }
+        //        } catch (AnnotationException $ex) {
+        //            $strErrorMessage = 'Unable to register command "' . $className . '":' . $ex->getMessage();
+        //            throw new \Exception($strErrorMessage);
+        //            //TODO: handle invalid/incomplete annotations,
+        //            // maybe make it possible to validate the project before building it?
+        //        }
     }
 
     private function getCommandParameters(\ReflectionMethod $invokeMethodReflection): array

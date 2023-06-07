@@ -14,12 +14,12 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function Safe\base64_decode;
 use function Safe\json_decode;
 
 class RunFlow extends Command
 {
-
     private const ARG_TASK = 'task';
     private const ARG_ARGUMENTS = 'arguments';
     private const ARG_EXECUTION = 'execution';
@@ -29,8 +29,7 @@ class RunFlow extends Command
         protected Client              $client,
         protected Environment         $environment,
         protected LoggerInterface     $logger
-    )
-    {
+    ) {
         parent::__construct();
     }
 
@@ -49,7 +48,7 @@ class RunFlow extends Command
     {
         if ($input->getOption('verbose') === true) {
             // TODO: fix implementation
-//            $this->streamHandler->setLevel(LogLevel::DEBUG);
+            //            $this->streamHandler->setLevel(LogLevel::DEBUG);
         }
     }
 
