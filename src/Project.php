@@ -165,9 +165,11 @@ class Project
 
     public function run()
     {
+        /** @var Client $attlazClient */
         $attlazClient = $this->diContainer->get(Client::class);
         $environment = $this->environment;
         if (PHP_SAPI === 'cli') {
+            /** @var Config $config */
             $config = $this->diContainer->get(Config::class);
 
             $commandManager = $this->commandManager;
@@ -177,7 +179,7 @@ class Project
 
             $taskHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
 
-            $cliApplication->add(new SystemStatus($attlazClient));
+            $cliApplication->add(new SystemStatus($environment));
 
             if ($this->environment->isInitialized()) {
                 //                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
@@ -199,7 +201,9 @@ class Project
                 //Config list
                 $cliApplication->add(new ConfigList($config, $environment, $attlazClient, $this->logger));
                 //Clean cache
-                $clearCacheCommand = new CacheClean($config, $this->diContainer->get(StorageManager::class), $this->logger);
+                /** @var StorageManager $storageManager */
+                $storageManager = $this->diContainer->get(StorageManager::class);
+                $clearCacheCommand = new CacheClean($config, $storageManager, $this->logger);
                 $cliApplication->add($clearCacheCommand);
                 //Request deploy
                 $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
