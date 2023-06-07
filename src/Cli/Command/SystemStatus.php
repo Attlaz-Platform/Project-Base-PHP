@@ -11,8 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SystemStatus extends Command
 {
-
-
     public function __construct(private readonly Environment $environment)
     {
         parent::__construct();

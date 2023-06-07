@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\DI\Definition;
@@ -14,7 +15,6 @@ use Psr\Container\ContainerInterface;
  */
 class ConfigConnectionDefinition implements Definition, SelfResolvingDefinition
 {
-
     private string $name = '';
 
     private string $configKey;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Setup;
 
 use Echron\Tools\FileSystem;
+
 use function Safe\chmod;
 use function Safe\realpath;
 

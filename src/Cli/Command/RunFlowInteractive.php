@@ -26,8 +26,7 @@ class RunFlowInteractive extends RunFlow
         private readonly CommandManager $commandManager,
         Environment                     $environment,
         LoggerInterface                 $logger
-    )
-    {
+    ) {
         parent::__construct($taskExecutor, $client, $environment, $logger);
     }
 

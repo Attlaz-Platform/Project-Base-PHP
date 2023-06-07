@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
@@ -7,7 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 class ExecuteTaskTest extends TestCase
 {
-
     public function testUnknownJob()
     {
         //        $task = new Task('nonExistingJob');

@@ -98,8 +98,8 @@ class Logger extends \Monolog\Logger implements LoggerInterface
                 $context = $this->mergeExceptionContext($value, $context, false);
             }
         }
-//        $message = $this->removeSecrets($message);
-//        $context = $this->removeSecrets($context);
+        //        $message = $this->removeSecrets($message);
+        //        $context = $this->removeSecrets($context);
 
         return [$message, $context];
     }

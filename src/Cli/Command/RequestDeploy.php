@@ -14,13 +14,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RequestDeploy extends Command
 {
-
     public function __construct(
         private readonly Environment     $environment,
         private readonly Client          $client,
         private readonly LoggerInterface $logger
-    )
-    {
+    ) {
         parent::__construct();
 
     }

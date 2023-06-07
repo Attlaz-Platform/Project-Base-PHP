@@ -8,5 +8,4 @@ use Attlaz\Project\Model\Context;
 
 class HelperContext extends Context
 {
-
 }

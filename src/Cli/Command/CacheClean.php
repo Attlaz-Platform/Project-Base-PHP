@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
@@ -12,14 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CacheClean extends Command
 {
-
-
     public function __construct(
         protected readonly Config          $config,
         protected readonly StorageManager  $storageManager,
         protected readonly LoggerInterface $logger
-    )
-    {
+    ) {
         parent::__construct();
 
 

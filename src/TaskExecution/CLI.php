@@ -6,5 +6,4 @@ namespace Attlaz\Project\TaskExecution;
 
 class CLI extends AbstractTaskHandler
 {
-
 }

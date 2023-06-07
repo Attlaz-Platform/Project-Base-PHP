@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project;
@@ -35,7 +36,6 @@ use Symfony\Component\Console\Application;
 
 class Project
 {
-
     private CommandManager $commandManager;
     private ContainerInterface $diContainer;
     private LoggerInterface $logger;
@@ -66,7 +66,7 @@ class Project
 
             $start = \microtime(true);
             $container = $this->getDIContainer();
-//            $this->logger = $container->get(LoggerInterface::class);
+            //            $this->logger = $container->get(LoggerInterface::class);
 
             //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             //            $start = \microtime(true);
@@ -139,7 +139,7 @@ class Project
         $adapterHelper = new AdapterDILoader();
         $adapterHelper->initDI($containerBuilder, $config);
 
-//        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
+        //        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
         if (!\is_null($definitionsFile)) {
             $containerBuilder->addDefinitions($definitionsFile);
         }
@@ -180,7 +180,7 @@ class Project
             $cliApplication->add(new SystemStatus($attlazClient));
 
             if ($this->environment->isInitialized()) {
-//                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
+                //                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
 
                 //List tasks
                 $cliApplication->add(new ListFlows($commandManager));

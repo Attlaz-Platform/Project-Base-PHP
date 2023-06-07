@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\DI;
@@ -10,7 +11,6 @@ use DI\ContainerBuilder;
 
 class AdapterDILoader
 {
-
     public function __construct()
     {
     }

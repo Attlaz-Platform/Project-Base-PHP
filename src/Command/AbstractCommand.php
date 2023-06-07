@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
@@ -22,7 +23,6 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractCommand
 {
-
     public const INVOKE_METHOD = 'execute';
     private AttlazClient $attlazClient;
     protected LoggerInterface $logger;
@@ -97,8 +97,7 @@ abstract class AbstractCommand
         string $flowId,
         array  $arguments = [],
         string $projectEnvironmentId = null
-    ): FlowRunResult
-    {
+    ): FlowRunResult {
         $executeLocal = false;
 
         $environment = $this->dependencyManager->get(Environment::class);
@@ -117,10 +116,11 @@ abstract class AbstractCommand
         }
     }
 
-    private function executeLocal(string $flowId,
-                                  array  $arguments = [],
-                                  string $projectEnvironmentId = null): FlowRunResult
-    {
+    private function executeLocal(
+        string $flowId,
+        array  $arguments = [],
+        string $projectEnvironmentId = null
+    ): FlowRunResult {
         $executionId = $this->attlazClient->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
 
         $request = new FlowRunRequest($flowId, $arguments, $executionId);

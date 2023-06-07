@@ -27,7 +27,7 @@ class DateTimeHelper
     public static function deserialize(array $dateTime): DateTime
     {
         $date = $dateTime['date'];
-//        $timezone_type = $dateTime['timezone_type'];
+        //        $timezone_type = $dateTime['timezone_type'];
         $timezone = $dateTime['timezone'];
 
         return new DateTime($date, new \DateTimeZone($timezone));

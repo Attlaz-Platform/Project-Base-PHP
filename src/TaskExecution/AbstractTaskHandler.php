@@ -11,6 +11,7 @@ use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Model\FlowRunResult;
 use Attlaz\Project\Serialization\SerializeFlowRunResult;
 use Psr\Log\LoggerInterface;
+
 use function Safe\fwrite;
 
 class AbstractTaskHandler
@@ -25,8 +26,7 @@ class AbstractTaskHandler
         Client          $client,
         Environment     $environment,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->commandManager = $commandManager;
         $this->client = $client;
         $this->environment = $environment;

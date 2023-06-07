@@ -1,0 +1,26 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Negated boolean expression is always true\\.$#"
+			count: 1
+			path: src/App/Environment.php
+
+		-
+			message: "#^Call to function is_null\\(\\) with Attlaz\\\\Model\\\\ProjectEnvironment will always evaluate to false\\.$#"
+			count: 1
+			path: src/Cli/Command/RequestDeploy.php
+
+		-
+			message: "#^Parameter \\#2 \\$format of class Bramus\\\\Monolog\\\\Formatter\\\\ColoredLineFormatter constructor expects null, string given\\.$#"
+			count: 1
+			path: src/DI/InternalFactory.php
+
+		-
+			message: "#^Class Attlaz\\\\Project\\\\Logger\\\\Logger extends @final class Monolog\\\\Logger\\.$#"
+			count: 1
+			path: src/Logger/Logger.php
+
+		-
+			message: "#^Argument of an invalid type Attlaz\\\\Model\\\\Config supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: src/Model/Config.php

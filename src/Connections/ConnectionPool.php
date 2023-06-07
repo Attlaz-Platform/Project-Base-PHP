@@ -1,8 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Attlaz\Project\Connections;
-
 
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionFactory;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
@@ -15,8 +15,6 @@ use Attlaz\Project\App\Environment;
 
 class ConnectionPool implements AdapterConnectionPool
 {
-
-
     /** @var AdapterConnection[]|null */
     private array|null $connectionDefinitions = null;
 
