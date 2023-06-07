@@ -14,7 +14,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
 use function Safe\base64_decode;
 use function Safe\json_decode;
 
@@ -29,7 +28,8 @@ class RunFlow extends Command
         protected Client              $client,
         protected Environment         $environment,
         protected LoggerInterface     $logger
-    ) {
+    )
+    {
         parent::__construct();
     }
 
@@ -44,7 +44,7 @@ class RunFlow extends Command
             ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the flow run id', null);
     }
 
-    protected function init(InputInterface $input)
+    protected function init(InputInterface $input): void
     {
         if ($input->getOption('verbose') === true) {
             // TODO: fix implementation
@@ -95,6 +95,11 @@ class RunFlow extends Command
         return new FlowRunRequest($taskId, $arguments, $taskExecutionId);
     }
 
+    /**
+     * @param string $taskExecutionId
+     * @return array
+     * @throws \Safe\Exceptions\JsonException
+     */
     private function getArgumentsFromStorage(string $taskExecutionId): array
     {
         $taskExecution = $this->client->getFlowEndpoint()->getFlowRun($taskExecutionId);
@@ -103,9 +108,7 @@ class RunFlow extends Command
         }
 
         $arguments = $taskExecution['arguments'];
-        $arguments = json_decode($arguments, true);
-
-        return $arguments;
+        return json_decode($arguments, true);
     }
 
     private function areArgumentsInStorage(array $inputArguments): bool

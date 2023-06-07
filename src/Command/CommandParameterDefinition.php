@@ -44,7 +44,7 @@ class CommandParameterDefinition
         return $this->default;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $parameterString = $this->getName();
 
@@ -68,7 +68,7 @@ class CommandParameterDefinition
         return $parameterString;
     }
 
-    public static function isCorrectType($value, self $parameterDefinition): bool
+    public static function isCorrectType(mixed $value, self $parameterDefinition): bool
     {
         if (!$parameterDefinition->hasType()) {
             return true;

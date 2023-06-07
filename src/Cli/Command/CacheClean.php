@@ -17,7 +17,8 @@ class CacheClean extends Command
         protected readonly Config          $config,
         protected readonly StorageManager  $storageManager,
         protected readonly LoggerInterface $logger
-    ) {
+    )
+    {
         parent::__construct();
 
 

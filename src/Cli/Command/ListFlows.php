@@ -58,6 +58,10 @@ class ListFlows extends Command
         return 0;
     }
 
+    /**
+     * @param CommandDefinition $command
+     * @return string[]
+     */
     private function formatParameters(CommandDefinition $command): array
     {
         $result = [];

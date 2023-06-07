@@ -100,7 +100,7 @@ class ConfigList extends Command
     /**
      * @param \Attlaz\Project\Model\Config[] $configValues
      * @param ProjectEnvironment[] $environments
-     * @return array
+     * @return string[]
      */
     private function formatConfigValues(string $key, array $configValues, array $environments): array
     {
