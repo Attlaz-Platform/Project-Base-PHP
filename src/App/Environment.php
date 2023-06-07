@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\App;
 
+use Attlaz\Client;
 use Attlaz\Model\Project as ProjectModel;
 use Attlaz\Model\ProjectEnvironment;
 use Dotenv\Dotenv;
@@ -219,7 +220,7 @@ class Environment
     {
         if ($this->isInitialized) {
             //TODO: load this from DI
-            $client = new \Attlaz\Client($this->api_client_id, $this->api_client_secret);
+            $client = new Client($this->api_client_id, $this->api_client_secret, true);
             $client->setEndPoint($this->api_endpoint);
             $projectId = $this->getEnvValue(self::ENV_PROJECT);
             $this->project = $client->getProjectEndpoint()->getProjectById($projectId);

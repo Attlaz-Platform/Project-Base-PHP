@@ -100,7 +100,7 @@ class InternalFactory
     public static function getClient(Environment $environment): Client
     {
         if (self::$client === null) {
-            self::$client = new Client($environment->api_client_id, $environment->api_client_secret);
+            self::$client = new Client($environment->api_client_id, $environment->api_client_secret, true);
             self::$client->setEndPoint($environment->api_endpoint);
         }
 

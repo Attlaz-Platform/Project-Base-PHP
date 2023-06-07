@@ -6,8 +6,6 @@ namespace Attlaz\Project\Setup;
 
 use Echron\Tools\FileSystem;
 
-use function Safe\chmod;
-use function Safe\realpath;
 
 class Install
 {
@@ -24,12 +22,12 @@ class Install
 
     private static function getVendorBinPath(): string
     {
-        return realpath(dirname(__FILE__)) . \DIRECTORY_SEPARATOR . 'bin';
+        return \realpath(__DIR__) . \DIRECTORY_SEPARATOR . 'bin';
     }
 
     private static function getProjectBinPath(): string
     {
-        return FileSystem::joinPath(dirname(__FILE__), '..', '..', '..', '..', '..', 'bin');
+        return FileSystem::joinPath(__DIR__, '..', '..', '..', '..', '..', 'bin');
     }
 
     private static function copyBinFiles(): void
@@ -57,7 +55,7 @@ class Install
             $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console',
         ];
         foreach ($files as $file) {
-            chmod($file, 0755);
+            \chmod($file, 0755);
         }
     }
 }
