@@ -11,7 +11,6 @@ use Dotenv\Exception\InvalidPathException;
 use Echron\Tools\FileSystem;
 use Echron\Tools\Normalize\Normalizer;
 use Monolog\Level;
-
 use function Safe\ini_set;
 use function Safe\realpath;
 
@@ -235,6 +234,11 @@ class Environment
         return $this->isInitialized;
     }
 
+    /**
+     * @param ProjectEnvironment|null $environment
+     * @param string[] $segments
+     * @return string
+     */
     public function getAppUrl(ProjectEnvironment $environment = null, array $segments = []): string
     {
         $workspaceId = $this->getProject()->workspaceId;

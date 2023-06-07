@@ -10,7 +10,6 @@ use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\CommandParameterDefinition;
 use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\TaskExecution\CLI;
-use Monolog\Handler\StreamHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +25,8 @@ class RunFlowInteractive extends RunFlow
         private readonly CommandManager $commandManager,
         Environment                     $environment,
         LoggerInterface                 $logger
-    ) {
+    )
+    {
         parent::__construct($taskExecutor, $client, $environment, $logger);
     }
 
@@ -107,12 +107,12 @@ class RunFlowInteractive extends RunFlow
         }
     }
 
-    private function formatValue($value, CommandParameterDefinition $parameter)
+    private function formatValue(mixed $value, CommandParameterDefinition $parameter): mixed
     {
         if ($parameter->hasType()) {
             if ($parameter->getType() === 'int') {
                 if (\is_numeric($value)) {
-                    $value = intval($value);
+                    $value = (int)$value;
                 }
             } elseif ($parameter->getType() === 'bool') {
                 $true = [

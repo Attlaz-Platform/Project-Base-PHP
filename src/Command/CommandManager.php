@@ -68,14 +68,14 @@ class CommandManager
     public function runFlow(FlowRunRequest $request): FlowRunResult
     {
         //TODO: make it possible to switch between app/staging app
-        $taskKey = $request->getFlowId();
-        $taskExecutionKey = $request->getRunId();
+        $flowKey = $request->getFlowId();
+        $flowRunId = $request->getRunId();
 
         $urlSegments = [
-            'tasks',
-            $taskKey,
-            'execution',
-            $taskExecutionKey,
+            'flows',
+            $flowKey,
+            'run',
+            $flowRunId,
         ];
         $dashboardUrl = $this->environment->getAppUrl(null, $urlSegments);
         // Only log this to console
