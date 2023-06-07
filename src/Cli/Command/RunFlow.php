@@ -9,12 +9,13 @@ use Attlaz\Project\App\Environment;
 use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\TaskExecution\AbstractTaskHandler;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function Safe\base64_decode;
+use function Safe\json_decode;
 
 class RunFlow extends Command
 {
@@ -103,7 +104,7 @@ class RunFlow extends Command
         }
 
         $arguments = $taskExecution['arguments'];
-        $arguments = \json_decode($arguments, true);
+        $arguments = json_decode($arguments, true);
 
         return $arguments;
     }
@@ -137,21 +138,28 @@ class RunFlow extends Command
 
         try {
             if (!\is_string($arguments)) {
-                throw new \Exception('Invalid arguments');
+                throw new \RuntimeException('Invalid arguments');
             }
-            // $arguments = (string)$arguments;
 
-            $arguments = \base64_decode($arguments);
-            if ($arguments === false) {
-                throw new \Exception('Unable to decode arguments');
+
+            try {
+                $arguments = base64_decode($arguments);
+            } catch (\Exception $ex) {
+                throw new \RuntimeException('Unable to decode arguments');
             }
-            //PHP 7.3 \JSON_THROW_ON_ERROR
-            $arguments = \json_decode($arguments, true);
-            if ($arguments === false || \is_null($arguments)) {
-                throw new \Exception('Unable to decode arguments');
+
+            try {
+                $arguments = json_decode($arguments, true);
+            } catch (\Exception $ex) {
+                throw new \RuntimeException('Unable to decode arguments');
             }
+
+            if (!is_array($arguments)) {
+                throw new \RuntimeException('Invalid arguments');
+            }
+
         } catch (\Exception $ex) {
-            throw new \Exception('Unable to read task arguments: ' . $ex->getMessage());
+            throw new \RuntimeException('Unable to read flow arguments: ' . $ex->getMessage());
         }
 
         return $arguments;

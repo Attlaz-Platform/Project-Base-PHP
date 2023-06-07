@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Attlaz\Project\Setup;
 
 use Echron\Tools\FileSystem;
+use function Safe\chmod;
+use function Safe\realpath;
 
 class Install
 {
@@ -54,7 +56,7 @@ class Install
             $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console',
         ];
         foreach ($files as $file) {
-            \chmod($sourceBinDirectoryPath, 0755);
+            chmod($file, 0755);
         }
     }
 }

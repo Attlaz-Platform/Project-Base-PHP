@@ -5,7 +5,7 @@ namespace Attlaz\Project\Model;
 
 class Config extends \Attlaz\Model\Config
 {
-    public $source;
+    public string|null $source = null;
 
     public static function fromBase(\Attlaz\Model\Config $input): self
     {

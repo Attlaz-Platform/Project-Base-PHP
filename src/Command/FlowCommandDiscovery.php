@@ -47,13 +47,15 @@ class FlowCommandDiscovery
 
     private function discoverCommands(): void
     {
-        $commandDirectoryPath = Environment::getCommandDirectoryPath($this->directory);
-        if (is_null($commandDirectoryPath)) {
+        try {
+            $commandDirectoryPath = Environment::getCommandDirectoryPath($this->directory);
+        } catch (\Exception $ex) {
             $errorMessage = 'Unable to discover commands: ';
             $errorMessage .= 'command directory "' . Environment::COMMANDS_LOCATION . '" does not exist';
 
-            throw new \Exception($errorMessage);
+            throw new \RuntimeException($errorMessage);
         }
+
 
         $commands = [];
         $files = FileSystem::listFiles($commandDirectoryPath, true);
@@ -174,7 +176,6 @@ class FlowCommandDiscovery
         $parameters = [];
 
         $reflectionParameters = $invokeMethodReflection->getParameters();
-        /** @var \ReflectionParameter $parameter */
         foreach ($reflectionParameters as $reflectionParameter) {
             $parameterName = $reflectionParameter->getName();
 
@@ -184,7 +185,7 @@ class FlowCommandDiscovery
                 //TODO: validate type and throw exception when it's an unknown type
 
                 $type = $reflectionParameter->getType();
-                if (!\is_null($type)) {
+                if ($type instanceof \ReflectionNamedType) {
                     $typeName = $type->getName();
                 }
             }

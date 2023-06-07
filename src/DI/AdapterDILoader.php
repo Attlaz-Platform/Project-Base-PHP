@@ -7,12 +7,11 @@ use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\Connections\AdapterFactory;
 use DI\ContainerBuilder;
-use Psr\Log\LoggerInterface;
 
 class AdapterDILoader
 {
 
-    public function __construct(private LoggerInterface $logger)
+    public function __construct()
     {
     }
 

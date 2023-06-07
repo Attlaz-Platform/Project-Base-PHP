@@ -11,6 +11,7 @@ use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Model\FlowRunResult;
 use Attlaz\Project\Serialization\SerializeFlowRunResult;
 use Psr\Log\LoggerInterface;
+use function Safe\fwrite;
 
 class AbstractTaskHandler
 {
@@ -80,6 +81,6 @@ class AbstractTaskHandler
 
     private function output(string $output): void
     {
-        \fwrite(\STDOUT, $output . \PHP_EOL);
+        fwrite(\STDOUT, $output . \PHP_EOL);
     }
 }

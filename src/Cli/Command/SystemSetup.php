@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
+use function Safe\file_put_contents;
 
 class SystemSetup extends Command
 {
@@ -49,7 +50,7 @@ class SystemSetup extends Command
              */
             $apiEndpoints = [
                 'latest' => 'https://api.attlaz.com',
-                'beta'   => 'https://api.attlaz.com/beta',
+                'beta' => 'https://api.attlaz.com/beta',
             ];
             $question = new ChoiceQuestion('API endpoint?', $apiEndpoints, $apiEndpoints['latest']);
 
@@ -177,6 +178,6 @@ class SystemSetup extends Command
             $strEnv .= $key . '="' . $value . '"' . \PHP_EOL;
         }
 
-        \file_put_contents($this->environment->getEnvFilePath(), $strEnv);
+        file_put_contents($this->environment->getEnvFilePath(), $strEnv);
     }
 }

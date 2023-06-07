@@ -6,6 +6,7 @@ namespace Attlaz\Project\Storage;
 use Attlaz\Client;
 use Attlaz\Model\StorageItem;
 use Attlaz\Project\App\Environment;
+use Safe\DateTime;
 
 class StorageEngine
 {
@@ -47,7 +48,7 @@ class StorageEngine
         $item->key = $key;
         $item->value = $value;
         if ($expirationSeconds !== null) {
-            $date = new \DateTime();
+            $date = new DateTime();
             $date->add(new \DateInterval('PT' . $expirationSeconds . 'S'));
             $item->expiration = $date;
         }

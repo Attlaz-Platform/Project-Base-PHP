@@ -12,7 +12,6 @@ use Attlaz\Client;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
-use Psr\Log\LoggerInterface;
 
 class ConnectionPool implements AdapterConnectionPool
 {
@@ -21,7 +20,7 @@ class ConnectionPool implements AdapterConnectionPool
     /** @var AdapterConnection[]|null */
     private array|null $connectionDefinitions = null;
 
-    public function __construct(private Config $config, private Environment $environment, private Client $client, private LoggerInterface $logger)
+    public function __construct(private readonly Config $config, private readonly Environment $environment, private readonly Client $client)
     {
 
     }
@@ -122,7 +121,7 @@ class ConnectionPool implements AdapterConnectionPool
         $result = [];
         foreach ($this->getConnectionDefinitions() as $connectionDefinition) {
             $result[] = [
-                'key'  => $connectionDefinition->getKey(),
+                'key' => $connectionDefinition->getKey(),
                 'type' => $connectionDefinition->getAdapterId()
             ];
         }

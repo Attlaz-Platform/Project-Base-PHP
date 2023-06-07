@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\App;
 
 use Attlaz\Client;
+use Attlaz\Model\Exception\RequestException;
 use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\Model\Config as ProjectConfig;
 use Attlaz\Project\Storage\StorageManager;
@@ -22,7 +23,7 @@ class Config implements LoggerAwareInterface
 
     private array $configuration = [];
 
-    private const CONFIG_CACHE_POOL = 'config';
+    //private const CONFIG_CACHE_POOL = 'config';
     private const CONFIG_CACHE_PREFIX_KEY = 'config_';
 
     public function __construct(
@@ -125,14 +126,11 @@ class Config implements LoggerAwareInterface
     }
 
     /**
-     * @param string $projectId
-     * @param int|null $projectEnvironmentId
+     * @param ProjectEnvironment $projectEnvironment
      * @return ProjectConfig[]
-     * @throws \Attlaz\Model\Exception\RequestException
+     * @throws RequestException
      */
-    private function fetchApiConfigValues(
-        ProjectEnvironment $projectEnvironment
-    ): array
+    private function fetchApiConfigValues(ProjectEnvironment $projectEnvironment): array
     {
 
         $configValues = $this->client->getConfigEndpoint()->getConfigByProject($projectEnvironment->id);

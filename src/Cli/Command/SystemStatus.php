@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Cli\Command;
 
-use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,7 +13,7 @@ class SystemStatus extends Command
 {
 
 
-    public function __construct(private Client $client, private Environment $environment, private LoggerInterface $logger)
+    public function __construct(private readonly Environment $environment)
     {
         parent::__construct();
     }
