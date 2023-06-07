@@ -13,7 +13,6 @@ use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Model\FlowRunResult;
 use Attlaz\Project\Storage\StorageManager;
 use DI\Container as DIContainer;
-use Echron\Tools\Time;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -95,7 +94,7 @@ abstract class AbstractCommand
 //    }
 
     final protected function requestTaskExecution(
-        string $taskId,
+        string $flowId,
         array  $arguments = [],
         string $projectEnvironmentId = null
     ): FlowRunResult
@@ -111,20 +110,20 @@ abstract class AbstractCommand
         }
 
         if ($executeLocal) {
-            return $this->executeLocal($taskId, $arguments, $projectEnvironmentId);
+            return $this->executeLocal($flowId, $arguments, $projectEnvironmentId);
         } else {
-            $result = $this->attlazClient->requestTaskExecution($taskId, $arguments, $projectEnvironmentId);
-            return new FlowRunResult($taskId, $result->result, true);
+            $result = $this->attlazClient->getFlowEndpoint()->requestRunFlow($flowId, $arguments, $projectEnvironmentId);
+            return new FlowRunResult($flowId, $result->result, true);
         }
     }
 
-    private function executeLocal(string $taskId,
+    private function executeLocal(string $flowId,
                                   array  $arguments = [],
                                   string $projectEnvironmentId = null): FlowRunResult
     {
-        $executionId = $this->attlazClient->createTaskExecution($taskId, $projectEnvironmentId);
+        $executionId = $this->attlazClient->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
 
-        $request = new FlowRunRequest($taskId, $arguments, $executionId);
+        $request = new FlowRunRequest($flowId, $arguments, $executionId);
 
         $commandManager = $this->dependencyManager->get(CommandManager::class);
 

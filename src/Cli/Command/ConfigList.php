@@ -13,12 +13,11 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ConfigList extends Command
 {
-    private const ARG_FORCE_ENVIRONMENT = 'force-config-environment';
+//    private const ARG_FORCE_ENVIRONMENT = 'force-config-environment';
 
     public function __construct(
         protected readonly Config          $config,
@@ -34,28 +33,28 @@ class ConfigList extends Command
     {
         $this->setName('config:list')
             ->setDescription('List configuration')
-            ->setHelp('List configuration')
-            ->addOption(self::ARG_FORCE_ENVIRONMENT, null, InputOption::VALUE_OPTIONAL, 'Force the configuration to be fetched from this environment (id or key)', null);
+            ->setHelp('List configuration');
+        // ->addOption(self::ARG_FORCE_ENVIRONMENT, null, InputOption::VALUE_OPTIONAL, 'Force the configuration to be fetched from this environment (id or key)', null);
     }
 
-    private function getForcedConfigProjectEnvironment(InputInterface $input): ?ProjectEnvironment
-    {
-        $value = $input->getOption(self::ARG_FORCE_ENVIRONMENT);
-
-        if (!\is_null($value)) {
-            $identifier = trim($value);
-
-            if (\is_numeric($identifier)) {
-                $id = (int)$identifier . '';
-
-                return $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($id);
-            } else {
-                return $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironmentByKey($this->environment->getProject()->id, $identifier);
-            }
-        }
-
-        return null;
-    }
+//    private function getForcedConfigProjectEnvironment(InputInterface $input): ?ProjectEnvironment
+//    {
+//        $value = $input->getOption(self::ARG_FORCE_ENVIRONMENT);
+//
+//        if (!\is_null($value)) {
+//            $identifier = trim($value);
+//
+//            if (\is_numeric($identifier)) {
+//                $id = (int)$identifier . '';
+//
+//                return $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($id);
+//            } else {
+//                return $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironmentByKey($this->environment->getProject()->id, $identifier);
+//            }
+//        }
+//
+//        return null;
+//    }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)

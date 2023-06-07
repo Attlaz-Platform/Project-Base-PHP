@@ -11,6 +11,8 @@ use Dotenv\Exception\InvalidPathException;
 use Echron\Tools\FileSystem;
 use Echron\Tools\Normalize\Normalizer;
 use Monolog\Level;
+use function Safe\ini_set;
+use function Safe\realpath;
 
 class Environment
 {
@@ -89,7 +91,7 @@ class Environment
 
         $diFile = $this->getDIFileLocation($projectRootPath);
 
-        if (!is_null($diFile) && \file_exists($diFile)) {
+        if (\file_exists($diFile)) {
             $this->definitionsFile = $diFile;
         }
     }
@@ -154,12 +156,12 @@ class Environment
         return $value;
     }
 
-    private function getNumEnvValue(string $key): int
-    {
-        $value = $this->getEnvValue($key);
-
-        return (int)$value;
-    }
+//    private function getNumEnvValue(string $key): int
+//    {
+//        $value = $this->getEnvValue($key);
+//
+//        return (int)$value;
+//    }
 
     public function getCacheName(): string
     {
@@ -175,15 +177,10 @@ class Environment
         return $this->projectRootPath;
     }
 
-    private function getDIFileLocation(string $projectRootPath): ?string
+    private function getDIFileLocation(string $projectRootPath): string
     {
         $diFileLocation = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::DI_FILE_LOCATION);
-        $diFileLocation = realpath($diFileLocation);
-        if ($diFileLocation === false) {
-            return null;
-        }
-
-        return $diFileLocation;
+        return realpath($diFileLocation);
     }
 
     public function getConfigFilePath(): string
@@ -191,15 +188,10 @@ class Environment
         return FileSystem::joinPath($this->projectRootPath, self::SOURCE_LOCATION, self::CONFIG_FILE_LOCATION);
     }
 
-    public static function getCommandDirectoryPath(string $projectRootPath): ?string
+    public static function getCommandDirectoryPath(string $projectRootPath): string
     {
         $commandDirectoryPath = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::COMMANDS_LOCATION);
-        $commandDirectoryPath = realpath($commandDirectoryPath);
-        if ($commandDirectoryPath === false) {
-            return null;
-        }
-
-        return $commandDirectoryPath;
+        return realpath($commandDirectoryPath);
     }
 
     public function getFileCachePath(): string

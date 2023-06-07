@@ -9,15 +9,15 @@ use Attlaz\Project\App\ConfigHelper;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Cli\Command\CacheClean;
 use Attlaz\Project\Cli\Command\ConfigList;
-use Attlaz\Project\Cli\Command\RunFlow;
-use Attlaz\Project\Cli\Command\RunFlowInteractive;
 use Attlaz\Project\Cli\Command\ListFlows;
 use Attlaz\Project\Cli\Command\RequestDeploy;
+use Attlaz\Project\Cli\Command\RunFlow;
+use Attlaz\Project\Cli\Command\RunFlowInteractive;
 use Attlaz\Project\Cli\Command\RunTests;
 use Attlaz\Project\Cli\Command\SystemSetup;
 use Attlaz\Project\Cli\Command\SystemStatus;
-use Attlaz\Project\Command\FlowCommandDiscovery;
 use Attlaz\Project\Command\CommandManager;
+use Attlaz\Project\Command\FlowCommandDiscovery;
 use Attlaz\Project\DI\AdapterDILoader;
 use Attlaz\Project\DI\InternalFactory;
 use Attlaz\Project\Model\FlowRunRequest;
@@ -127,16 +127,16 @@ class Project
 
         $localDefinitions = [
             LoggerInterface::class => $this->logger,
-            Environment::class     => $this->environment,
-            Config::class          => $config,
-            StorageManager::class  => $storageManager,
-            CacheInterface::class  => new SimpleCacheAdapter($storageManager->cache),
-            Client::class          => $client
+            Environment::class => $this->environment,
+            Config::class => $config,
+            StorageManager::class => $storageManager,
+            CacheInterface::class => new SimpleCacheAdapter($storageManager->cache),
+            Client::class => $client
         ];
 
         $containerBuilder->addDefinitions($localDefinitions);
 
-        $adapterHelper = new AdapterDILoader($this->logger);
+        $adapterHelper = new AdapterDILoader();
         $adapterHelper->initDI($containerBuilder, $config);
 
 //        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
@@ -177,13 +177,13 @@ class Project
 
             $taskHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
 
-            $cliApplication->add(new SystemStatus($attlazClient, $this->environment, $this->logger));
+            $cliApplication->add(new SystemStatus($attlazClient));
 
             if ($this->environment->isInitialized()) {
 //                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
 
                 //List tasks
-                $cliApplication->add(new ListFlows($commandManager, $this->logger));
+                $cliApplication->add(new ListFlows($commandManager));
                 //Execute task
                 $cmd = new RunFlow($taskHandler, $attlazClient, $environment, $this->logger);
                 $cliApplication->add($cmd);

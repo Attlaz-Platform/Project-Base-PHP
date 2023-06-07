@@ -6,7 +6,6 @@ namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Project\Command\CommandDefinition;
 use Attlaz\Project\Command\CommandManager;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableCell;
@@ -17,7 +16,7 @@ class ListFlows extends Command
 {
 
 
-    public function __construct(private CommandManager $commandManager, private LoggerInterface $logger)
+    public function __construct(private CommandManager $commandManager)
     {
         parent::__construct();
     }
@@ -58,6 +57,7 @@ class ListFlows extends Command
                 ->setRows($rows);
             $table->render();
         }
+        return 0;
     }
 
     private function formatParameters(CommandDefinition $command): array
