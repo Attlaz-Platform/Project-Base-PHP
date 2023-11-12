@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\DI;
 
+use Attlaz\Adapter\Base\Model\AdapterFactory;
 use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Project\App\Config;
-use Attlaz\Project\Connections\AdapterFactory;
 use DI\ContainerBuilder;
 
 class AdapterDILoader
