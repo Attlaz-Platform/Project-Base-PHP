@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\App;
 
+use Attlaz\Adapter\Base\Model\ConfigProvider;
 use Attlaz\Client;
 use Attlaz\Model\Exception\RequestException;
 use Attlaz\Model\ProjectEnvironment;
@@ -12,7 +13,7 @@ use Attlaz\Project\Storage\StorageManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
-class Config implements LoggerAwareInterface
+class Config implements LoggerAwareInterface, ConfigProvider
 {
     use LoggerAwareTrait;
 
@@ -31,7 +32,8 @@ class Config implements LoggerAwareInterface
         Client         $client,
         Environment    $environment,
         ConfigHelper   $configHelper
-    ) {
+    )
+    {
         $this->storageManager = $storageManager;
         $this->client = $client;
         $this->environment = $environment;
