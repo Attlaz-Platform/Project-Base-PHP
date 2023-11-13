@@ -89,7 +89,7 @@ class Environment
 
         $diFile = $this->getDIFileLocation($projectRootPath);
 
-        if (\file_exists($diFile)) {
+        if ($diFile !== null && \file_exists($diFile)) {
             $this->definitionsFile = $diFile;
         }
     }
@@ -175,10 +175,14 @@ class Environment
         return $this->projectRootPath;
     }
 
-    private function getDIFileLocation(string $projectRootPath): string
+    private function getDIFileLocation(string $projectRootPath): string|null
     {
         $diFileLocation = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::DI_FILE_LOCATION);
-        return realpath($diFileLocation);
+        $x = realpath($diFileLocation);
+        if ($x === false) {
+            return null;
+        }
+        return $x;
     }
 
     public function getConfigFilePath(): string
