@@ -38,6 +38,7 @@ class ConfigConnectionDefinition implements Definition, SelfResolvingDefinition
 
     public function resolve(ContainerInterface $container): mixed
     {
+        /** @var Config $config */
         $config = $container->get(Config::class);
 
         $connectionIdentifier = $config->get($this->configKey, 'string');

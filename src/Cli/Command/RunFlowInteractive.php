@@ -8,8 +8,8 @@ use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\CommandParameterDefinition;
+use Attlaz\Project\FlowRun\CLI;
 use Attlaz\Project\Model\FlowRunRequest;
-use Attlaz\Project\TaskExecution\CLI;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,22 +20,21 @@ use Symfony\Component\Console\Question\Question;
 class RunFlowInteractive extends RunFlow
 {
     public function __construct(
-        CLI                             $taskExecutor,
+        CLI                             $flowRunHandler,
         Client                          $client,
         private readonly CommandManager $commandManager,
         Environment                     $environment,
         LoggerInterface                 $logger
     )
     {
-        parent::__construct($taskExecutor, $client, $environment, $logger);
+        parent::__construct($flowRunHandler, $client, $environment, $logger);
     }
 
     protected function configure()
     {
-        $this->setName('task:execute:interactive')
-            ->setAliases(['flow:run:interactive'])
-            ->setDescription('Run task.')
-            ->setHelp('This command allows you to run a task interactively');
+        $this->setName('flow:run:interactive')
+            ->setDescription('Run flow interactively.')
+            ->setHelp('This command allows you to run a flow interactively');
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -53,18 +52,18 @@ class RunFlowInteractive extends RunFlow
             $questionHelper = new QuestionHelper();
 
             /**
-             * Request taskId
+             * Request flowId
              */
             $question = new ChoiceQuestion('Please select a flow:', $flowIds);
             $question->setErrorMessage('Flow %s is invalid.');
 
-            $taskId = $questionHelper->ask($input, $output, $question);
+            $flowId = $questionHelper->ask($input, $output, $question);
 
-            $output->writeln('You have just selected: ' . $taskId);
+            $output->writeln('You have just selected: ' . $flowId);
 
             $selectedCommand = null;
             foreach ($commands as $command) {
-                if ($taskId === $command->flowId) {
+                if ($flowId === $command->flowId) {
                     $selectedCommand = $command;
                 }
             }
@@ -97,9 +96,9 @@ class RunFlowInteractive extends RunFlow
                 $parameterValues[$parameter->getName()] = $parameterValue;
             }
 
-            $taskExecutionRequest = new FlowRunRequest($taskId, $parameterValues, 'soe');
+            $flowRunRequest = new FlowRunRequest($flowId, $parameterValues, 'soe');
 
-            return $this->taskExecutor->execute($taskExecutionRequest);
+            return $this->flowRunHandler->execute($flowRunRequest);
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 

@@ -21,11 +21,10 @@ use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Command\FlowCommandDiscovery;
 use Attlaz\Project\DI\AdapterDILoader;
 use Attlaz\Project\DI\InternalFactory;
-use Attlaz\Project\Model\FlowRunRequest;
+use Attlaz\Project\FlowRun\CLI;
+use Attlaz\Project\FlowRun\FPM;
 use Attlaz\Project\Storage\SimpleCacheAdapter;
 use Attlaz\Project\Storage\StorageManager;
-use Attlaz\Project\TaskExecution\CLI;
-use Attlaz\Project\TaskExecution\FPM;
 use DI\ContainerBuilder;
 use Echron\Tools\FileSystem;
 use Echron\Tools\Time;
@@ -70,6 +69,7 @@ class Project
 
             //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             //            $start = \microtime(true);
+            /** @var Config $config */
             $config = $container->get(Config::class);
 
             if ($this->environment->isInitialized()) {
@@ -131,7 +131,7 @@ class Project
             Config::class => $config,
             StorageManager::class => $storageManager,
             CacheInterface::class => new SimpleCacheAdapter($storageManager->cache),
-            Client::class => $client
+            Client::class => $client,
         ];
 
         $containerBuilder->addDefinitions($localDefinitions);
@@ -177,7 +177,7 @@ class Project
             $cliApplication = new Application();
             $cliApplication->setAutoExit(false);
 
-            $taskHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
+            $flowRunCliHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
 
             $cliApplication->add(new SystemStatus($environment));
 
@@ -187,11 +187,11 @@ class Project
                 //List tasks
                 $cliApplication->add(new ListFlows($commandManager));
                 //Execute task
-                $cmd = new RunFlow($taskHandler, $attlazClient, $environment, $this->logger);
+                $cmd = new RunFlow($flowRunCliHandler, $attlazClient, $environment, $this->logger);
                 $cliApplication->add($cmd);
                 //Execute task interactive
                 $cmd = new RunFlowInteractive(
-                    $taskHandler,
+                    $flowRunCliHandler,
                     $attlazClient,
                     $commandManager,
                     $environment,
@@ -229,17 +229,17 @@ class Project
         }
     }
 
-    protected function executeTaskExecutionRequest(FlowRunRequest $taskExecutionRequest): int
-    {
-        $taskExecutionResult = $this->commandManager->runFlow($taskExecutionRequest);
-
-        //$this->sendResponse($taskExecutionResult);
-
-        if ($taskExecutionResult->getSuccess()) {
-            return 0;
-        } else {
-            //TODO: change exit code based on exception type
-            return 1;
-        }
-    }
+//    protected function executeTaskExecutionRequest(FlowRunRequest $taskExecutionRequest): int
+//    {
+//        $taskExecutionResult = $this->commandManager->runFlow($taskExecutionRequest);
+//
+//        //$this->sendResponse($taskExecutionResult);
+//
+//        if ($taskExecutionResult->getSuccess()) {
+//            return 0;
+//        } else {
+//            //TODO: change exit code based on exception type
+//            return 1;
+//        }
+//    }
 }

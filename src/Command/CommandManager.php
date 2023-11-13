@@ -28,7 +28,8 @@ class CommandManager
         ContainerInterface   $diContainer,
         Environment          $environment,
         LoggerInterface      $logger
-    ) {
+    )
+    {
         //TODO: we should check if the CommandManager is initialized an has everything loaded
         $this->discovery = $discovery;
         $this->diContainer = $diContainer;
@@ -89,7 +90,7 @@ class CommandManager
         $this->logger->info('Execution started', $context);
 
         try {
-            $commandDefinition = $this->getCommandDefinitionByTask($request);
+            $commandDefinition = $this->getCommandDefinitionByFlow($request);
 
             $parameterValues = $this->getMethodArguments($request, $commandDefinition);
 
@@ -118,16 +119,16 @@ class CommandManager
     }
 
 
-    private function getCommandDefinitionByTask(FlowRunRequest $taskExecutionRequest): CommandDefinition
+    private function getCommandDefinitionByFlow(FlowRunRequest $flowRunRequest): CommandDefinition
     {
         $commands = $this->discovery->getCommands();
 
         foreach ($commands as $command) {
-            if ($command->flowId === $taskExecutionRequest->getFlowId()) {
+            if ($command->flowId === $flowRunRequest->getFlowId()) {
                 return $command;
             }
         }
-        throw new \Exception('No command found for task "' . $taskExecutionRequest->getFlowId() . '"');
+        throw new \Exception('No command found for flow "' . $flowRunRequest->getFlowId() . '"');
     }
 
     private function getMethodArguments(FlowRunRequest $request, CommandDefinition $commandDefinition): array
