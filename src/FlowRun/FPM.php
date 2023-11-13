@@ -2,23 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project\TaskExecution;
+namespace Attlaz\Project\FlowRun;
 
 use Attlaz\Project\Model\FlowRunRequest;
-
-use function Safe\json_decode;
 use function Safe\file_get_contents;
+use function Safe\json_decode;
 
-class FPM extends AbstractTaskHandler
+class FPM extends AbstractFlowRunHandler
 {
     public function run(): int
     {
-        $taskExecutionRequest = $this->getTaskExecutionRequest();
+        $flowRunRequest = $this->getFlowRunRequest();
 
-        return $this->execute($taskExecutionRequest);
+        return $this->execute($flowRunRequest);
     }
 
-    private function getTaskExecutionRequest(): FlowRunRequest
+    private function getFlowRunRequest(): FlowRunRequest
     {
         $json = file_get_contents('php://input');
         if (!\is_string($json)) {
@@ -28,12 +27,12 @@ class FPM extends AbstractTaskHandler
             //            var_dump($json);
             //            var_dump($values);
 
-            $taskId = $values['taskId'];
+            $flowId = $values['flowId'];
             $arguments = $values['arguments'];
 
-            $executionId = $values['executionId'];
+            $flowRunId = $values['flowRunId'];
 
-            return new FlowRunRequest($taskId, $arguments, $executionId);
+            return new FlowRunRequest($flowId, $arguments, $flowRunId);
         }
     }
 }

@@ -48,6 +48,7 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
 
     public function isResolvable(ContainerInterface $container): bool
     {
+        /** @var Config $config */
         $config = $container->get(Config::class);
 
         return $config->has($this->key);
@@ -71,7 +72,8 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         string             $key,
         ContainerInterface $container,
         string             $datatype = null
-    ) {
+    )
+    {
         /** @var Config $config */
         $config = $container->get(Config::class);
 

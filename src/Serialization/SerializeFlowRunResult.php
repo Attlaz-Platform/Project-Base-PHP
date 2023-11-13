@@ -13,7 +13,7 @@ class SerializeFlowRunResult
         $serialized = json_encode($flowRunResult, JSON_THROW_ON_ERROR);
 
         if (!\is_string($serialized)) {
-            throw new \Exception('Unable to encode task result');
+            throw new \Exception('Unable to encode flow run result');
         }
 
         return $serialized;

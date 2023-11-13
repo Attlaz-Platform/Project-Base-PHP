@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project\TaskExecution;
+namespace Attlaz\Project\FlowRun;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
@@ -11,10 +11,9 @@ use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Model\FlowRunResult;
 use Attlaz\Project\Serialization\SerializeFlowRunResult;
 use Psr\Log\LoggerInterface;
-
 use function Safe\fwrite;
 
-class AbstractTaskHandler
+class AbstractFlowRunHandler
 {
     protected CommandManager $commandManager;
     protected Client $client;
@@ -26,32 +25,33 @@ class AbstractTaskHandler
         Client          $client,
         Environment     $environment,
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->commandManager = $commandManager;
         $this->client = $client;
         $this->environment = $environment;
         $this->logger = $logger;
     }
 
-    public function execute(FlowRunRequest $taskExecutionRequest): int
+    public function execute(FlowRunRequest $flowRunRequest): int
     {
         if ($this->environment->getProjectEnvironment()->isLocal) {
-            $this->client->getFlowEndpoint()->updateFlowRun($taskExecutionRequest->getRunId(), 'Running');
+            $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Running');
         }
 
-        $taskExecutionResult = $this->commandManager->runFlow($taskExecutionRequest);
+        $flowRunResult = $this->commandManager->runFlow($flowRunRequest);
 
-        $this->sendResponse($taskExecutionResult);
+        $this->sendResponse($flowRunResult);
 
-        if ($taskExecutionResult->getSuccess()) {
+        if ($flowRunResult->getSuccess()) {
             if ($this->environment->getProjectEnvironment()->isLocal) {
-                $this->client->getFlowEndpoint()->updateFlowRun($taskExecutionRequest->getRunId(), 'Complete');
+                $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Complete');
             }
 
             return 0;
         } else {
             if ($this->environment->getProjectEnvironment()->isLocal) {
-                $this->client->getFlowEndpoint()->updateFlowRun($taskExecutionRequest->getRunId(), 'Failed');
+                $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Failed');
             }
 
             //TODO: change exit code based on exception type
@@ -59,16 +59,16 @@ class AbstractTaskHandler
         }
     }
 
-    protected function sendResponse(FlowRunResult $taskExecutionResult)
+    protected function sendResponse(FlowRunResult $flowRunResult)
     {
         //TODO: this can be string since CLI is just for debugging purpose
         $cmd = new SerializeFlowRunResult();
-        $strTaskResult = $cmd->__invoke($taskExecutionResult);
+        $strFlowRunResult = $cmd->__invoke($flowRunResult);
 
-        $this->logger->debug('Sending back response: ' . \substr($strTaskResult, 0, 5000));
+        $this->logger->debug('Sending back response: ' . \substr($strFlowRunResult, 0, 5000));
 
         // echo \base64_encode('<result>') . ':' . base64_encode($strTaskResult) . \base64_encode('</result>');
-        $response = base64_encode($strTaskResult);
+        $response = base64_encode($strFlowRunResult);
 
         $responseParts = \str_split($response, 50000);
 

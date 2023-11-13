@@ -18,7 +18,8 @@ class RequestDeploy extends Command
         private readonly Environment     $environment,
         private readonly Client          $client,
         private readonly LoggerInterface $logger
-    ) {
+    )
+    {
         parent::__construct();
 
     }

@@ -6,8 +6,8 @@ namespace Attlaz\Project\Cli\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
+use Attlaz\Project\FlowRun\AbstractFlowRunHandler;
 use Attlaz\Project\Model\FlowRunRequest;
-use Attlaz\Project\TaskExecution\AbstractTaskHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,15 +19,15 @@ use function Safe\json_decode;
 
 class RunFlow extends Command
 {
-    private const ARG_TASK = 'task';
+    private const ARG_FLOW_ID = 'flow';
     private const ARG_ARGUMENTS = 'arguments';
-    private const ARG_EXECUTION = 'execution';
+    private const ARG_RUN_ID = 'execution';
 
     public function __construct(
-        protected AbstractTaskHandler $taskExecutor,
-        protected Client              $client,
-        protected Environment         $environment,
-        protected LoggerInterface     $logger
+        protected AbstractFlowRunHandler $flowRunHandler,
+        protected Client                 $client,
+        protected Environment            $environment,
+        protected LoggerInterface        $logger
     )
     {
         parent::__construct();
@@ -35,13 +35,12 @@ class RunFlow extends Command
 
     protected function configure()
     {
-        $this->setName('task:execute')
-            ->setAliases(['flow:run'])
+        $this->setName('flow:run')
             ->setDescription('Run flow.')
             ->setHelp('This command allows you to run a flow')
-            ->addArgument(self::ARG_TASK, InputArgument::REQUIRED, 'Flow identifier to execute')
+            ->addArgument(self::ARG_FLOW_ID, InputArgument::REQUIRED, 'Flow identifier to execute')
             ->addOption(self::ARG_ARGUMENTS, null, InputOption::VALUE_REQUIRED, 'Pass arguments in base64 encoded JSON format', null)
-            ->addOption(self::ARG_EXECUTION, null, InputOption::VALUE_REQUIRED, 'Pass the flow run id', null);
+            ->addOption(self::ARG_RUN_ID, null, InputOption::VALUE_REQUIRED, 'Pass the flow run id', null);
     }
 
     protected function init(InputInterface $input): void
@@ -58,9 +57,9 @@ class RunFlow extends Command
         $this->init($input);
 
         try {
-            $taskExecutionRequest = $this->getRequestFromInput($input);
+            $flowRunRequest = $this->getRequestFromInput($input);
 
-            return $this->taskExecutor->execute($taskExecutionRequest);
+            return $this->flowRunHandler->execute($flowRunRequest);
         } catch (\Throwable $ex) {
             $this->logger->error($ex->getMessage());
 
@@ -70,44 +69,44 @@ class RunFlow extends Command
 
     private function getRequestFromInput(InputInterface $input): FlowRunRequest
     {
-        $taskId = $input->getArgument(self::ARG_TASK);
-        if (!\is_string($taskId)) {
-            throw new \Exception('Invalid task identifier');
+        $flowId = $input->getArgument(self::ARG_FLOW_ID);
+        if (!\is_string($flowId)) {
+            throw new \Exception('Invalid flow identifier');
         }
         $arguments = $this->getArguments($input);
 
-        $taskExecutionId = $this->getTaskExecutionIdFromInput($input);
+        $flowRunId = $this->getFlowRunIdFromInput($input);
 
-        if (\is_null($taskExecutionId)) {
+        if (\is_null($flowRunId)) {
             if ($this->environment->getProjectEnvironment()->isLocal) {
                 //TODO: only when local and no execution is given
                 $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
-                $taskExecutionId = $this->client->getFlowEndpoint()->createFlowRun($taskId, $projectEnvironmentId);
+                $flowRunId = $this->client->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
         } else {
             if ($this->areArgumentsInStorage($arguments)) {
-                $arguments = $this->getArgumentsFromStorage($taskExecutionId);
+                $arguments = $this->getArgumentsFromStorage($flowRunId);
             }
         }
 
-        return new FlowRunRequest($taskId, $arguments, $taskExecutionId);
+        return new FlowRunRequest($flowId, $arguments, $flowRunId);
     }
 
     /**
-     * @param string $taskExecutionId
+     * @param string $flowRunId
      * @return array
      * @throws \Safe\Exceptions\JsonException
      */
-    private function getArgumentsFromStorage(string $taskExecutionId): array
+    private function getArgumentsFromStorage(string $flowRunId): array
     {
-        $taskExecution = $this->client->getFlowEndpoint()->getFlowRun($taskExecutionId);
-        if (\is_null($taskExecution)) {
-            throw new \Exception('Unable to execute task: unable to get arguments from storage');
+        $flowRun = $this->client->getFlowEndpoint()->getFlowRun($flowRunId);
+        if (\is_null($flowRun)) {
+            throw new \Exception('Unable to start flow run: unable to get arguments from storage');
         }
 
-        $arguments = $taskExecution['arguments'];
+        $arguments = $flowRun['arguments'];
         return json_decode($arguments, true);
     }
 
@@ -116,15 +115,15 @@ class RunFlow extends Command
         return isset($inputArguments['from_storage']);
     }
 
-    private function getTaskExecutionIdFromInput(InputInterface $input): ?string
+    private function getFlowRunIdFromInput(InputInterface $input): string|null
     {
-        $taskExecutionId = $input->getOption(self::ARG_EXECUTION);
-        if (!\is_null($taskExecutionId)) {
-            if (\is_array($taskExecutionId)) {
-                $taskExecutionId = $taskExecutionId[0];
+        $flowRunId = $input->getOption(self::ARG_RUN_ID);
+        if (!\is_null($flowRunId)) {
+            if (\is_array($flowRunId)) {
+                $flowRunId = $flowRunId[0];
             }
 
-            return (string)$taskExecutionId;
+            return (string)$flowRunId;
         }
 
         return null;
