@@ -152,7 +152,7 @@ class Config implements LoggerAwareInterface, ConfigProvider
         return isset($this->configuration[$key]);
     }
 
-    public function get(string $key, string $datatype = null)
+    public function get(string $key, string $datatype = null): mixed
     {
         $configValue = $this->getConfig($key);
         if (\is_null($configValue)) {
@@ -165,7 +165,7 @@ class Config implements LoggerAwareInterface, ConfigProvider
                     break;
                 case 'int':
                 case 'integer':
-                    $value = \intval($value);
+                    $value = (int)$value;
                     break;
                 default:
                     throw new \Exception('Unable to cast config value to "' . $datatype . '": unknown type');
