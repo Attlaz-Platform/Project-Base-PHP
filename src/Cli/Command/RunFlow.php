@@ -21,7 +21,7 @@ class RunFlow extends Command
 {
     private const ARG_FLOW_ID = 'flow';
     private const ARG_ARGUMENTS = 'arguments';
-    private const ARG_RUN_ID = 'execution';
+    private const ARG_RUN_ID = 'run';
 
     public function __construct(
         protected AbstractFlowRunHandler $flowRunHandler,
