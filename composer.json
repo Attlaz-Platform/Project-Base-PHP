@@ -11,7 +11,7 @@
     "echron/datatypes": "^1.5",
     "php-di/php-di": "^7.0.1",
     "psr/simple-cache": "^1 || ^2 || ^3",
-    "attlaz/client": "^1.9",
+    "attlaz/client": "^1.10",
     "attlaz/attlaz-monolog": "^1.1.5|^2.0",
     "attlaz/adapter-base": "dev-develop",
     "vlucas/phpdotenv": "^5.5.0",
@@ -50,7 +50,7 @@
     "phpstan": " ./vendor/bin/phpstan analyse --memory-limit=512M",
     "phpstan:generate-baseline": " ./vendor/bin/phpstan analyse --generate-baseline --memory-limit=512M"
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "prefer-stable": true,
   "config": {
     "allow-plugins": {
