@@ -95,13 +95,20 @@ class InternalFactory
         return $logger;
     }
 
-    private static ?Client $client = null;
+    private static Client|null $client = null;
 
     public static function getClient(Environment $environment): Client
     {
         if (self::$client === null) {
-            self::$client = new Client($environment->api_client_id, $environment->api_client_secret, true);
-            self::$client->setEndPoint($environment->api_endpoint);
+
+            $client = new Client();
+            $client->setEndPoint($environment->api_endpoint);
+            if ($environment->api_client_id !== null && $environment->api_client_secret !== null) {
+                $client->authWithClient($environment->api_client_id, $environment->api_client_secret);
+            } else if ($environment->api_client_token !== null) {
+                $client->authWithToken($environment->api_client_token);
+            }
+            self::$client = $client;
         }
 
         return self::$client;
