@@ -11,7 +11,7 @@
     "echron/datatypes": "^1.5",
     "php-di/php-di": "^7.0.1",
     "psr/simple-cache": "^1 || ^2 || ^3",
-    "attlaz/client": "^1.10",
+    "attlaz/client": "^1.11.2",
     "attlaz/attlaz-monolog": "^1.1.5|^2.0",
     "attlaz/adapter-base": "^1.6|dev-develop",
     "vlucas/phpdotenv": "^5.5.0",

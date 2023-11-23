@@ -53,8 +53,8 @@ class ConnectionPool implements AdapterConnectionPool
         foreach ($configurations as $configuration) {
             $value = null;
             foreach ($configValues as $configValue) {
-                if ($configValue['key'] === $configuration->getId()) {
-                    $value = $configValue['value'];
+                if ($configValue->getConfigId() === $configuration->getId()) {
+                    $value = $configValue->getValue();
                 }
             }
             if ($value !== null) {
