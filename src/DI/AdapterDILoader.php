@@ -21,6 +21,7 @@ class AdapterDILoader
         $adapterNames = AdapterRegistrar::getAdapterIds();
 
 
+        $config->loadConfig();
         foreach ($adapterNames as $adapterName) {
 
             $factory = $this->getDIFactory($adapterName);
