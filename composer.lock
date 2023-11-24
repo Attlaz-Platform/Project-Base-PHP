@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2cdf1c3966dfd4a2c8125e7fe6f7fe9b",
+    "content-hash": "e5e11152789f35b45fc8b51864806ddf",
     "packages": [
         {
             "name": "attlaz/adapter-base",
-            "version": "1.6.0",
+            "version": "1.6.1",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/adapter-base-php.git",
-                "reference": "a00f80fc626a5b73e8344e7c8019fd961b9807ae"
+                "reference": "697cad4e2e51cb1e350b5e6452c996b2053ceaef"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.6.0-3a0e7c.tar",
-                "reference": "a00f80fc626a5b73e8344e7c8019fd961b9807ae",
-                "shasum": "d609a7294140ef8350df2038fbee83e482aba25c"
+                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.6.1-988e19.tar",
+                "reference": "697cad4e2e51cb1e350b5e6452c996b2053ceaef",
+                "shasum": "cd62e340a018f6ce79eca0031fe115e13385efa9"
             },
             "require": {
                 "attlaz/client": "^1.11.0",
@@ -75,7 +75,7 @@
                 "email": "support@attlaz.com",
                 "docs": "https://docs.attlaz.com/"
             },
-            "time": "2023-11-22T23:08:10+00:00"
+            "time": "2023-11-24T17:42:29+00:00"
         },
         {
             "name": "attlaz/attlaz-monolog",
@@ -133,16 +133,16 @@
         },
         {
             "name": "attlaz/client",
-            "version": "1.11.2",
+            "version": "1.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/PHP-Client.git",
-                "reference": "9dbeb7e544ae93d9bc330909c888dadea4e9e1ad"
+                "reference": "5e313dec078d2475b6bcd762b9f8e314a594cfb8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/9dbeb7e544ae93d9bc330909c888dadea4e9e1ad",
-                "reference": "9dbeb7e544ae93d9bc330909c888dadea4e9e1ad",
+                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/5e313dec078d2475b6bcd762b9f8e314a594cfb8",
+                "reference": "5e313dec078d2475b6bcd762b9f8e314a594cfb8",
                 "shasum": ""
             },
             "require": {
@@ -175,9 +175,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Attlaz-Platform/PHP-Client/issues",
-                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.11.2"
+                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.11.3"
             },
-            "time": "2023-11-23T01:01:54+00:00"
+            "time": "2023-11-24T17:40:07+00:00"
         },
         {
             "name": "echron/datatypes",
