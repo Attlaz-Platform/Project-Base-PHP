@@ -68,20 +68,11 @@ class ConnectionPool implements AdapterConnectionPool
         return $result;
     }
 
-    public function getConnection(string $connectionKey): AdapterConnectionInstance|null
+    public function getConnection(string $connectionId): AdapterConnectionInstance|null
     {
-        // TODO: detect if key or id
-
-        $connectionDefinition = $this->getConnectionDefinition($connectionKey);
-        if (\is_null($connectionDefinition)) {
-            // TODO: only show this additional information when in local mode
-            $connectionDefinitions = $this->getConnectionDefinitions();
-            $available = [];
-            foreach ($connectionDefinitions as $connectionDefinition) {
-                $available[] = $connectionDefinition->getName() . ' (' . $connectionDefinition->getKey() . ')';
-
-            }
-            throw new \Error('No connection found with id "' . $connectionKey . '", available: ' . \implode(', ', $available));
+        $connectionDefinition = $this->getConnectionDefinition($connectionId);
+        if ($connectionDefinition === null) {
+            return null;
         }
 
         $adapterId = $connectionDefinition->getAdapterId();
@@ -100,7 +91,7 @@ class ConnectionPool implements AdapterConnectionPool
 
         $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
 
-        if (\is_null($adapterConnection)) {
+        if ($adapterConnection === null) {
 
         }
 
@@ -113,14 +104,12 @@ class ConnectionPool implements AdapterConnectionPool
         $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
     }
 
-    public function getConnectionDefinition(string $connectionKey): AdapterConnectionDefinition|null
+    public function getConnectionDefinition(string $connectionId): AdapterConnectionDefinition|null
     {
-
-        $connectionDefinition = $this->client->getConnectionEndpoint()->getConnectionByKey($this->environment->getProject()->id, $connectionKey);
+        $connectionDefinition = $this->client->getConnectionEndpoint()->getConnection($connectionId);
         if ($connectionDefinition === null) {
             return null;
         }
-
         return $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
 
     }
