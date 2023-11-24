@@ -13,13 +13,19 @@ use Attlaz\Client;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
+use Psr\Log\LoggerInterface;
 
 class ConnectionPool implements AdapterConnectionPool
 {
     /** @var AdapterConnection[]|null */
     private array|null $connectionDefinitions = null;
 
-    public function __construct(private readonly Config $config, private readonly Environment $environment, private readonly Client $client)
+    public function __construct(
+        private readonly Config          $config,
+        private readonly Environment     $environment,
+        private readonly LoggerInterface $logger,
+        private readonly Client          $client
+    )
     {
 
     }
@@ -29,7 +35,7 @@ class ConnectionPool implements AdapterConnectionPool
      */
     private function getConnectionDefinitions(): array
     {
-        if (\is_null($this->connectionDefinitions)) {
+        if ($this->connectionDefinitions === null) {
             $this->loadConnectionDefinitions();
         }
         return $this->connectionDefinitions;
@@ -68,7 +74,10 @@ class ConnectionPool implements AdapterConnectionPool
         return $result;
     }
 
-    public function getConnection(string $connectionId): AdapterConnectionInstance|null
+    /**
+     * @inheritDoc
+     */
+    public function getConnection(string $connectionId, string $className): AdapterConnectionInstance|null
     {
         $connectionDefinition = $this->getConnectionDefinition($connectionId);
         if ($connectionDefinition === null) {
@@ -80,7 +89,7 @@ class ConnectionPool implements AdapterConnectionPool
         $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterId);
 
 
-        if (\is_null($adapterFactoryClassName)) {
+        if ($adapterFactoryClassName === null) {
             $availableAdapterIds = AdapterRegistrar::getAdapterIds();
             throw new \Exception('Unknown connection adapter "' . $adapterId . '" (available: ' . \implode(', ', $availableAdapterIds) . ') make sure the package is installed');
         }
@@ -91,8 +100,10 @@ class ConnectionPool implements AdapterConnectionPool
 
         $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
 
-        if ($adapterConnection === null) {
-
+        if ($adapterConnection !== null) {
+            if (get_class($adapterConnection) !== $className) {
+                $this->logger->warning('Adapter connection should be `' . $className . '`, got `' . get_class($adapterConnection) . '` instead');
+            }
         }
 
         return $adapterConnection;

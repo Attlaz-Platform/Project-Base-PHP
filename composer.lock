@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e5e11152789f35b45fc8b51864806ddf",
+    "content-hash": "22b6bffb237c74a80b5d27c8415302c3",
     "packages": [
         {
             "name": "attlaz/adapter-base",
-            "version": "1.6.1",
+            "version": "1.6.2",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/adapter-base-php.git",
-                "reference": "697cad4e2e51cb1e350b5e6452c996b2053ceaef"
+                "reference": "2f89e6d8ebbe96489f6db4578fddcdd0c5e9808f"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.6.1-988e19.tar",
-                "reference": "697cad4e2e51cb1e350b5e6452c996b2053ceaef",
-                "shasum": "cd62e340a018f6ce79eca0031fe115e13385efa9"
+                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.6.2-187b8d.tar",
+                "reference": "2f89e6d8ebbe96489f6db4578fddcdd0c5e9808f",
+                "shasum": "dbf02b54fd89d96607983d80ae78d27364e19f3b"
             },
             "require": {
                 "attlaz/client": "^1.11.0",
@@ -75,7 +75,7 @@
                 "email": "support@attlaz.com",
                 "docs": "https://docs.attlaz.com/"
             },
-            "time": "2023-11-24T17:42:29+00:00"
+            "time": "2023-11-24T17:54:50+00:00"
         },
         {
             "name": "attlaz/attlaz-monolog",
