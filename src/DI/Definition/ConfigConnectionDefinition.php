@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\DI\Definition;
 
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\Connections\ConnectionPool;
 use DI\Definition\Definition;
@@ -46,7 +47,7 @@ class ConfigConnectionDefinition implements Definition, SelfResolvingDefinition
         /** @var ConnectionPool $connectionPool */
         $connectionPool = $container->get(ConnectionPool::class);
 
-        return $connectionPool->getConnection($connectionIdentifier);
+        return $connectionPool->getConnection($connectionIdentifier, AdapterConnectionInstance::class);
 
     }
 
