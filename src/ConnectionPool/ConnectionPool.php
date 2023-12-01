@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project\Connections;
+namespace Attlaz\ConnectionPool;
 
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionDefinition;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionFactory;
@@ -13,6 +13,7 @@ use Attlaz\Client;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
+use Attlaz\ConnectionPool\Model\Error\ConnectionNotFoundError;
 use Psr\Log\LoggerInterface;
 
 class ConnectionPool implements AdapterConnectionPool
@@ -81,7 +82,7 @@ class ConnectionPool implements AdapterConnectionPool
     {
         $connectionDefinition = $this->getConnectionDefinition($connectionId);
         if ($connectionDefinition === null) {
-            return null;
+            throw new ConnectionNotFoundError('No connection definition found for `' . $connectionId . '`');
         }
 
         $adapterId = $connectionDefinition->getAdapterId();
