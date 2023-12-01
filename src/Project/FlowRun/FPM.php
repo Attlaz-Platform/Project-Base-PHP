@@ -22,17 +22,17 @@ class FPM extends AbstractFlowRunHandler
         $json = file_get_contents('php://input');
         if (!\is_string($json)) {
             throw new \Exception('Unable to get input content');
-        } else {
-            $values = json_decode($json, true);
-            //            var_dump($json);
-            //            var_dump($values);
-
-            $flowId = $values['flowId'];
-            $arguments = $values['arguments'];
-
-            $flowRunId = $values['flowRunId'];
-
-            return new FlowRunRequest($flowId, $arguments, $flowRunId);
         }
+
+        $values = json_decode($json, true);
+        //            var_dump($json);
+        //            var_dump($values);
+
+        $flowId = $values['flowId'];
+        $arguments = $values['arguments'];
+
+        $flowRunId = $values['flowRunId'];
+
+        return new FlowRunRequest($flowId, $arguments, $flowRunId);
     }
 }

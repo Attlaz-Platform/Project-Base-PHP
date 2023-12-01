@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Helper;
 
 use Attlaz\Project\App\Config;
-use Attlaz\Project\Connections\ConnectionPool;
+use Attlaz\ConnectionPool\ConnectionPool;
 use Attlaz\Project\Storage\StorageManager;
 use DI\Container;
 use Psr\Log\LoggerInterface;

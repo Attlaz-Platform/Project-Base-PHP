@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project;
+namespace Attlaz\Project\Project;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Config;
@@ -219,10 +219,10 @@ class Project
 
             if ($output === 0) {
                 exit(0);
-            } else {
-                //TODO: change exit code based on exception type
-                exit(1);
             }
+
+//TODO: change exit code based on exception type
+            exit(1);
         } else {
             $fpm = new FPM($this->commandManager, $attlazClient, $environment, $this->logger);
             $fpm->run();

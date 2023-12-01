@@ -164,7 +164,7 @@ class CommandManager
         return $parameterValue;
     }
 
-    private function validateParameterValueType($value, CommandParameterDefinition $parameter): void
+    private function validateParameterValueType(mixed $value, CommandParameterDefinition $parameter): void
     {
         if (!CommandParameterDefinition::isCorrectType($value, $parameter)) {
             $parameterName = $parameter->getName();

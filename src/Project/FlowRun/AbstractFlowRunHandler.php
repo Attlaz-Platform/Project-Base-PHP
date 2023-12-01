@@ -49,17 +49,17 @@ class AbstractFlowRunHandler
             }
 
             return 0;
-        } else {
-            if ($this->environment->getProjectEnvironment()->isLocal) {
-                $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Failed');
-            }
-
-            //TODO: change exit code based on exception type
-            return 1;
         }
+
+        if ($this->environment->getProjectEnvironment()->isLocal) {
+            $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Failed');
+        }
+
+        //TODO: change exit code based on exception type
+        return 1;
     }
 
-    protected function sendResponse(FlowRunResult $flowRunResult)
+    protected function sendResponse(FlowRunResult $flowRunResult): void
     {
         //TODO: this can be string since CLI is just for debugging purpose
         $cmd = new SerializeFlowRunResult();

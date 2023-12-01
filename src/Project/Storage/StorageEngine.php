@@ -32,7 +32,7 @@ class StorageEngine
         return $this->attlazClient->getStorageEndpoint()->hasItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $pool);
     }
 
-    public function setItem(string $key, $value, int|null $expirationSeconds = null, string|null $pool = null): bool
+    public function setItem(string $key, mixed $value, int|null $expirationSeconds = null, string|null $pool = null): bool
     {
         // TODO: expiration seconds is required for cache
         // TODO: how to handle overrides?

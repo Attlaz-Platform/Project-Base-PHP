@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
+use Attlaz\ConnectionPool\ConnectionPool;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Connections\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
 use Attlaz\Project\Helper\Profiler;
 use Attlaz\Project\Storage\StorageManager;
@@ -24,7 +24,8 @@ class Context
         protected OutputHelper    $outputHelper,
         protected ConnectionPool  $connectionPool,
         protected Profiler        $profiler
-    ) {
+    )
+    {
     }
 
     public function getLogger(): LoggerInterface
