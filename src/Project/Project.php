@@ -95,8 +95,9 @@ class Project
         //   echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
         // TODO: only show this in debug (local) mode
-        echo PHP_EOL . 'Constructor Total time: ';
-        echo Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+
+        $this->logger->debug('Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime));
+
     }
 
     private function initDI(string $definitionsFile = null)
@@ -215,7 +216,7 @@ class Project
             $output = $cliApplication->run();
 
             // TODO: only show this in debug (local) mode
-            echo PHP_EOL . 'Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime) . \PHP_EOL;
+            $this->logger->debug('Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime, true));
 
             if ($output === 0) {
                 exit(0);

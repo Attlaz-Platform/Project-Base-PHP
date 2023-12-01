@@ -28,7 +28,7 @@ class ConfigHelper
         $result = [];
         if (!FileSystem::fileExists($configFilePath)) {
             //            if ($this->logger) {
-            $this->logger->debug('No local configuration defined');
+            //$this->logger->debug('No local configuration defined');
             //            }
         } else {
             try {
