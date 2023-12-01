@@ -33,7 +33,7 @@ class Install
 
     private static function copyBinFiles(): void
     {
-        // TODO: how to make sure the bin directory is not in git without modifiying the .gitignore file to avoid bad
+        // TODO: how to make sure the bin directory is not in git without modifying the .gitignore file to avoid bad
         // changes to that file
         $sourceBinDirectoryPath = self::getVendorBinPath();
         $destinationBinDirectoryPath = self::getProjectBinPath();
@@ -52,8 +52,10 @@ class Install
 
         $files = [
             $sourceBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
-            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
             $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'lint.sh',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'test.sh',
         ];
         foreach ($files as $file) {
             \chmod($file, 0755);
