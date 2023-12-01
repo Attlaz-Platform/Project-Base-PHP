@@ -4,29 +4,19 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\DI\Definition;
 
-use Attlaz\Project\App\Config;
-use Attlaz\Project\Connections\ConnectionPool;
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
+use Attlaz\ConnectionPool\ConnectionPool;
 use DI\Definition\Definition;
 use DI\Definition\SelfResolvingDefinition;
 use Psr\Container\ContainerInterface;
 
 class ConnectionDefinition implements Definition, SelfResolvingDefinition
 {
-    /**
-     * Entry name.
-     * @var string
-     */
-    private $name = '';
-
-    /**
-     * @var string
-     */
-    private $connectionIdentifier;
+    private string $name = '';
 
 
-    public function __construct(string $connectionIdentifier)
+    public function __construct(private readonly string $connectionIdentifier)
     {
-        $this->connectionIdentifier = $connectionIdentifier;
 
     }
 
@@ -50,7 +40,7 @@ class ConnectionDefinition implements Definition, SelfResolvingDefinition
         /** @var ConnectionPool $connectionPool */
         $connectionPool = $container->get(ConnectionPool::class);
 
-        return $connectionPool->getConnection($this->connectionIdentifier);
+        return $connectionPool->getConnection($this->connectionIdentifier, AdapterConnectionInstance::class);
 
     }
 

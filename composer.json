@@ -29,12 +29,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Attlaz\\Project\\": "src"
+      "Attlaz\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Attlaz\\Project\\": "tests",
+      "Attlaz\\": "tests",
       "App\\": ".project/src/App"
     }
   },

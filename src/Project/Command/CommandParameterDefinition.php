@@ -9,9 +9,9 @@ class CommandParameterDefinition
     private string $name;
     private string|null $type;
     private bool $required = true;
-    private $default = null;
+    private mixed $default = null;
 
-    public function __construct(string $name, string|null $type = null, bool $required = true, $default = null)
+    public function __construct(string $name, string|null $type = null, bool $required = true, mixed $default = null)
     {
         $this->name = $name;
         $this->type = $type;

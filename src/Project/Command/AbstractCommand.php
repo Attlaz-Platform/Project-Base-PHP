@@ -7,7 +7,7 @@ namespace Attlaz\Project\Command;
 use Attlaz\Client as AttlazClient;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Connections\ConnectionPool;
+use Attlaz\ConnectionPool\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
 use Attlaz\Project\Helper\Profiler;
 use Attlaz\Project\Model\FlowRunRequest;
@@ -52,7 +52,7 @@ abstract class AbstractCommand
      * Place code here to initialize that doesn't belong in the constructor.
      * For instance stuff handling the logger which is not available in the constructor
      */
-    public function init()
+    public function init(): void
     {
     }
 
@@ -97,7 +97,8 @@ abstract class AbstractCommand
         string $flowId,
         array  $arguments = [],
         string $projectEnvironmentId = null
-    ): FlowRunResult {
+    ): FlowRunResult
+    {
         $executeLocal = false;
 
         $environment = $this->dependencyManager->get(Environment::class);
@@ -110,21 +111,22 @@ abstract class AbstractCommand
 
         if ($executeLocal) {
             return $this->executeLocal($flowId, $arguments, $projectEnvironmentId);
-        } else {
-            $result = $this->attlazClient->getFlowEndpoint()->requestRunFlow($flowId, $arguments, $projectEnvironmentId);
-            return new FlowRunResult($flowId, $result->result, true);
         }
+
+        $result = $this->attlazClient->getFlowEndpoint()->requestRunFlow($flowId, $arguments, $projectEnvironmentId);
+        return new FlowRunResult($flowId, $result->result, true);
     }
 
     private function executeLocal(
         string $flowId,
         array  $arguments = [],
         string $projectEnvironmentId = null
-    ): FlowRunResult {
+    ): FlowRunResult
+    {
         $executionId = $this->attlazClient->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
 
         $request = new FlowRunRequest($flowId, $arguments, $executionId);
-
+        /** @var CommandManager $commandManager */
         $commandManager = $this->dependencyManager->get(CommandManager::class);
 
         return $commandManager->runFlow($request);

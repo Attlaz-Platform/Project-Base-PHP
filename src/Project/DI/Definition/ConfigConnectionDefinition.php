@@ -6,7 +6,7 @@ namespace Attlaz\Project\DI\Definition;
 
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
 use Attlaz\Project\App\Config;
-use Attlaz\Project\Connections\ConnectionPool;
+use Attlaz\ConnectionPool\ConnectionPool;
 use DI\Definition\Definition;
 use DI\Definition\SelfResolvingDefinition;
 use Psr\Container\ContainerInterface;
