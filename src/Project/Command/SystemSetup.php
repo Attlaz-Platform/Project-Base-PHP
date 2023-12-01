@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project\Cli\Command;
+namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
@@ -13,7 +13,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
-
 use function Safe\file_put_contents;
 
 class SystemSetup extends Command
@@ -95,7 +94,8 @@ class SystemSetup extends Command
 
             //TODO: handle when client is not able to connect to API
 
-            $client = new Client($apiClientId, $apiClientSecret);
+            $client = new Client();
+            $client->authWithClient($apiClientId, $apiClientSecret);
             $client->setEndPoint($apiEndpoint);
             $values[Environment::ENV_API_ENDPOINT] = $apiEndpoint;
             $values[Environment::ENV_API_CLIENT_ID] = $apiClientId;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Logger;
 
 use Attlaz\Project\Exception\RuntimeException;
+use Monolog\Level;
 use Psr\Log\LoggerInterface;
 
 class Logger extends \Monolog\Logger implements LoggerInterface
@@ -15,49 +16,49 @@ class Logger extends \Monolog\Logger implements LoggerInterface
     public function emergency($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Emergency, $message, $context);
+        $this->addRecord(Level::Emergency, $message, $context);
     }
 
     public function alert($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Alert, $message, $context);
+        $this->addRecord(Level::Alert, $message, $context);
     }
 
     public function critical($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Critical, $message, $context);
+        $this->addRecord(Level::Critical, $message, $context);
     }
 
     public function error($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Error, $message, $context);
+        $this->addRecord(Level::Error, $message, $context);
     }
 
     public function warning($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Warning, $message, $context);
+        $this->addRecord(Level::Warning, $message, $context);
     }
 
     public function notice($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Notice, $message, $context);
+        $this->addRecord(Level::Notice, $message, $context);
     }
 
     public function info($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Info, $message, $context);
+        $this->addRecord(Level::Info, $message, $context);
     }
 
     public function debug($message, array $context = []): void
     {
         [$message, $context] = $this->formatMessageAndContext($message, $context);
-        $this->addRecord(\Monolog\Level::Debug, $message, $context);
+        $this->addRecord(Level::Debug, $message, $context);
     }
 
 

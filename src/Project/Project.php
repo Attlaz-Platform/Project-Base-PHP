@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project\Project;
+namespace Attlaz\Project;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\ConfigHelper;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Cli\Command\CacheClean;
-use Attlaz\Project\Cli\Command\ConfigList;
-use Attlaz\Project\Cli\Command\ListFlows;
-use Attlaz\Project\Cli\Command\RequestDeploy;
-use Attlaz\Project\Cli\Command\RunFlow;
-use Attlaz\Project\Cli\Command\RunFlowInteractive;
-use Attlaz\Project\Cli\Command\RunTests;
-use Attlaz\Project\Cli\Command\SystemSetup;
-use Attlaz\Project\Cli\Command\SystemStatus;
+use Attlaz\Project\Command\CacheClean;
 use Attlaz\Project\Command\CommandManager;
+use Attlaz\Project\Command\ConfigList;
 use Attlaz\Project\Command\FlowCommandDiscovery;
+use Attlaz\Project\Command\ListFlows;
+use Attlaz\Project\Command\RequestDeploy;
+use Attlaz\Project\Command\RunFlow;
+use Attlaz\Project\Command\RunFlowInteractive;
+use Attlaz\Project\Command\RunTests;
+use Attlaz\Project\Command\SystemSetup;
+use Attlaz\Project\Command\SystemStatus;
 use Attlaz\Project\DI\AdapterDILoader;
 use Attlaz\Project\DI\InternalFactory;
 use Attlaz\Project\FlowRun\CLI;
@@ -223,10 +223,10 @@ class Project
 
 //TODO: change exit code based on exception type
             exit(1);
-        } else {
-            $fpm = new FPM($this->commandManager, $attlazClient, $environment, $this->logger);
-            $fpm->run();
         }
+
+        $fpm = new FPM($this->commandManager, $attlazClient, $environment, $this->logger);
+        $fpm->run();
     }
 
 //    protected function executeTaskExecutionRequest(FlowRunRequest $taskExecutionRequest): int

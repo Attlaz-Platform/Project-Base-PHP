@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project\Cli\Command;
+namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\FlowRun\AbstractFlowRunHandler;
 use Attlaz\Project\Model\FlowRunRequest;
 use Psr\Log\LoggerInterface;
+use Safe\Exceptions\JsonException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -85,10 +86,9 @@ class RunFlow extends Command
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
-        } else {
-            if ($this->areArgumentsInStorage($arguments)) {
-                $arguments = $this->getArgumentsFromStorage($flowRunId);
-            }
+        } elseif ($this->areArgumentsInStorage($arguments)) {
+            $arguments = $this->getArgumentsFromStorage($flowRunId);
+
         }
 
         return new FlowRunRequest($flowId, $arguments, $flowRunId);
@@ -97,7 +97,7 @@ class RunFlow extends Command
     /**
      * @param string $flowRunId
      * @return array
-     * @throws \Safe\Exceptions\JsonException
+     * @throws JsonException
      */
     private function getArgumentsFromStorage(string $flowRunId): array
     {
