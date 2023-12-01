@@ -9,9 +9,9 @@ use Echron\Tools\FileSystem;
 
 class Install
 {
-    public static function run()
+    public static function run(): void
     {
-        echo 'Setup project';
+        echo 'Setup Attlaz project' . PHP_EOL;
         try {
             self::copyBinFiles();
             self::makeExecutable();
@@ -27,7 +27,8 @@ class Install
 
     private static function getProjectBinPath(): string
     {
-        return FileSystem::joinPath(__DIR__, '..', '..', '..', '..', '..', 'bin');
+        //        $binPath = FileSystem::joinPath(__DIR__, '..', '..', '..', '..', '..', '..', 'bin');
+        return \realpath(getcwd()) . \DIRECTORY_SEPARATOR . 'bin';
     }
 
     private static function copyBinFiles(): void

@@ -105,7 +105,7 @@ class InternalFactory
             $client->setEndPoint($environment->api_endpoint);
             if ($environment->api_client_id !== null && $environment->api_client_secret !== null) {
                 $client->authWithClient($environment->api_client_id, $environment->api_client_secret);
-            } else if ($environment->api_client_token !== null) {
+            } elseif ($environment->api_client_token !== null) {
                 $client->authWithToken($environment->api_client_token);
             }
             self::$client = $client;

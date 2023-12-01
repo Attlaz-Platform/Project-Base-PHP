@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Attlaz\Project\Cli\Command;
+namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
 use Attlaz\Model\ProjectEnvironment;
