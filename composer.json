@@ -13,7 +13,7 @@
     "psr/simple-cache": "^1 || ^2 || ^3",
     "attlaz/client": "^1.11.3",
     "attlaz/attlaz-monolog": "^1.1.5|^2.0",
-    "attlaz/adapter-base": "^1.6.2|dev-develop",
+    "attlaz/adapter-base": "^1.6.3|dev-develop",
     "vlucas/phpdotenv": "^5.5.0",
     "symfony/console": "^6.2",
     "symfony/yaml": "^6.2",

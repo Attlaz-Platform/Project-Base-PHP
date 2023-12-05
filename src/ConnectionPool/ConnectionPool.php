@@ -10,10 +10,10 @@ use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
 use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Client;
+use Attlaz\ConnectionPool\Model\Error\ConnectionNotFoundError;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
-use Attlaz\ConnectionPool\Model\Error\ConnectionNotFoundError;
 use Psr\Log\LoggerInterface;
 
 class ConnectionPool implements AdapterConnectionPool
@@ -60,7 +60,7 @@ class ConnectionPool implements AdapterConnectionPool
         foreach ($configurations as $configuration) {
             $value = null;
             foreach ($configValues as $configValue) {
-                if ($configValue->getConfigId() === $configuration->getId()) {
+                if ($configValue->getAdapterConfigurationId() === $configuration->getId()) {
                     $value = $configValue->getValue();
                 }
             }
