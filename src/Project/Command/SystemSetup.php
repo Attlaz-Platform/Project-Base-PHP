@@ -119,20 +119,21 @@ class SystemSetup extends Command
                 return $answer;
             });
             $answer = $questionHelper->ask($input, $output, $question);
+            $projectId = null;
             foreach ($arrProjectOptions as $key => $value) {
                 if ($answer === $key || $answer === $value) {
-                    $values[Environment::ENV_PROJECT] = $key;
+                    $projectId = $key;
                 }
             }
 
-            if (!isset($values[Environment::ENV_PROJECT])) {
+            if ($projectId === null) {
                 throw new \Exception('Invalid project');
             }
 
             /**
              * Project environment
              */
-            $projectEnvironments = $client->getProjectEnvironmentEndpoint()->getProjectEnvironments((string)$values[Environment::ENV_PROJECT]);
+            $projectEnvironments = $client->getProjectEnvironmentEndpoint()->getProjectEnvironments($projectId);
             $arrProjectEnvironmentOptions = [];
             foreach ($projectEnvironments as $projectEnvironment) {
                 $arrProjectEnvironmentOptions[$projectEnvironment->id] = $projectEnvironment->name;

@@ -54,7 +54,6 @@ class Environment
 
     private bool $isInitialized = false;
 
-    public const ENV_PROJECT = 'project';
     public const ENV_PROJECT_ENVIRONMENT = 'project_environment';
     public const ENV_MODE = 'mode';
     public const ENV_API_ENDPOINT = 'api_endpoint';
@@ -227,11 +226,10 @@ class Environment
         if ($this->isInitialized) {
             $client = InternalFactory::getClient($this);
 
-            $projectId = $this->getEnvValue(self::ENV_PROJECT);
-            $this->project = $client->getProjectEndpoint()->getProjectById($projectId);
-
             $projectEnvironmentId = $this->getEnvValue(self::ENV_PROJECT_ENVIRONMENT);
             $this->projectEnvironment = $client->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($projectEnvironmentId);
+
+            $this->project = $client->getProjectEndpoint()->getProjectById($this->projectEnvironment->projectId);
         }
     }
 
