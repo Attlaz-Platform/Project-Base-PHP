@@ -9,6 +9,12 @@ def get_docker_image():
         data = json.load(f)
     php_version = data['require']['php']
     match php_version:
+        case '7.2' | '^7.2' | '>=7.2':
+            return 'attlaz/php:8.0'
+        case '7.4' | '^7.4' | '>=7.4':
+            return 'attlaz/php:8.0'
+        case '8.0' | '^8.0' | '>=8.0':
+            return 'attlaz/php:8.0'
         case '8.1' | '^8.1' | '>=8.1':
             return 'attlaz/php:8.1'
         case '8.2' | '^8.2' | '>=8.2':
