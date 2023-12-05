@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Attlaz\Project\DI\Definition;
 
 use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionInstance;
-use Attlaz\Project\App\Config;
 use Attlaz\ConnectionPool\ConnectionPool;
+use Attlaz\ConnectionPool\Model\Error\ConnectionNotFoundError;
+use Attlaz\Project\App\Config;
 use DI\Definition\Definition;
 use DI\Definition\SelfResolvingDefinition;
 use Psr\Container\ContainerInterface;
@@ -18,11 +19,9 @@ class ConfigConnectionDefinition implements Definition, SelfResolvingDefinition
 {
     private string $name = '';
 
-    private string $configKey;
-
-    public function __construct(string $configKey)
+    public function __construct(private readonly string $configKey, private readonly string $connectionClass = AdapterConnectionInstance::class)
     {
-        $this->configKey = $configKey;
+
 
     }
 
@@ -43,11 +42,21 @@ class ConfigConnectionDefinition implements Definition, SelfResolvingDefinition
         $config = $container->get(Config::class);
 
         $connectionIdentifier = $config->get($this->configKey, 'string');
+        if ($connectionIdentifier === null) {
+            throw new \Error('Configuration `' . $this->configKey . '` not found');
+        }
 
         /** @var ConnectionPool $connectionPool */
         $connectionPool = $container->get(ConnectionPool::class);
 
-        return $connectionPool->getConnection($connectionIdentifier, AdapterConnectionInstance::class);
+        try {
+            $connection = $connectionPool->getConnection($connectionIdentifier, $this->connectionClass);
+        } catch (ConnectionNotFoundError $ex) {
+            throw new \Error('Unable to resolve config connection: connection `' . $connectionIdentifier . '` not found for config `' . $this->configKey . '`');
+        }
+
+
+        return $connection;
 
     }
 
