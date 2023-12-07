@@ -41,7 +41,7 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "https://packagist.echron.be/"
+      "url": "https://repo.attlaz.com"
     }
   ],
   "scripts": {
