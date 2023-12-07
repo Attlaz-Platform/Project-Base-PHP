@@ -1,1 +1,1 @@
-call %cd%\vendor\attlaz\project-base\src\bin\windows\composer.bat %*
+call py %cd%\vendor\attlaz\project-base\bin\py\composer.py %*

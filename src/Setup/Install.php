@@ -21,12 +21,12 @@ class Install
 
     private static function getVendorBinPath(): string
     {
-        return realpath(dirname(__FILE__)) . \DIRECTORY_SEPARATOR . 'bin';
+        return \realpath(__DIR__) . \DIRECTORY_SEPARATOR . 'bin';
     }
 
     private static function getProjectBinPath(): string
     {
-        return FileSystem::joinPath(dirname(__FILE__), '..', '..', '..', '..', '..', 'bin');
+        return \realpath(getcwd()) . \DIRECTORY_SEPARATOR . 'bin';
     }
 
     private static function copyBinFiles(): void
@@ -50,8 +50,10 @@ class Install
 
         $files = [
             $sourceBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
-            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
             $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'console.sh',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'lint.sh',
+            $destinationBinDirectoryPath . \DIRECTORY_SEPARATOR . 'test.sh',
         ];
         foreach ($files as $file) {
             \chmod($sourceBinDirectoryPath, 0755);
