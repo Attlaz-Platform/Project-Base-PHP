@@ -102,7 +102,7 @@ class ConnectionPool implements AdapterConnectionPool
         $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
 
         if ($adapterConnection !== null) {
-            if (get_class($adapterConnection) !== $className) {
+            if (!is_a($adapterConnection, $className)) {
                 $this->logger->warning('Adapter connection should be `' . $className . '`, got `' . get_class($adapterConnection) . '` instead');
             }
         }
