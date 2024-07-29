@@ -49,6 +49,6 @@ def docker_run(command):
     if profile:
         docker_command = f"docker run --rm -e PROFILE=1 -it --init -v {project_dir}/profile:/xdebug -v {project_dir}:/var/attlaz -w /var/attlaz {image} {command}"
     else:
-    docker_command = f"docker run --rm -it --init -v {project_dir}:/var/attlaz -w /var/attlaz {image} {command}"
+        docker_command = f"docker run --rm -it --init -v {project_dir}:/var/attlaz -w /var/attlaz {image} {command}"
     print(f'{docker_command}')
     os.system(docker_command)
