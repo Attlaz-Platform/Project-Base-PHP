@@ -21,8 +21,10 @@ def get_docker_image():
             return 'attlaz/php:8.2'
         case '8.3' | '^8.3' | '>=8.3':
             return 'attlaz/php:8.3'
+        case '8.4' | '^8.4' | '>=8.4':
+                    return 'attlaz/php:8.4'
         case _:
-            print(f'Unable to detect PHP version based on composer.json. (found version constraint `{php_version}`)')
+            print(f'Unable to detect PHP version based on composer.json. (found version constraint `{php_version}`) using PHP 8.1')
             # Show error that we cannot define PHP version based on composer file
             return 'attlaz/php:8.1'
 
@@ -43,5 +45,10 @@ def get_project_dir():
 def docker_run(command):
     project_dir = get_project_dir()
     image = get_docker_image()
+    profile = False
+    if profile:
+        docker_command = f"docker run --rm -e PROFILE=1 -it --init -v {project_dir}/profile:/xdebug -v {project_dir}:/var/attlaz -w /var/attlaz {image} {command}"
+    else:
     docker_command = f"docker run --rm -it --init -v {project_dir}:/var/attlaz -w /var/attlaz {image} {command}"
+    print(f'{docker_command}')
     os.system(docker_command)
