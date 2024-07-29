@@ -8,7 +8,7 @@ class FlowRunRequest
 {
     private string $flowId;
     private array $arguments;
-    private ?string $flowRunId;
+    private string|null $flowRunId;
 
     public function __construct(string $flowId, array $arguments = [], string $flowRunId = null)
     {
@@ -17,8 +17,20 @@ class FlowRunRequest
         }
 
         $this->flowId = $flowId;
-        $this->arguments = $arguments;
+        $this->arguments = [];
+        foreach ($arguments as $key => $value) {
+            $key = $this->formatArgumentName($key);
+            $this->arguments[$key] = $value;
+        }
+
+
         $this->flowRunId = $flowRunId;
+    }
+
+    private function formatArgumentName(string $input): string
+    {
+        // Convert PascalCase to snake_case
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $input));
     }
 
     public function getFlowId(): string
@@ -33,11 +45,13 @@ class FlowRunRequest
 
     public function hasArgument(string $name): bool
     {
+        $name = $this->formatArgumentName($name);
         return isset($this->arguments[$name]);
     }
 
     public function getArgument(string $name): mixed
     {
+        $name = $this->formatArgumentName($name);
         return $this->arguments[$name];
     }
 
