@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\DI;
 
-use Attlaz\Adapter\Base\Model\AdapterFactory;
+use Attlaz\Adapter\Base\Model\AdapterDefinitionsCollector;
 use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Project\App\Config;
 use DI\Container;
@@ -52,9 +52,9 @@ class AdapterDILoader
         $config->loadConfig();
         foreach ($adapterNames as $adapterName) {
 
-            $factory = $this->getAdapterFactoryInstance($this->diContainer, $adapterName);
-            if (!\is_null($factory)) {
-                $adapterDefinitions = $factory->getDefinitions($config);
+            $adapterDefinitionsCollector = $this->getAdapterDefinitionsCollector($this->diContainer, $adapterName);
+            if (!\is_null($adapterDefinitionsCollector)) {
+                $adapterDefinitions = $adapterDefinitionsCollector->getDefinitions($config);
                 if (count($adapterDefinitions) > 0) {
                     foreach ($adapterDefinitions as $key => $value) {
                         $this->diContainer->set($key, $value);
@@ -65,7 +65,7 @@ class AdapterDILoader
         }
     }
 
-    private function getAdapterFactoryInstance(ContainerInterface $objectContainer, string $adapterName): AdapterFactory|null
+    private function getAdapterDefinitionsCollector(ContainerInterface $objectContainer, string $adapterName): AdapterDefinitionsCollector|null
     {
 
         $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterName);
@@ -77,8 +77,10 @@ class AdapterDILoader
 
         $adapterFactory = $objectContainer->get($adapterFactoryClassName);
 
-        if (!$adapterFactory instanceof AdapterFactory) {
-            throw new \RuntimeException('Adapter factory `' . $adapterFactoryClassName . '` must implements `' . AdapterFactory::class . '`');
+        if (!$adapterFactory instanceof AdapterDefinitionsCollector) {
+            // It is not required for a Factory to implement AdapterFactory, this just means there are no definitions
+            return null;
+            throw new \RuntimeException('Adapter factory `' . $adapterFactoryClassName . '` must implements `' . AdapterDefinitionsCollector::class . '`');
         }
         return $adapterFactory;
     }
