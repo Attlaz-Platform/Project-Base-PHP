@@ -14,6 +14,7 @@ use Attlaz\ConnectionPool\Model\Error\ConnectionNotFoundError;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
+use DI\Container;
 use Psr\Log\LoggerInterface;
 
 class ConnectionPool implements AdapterConnectionPool
@@ -25,6 +26,7 @@ class ConnectionPool implements AdapterConnectionPool
         private readonly Config          $config,
         private readonly Environment     $environment,
         private readonly LoggerInterface $logger,
+        private readonly Container       $objectManager,
         private readonly Client          $client
     )
     {
@@ -32,14 +34,52 @@ class ConnectionPool implements AdapterConnectionPool
     }
 
     /**
-     * @return AdapterConnection[]
+     * @inheritDoc
      */
-    private function getConnectionDefinitions(): array
+    public function getConnection(string $connectionId, string $className): AdapterConnectionInstance|null
     {
-        if ($this->connectionDefinitions === null) {
-            $this->loadConnectionDefinitions();
+        $connectionDefinition = $this->getConnectionDefinition($connectionId);
+        if ($connectionDefinition === null) {
+            throw new ConnectionNotFoundError('No connection definition found for `' . $connectionId . '`');
         }
-        return $this->connectionDefinitions;
+
+        $adapterId = $connectionDefinition->getAdapterId();
+
+        $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterId);
+
+
+        if ($adapterFactoryClassName === null) {
+            $availableAdapterIds = AdapterRegistrar::getAdapterIds();
+            throw new \Exception('Unknown connection adapter "' . $adapterId . '" (available: ' . \implode(', ', $availableAdapterIds) . ') make sure the package is installed');
+        }
+
+
+        $adapterFactory = $this->objectManager->get($adapterFactoryClassName);
+        if (!$adapterFactory instanceof AdapterConnectionFactory) {
+            throw new \RuntimeException('Adapter factory `' . $adapterFactoryClassName . '` must implements `' . AdapterConnectionFactory::class . '`');
+        }
+
+
+        $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
+
+        if ($adapterConnection !== null) {
+            if (!is_a($adapterConnection, $className)) {
+                $this->logger->warning('Adapter connection should be `' . $className . '`, got `' . get_class($adapterConnection) . '` instead');
+            }
+        }
+
+        return $adapterConnection;
+
+    }
+
+    public function getConnectionDefinition(string $connectionId): AdapterConnectionDefinition|null
+    {
+        $connectionDefinition = $this->client->getConnectionEndpoint()->getConnection($connectionId);
+        if ($connectionDefinition === null) {
+            return null;
+        }
+        return $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
+
     }
 
     private function patchAdapterConnectionConfigurationValues(AdapterConnection $adapterConnection): AdapterConnectionDefinition
@@ -75,57 +115,6 @@ class ConnectionPool implements AdapterConnectionPool
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getConnection(string $connectionId, string $className): AdapterConnectionInstance|null
-    {
-        $connectionDefinition = $this->getConnectionDefinition($connectionId);
-        if ($connectionDefinition === null) {
-            throw new ConnectionNotFoundError('No connection definition found for `' . $connectionId . '`');
-        }
-
-        $adapterId = $connectionDefinition->getAdapterId();
-
-        $adapterFactoryClassName = AdapterRegistrar::getFactoryClassName($adapterId);
-
-
-        if ($adapterFactoryClassName === null) {
-            $availableAdapterIds = AdapterRegistrar::getAdapterIds();
-            throw new \Exception('Unknown connection adapter "' . $adapterId . '" (available: ' . \implode(', ', $availableAdapterIds) . ') make sure the package is installed');
-        }
-
-        /** @var AdapterConnectionFactory $adapterFactory */
-        $adapterFactory = new $adapterFactoryClassName($this);
-
-
-        $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
-
-        if ($adapterConnection !== null) {
-            if (!is_a($adapterConnection, $className)) {
-                $this->logger->warning('Adapter connection should be `' . $className . '`, got `' . get_class($adapterConnection) . '` instead');
-            }
-        }
-
-        return $adapterConnection;
-
-    }
-
-    private function loadConnectionDefinitions(): void
-    {
-        $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
-    }
-
-    public function getConnectionDefinition(string $connectionId): AdapterConnectionDefinition|null
-    {
-        $connectionDefinition = $this->client->getConnectionEndpoint()->getConnection($connectionId);
-        if ($connectionDefinition === null) {
-            return null;
-        }
-        return $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
-
-    }
-
     public function getConnectionDefinitionKeys(): array
     {
         //TODO: rewrite with yield
@@ -134,6 +123,22 @@ class ConnectionPool implements AdapterConnectionPool
             $result[] = $connectionDefinition->getKey();
         }
         return $result;
+    }
+
+    /**
+     * @return AdapterConnection[]
+     */
+    private function getConnectionDefinitions(): array
+    {
+        if ($this->connectionDefinitions === null) {
+            $this->loadConnectionDefinitions();
+        }
+        return $this->connectionDefinitions;
+    }
+
+    private function loadConnectionDefinitions(): void
+    {
+        $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
     }
 
     public function getDefinedConnections(): array
