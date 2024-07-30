@@ -156,8 +156,8 @@ class Project
 
         $this->diContainer = $containerBuilder->build();
 
-        $adapterHelper = new AdapterDILoader();
-        $adapterHelper->addDefinitionsToDi($this->diContainer, $config);
+        $adapterHelper = new AdapterDILoader($this->diContainer);
+        $adapterHelper->addDefinitionsToDi($config);
 
     }
 
