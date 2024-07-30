@@ -137,8 +137,6 @@ class Project
 
         $containerBuilder->addDefinitions($localDefinitions);
 
-        $adapterHelper = new AdapterDILoader();
-        $adapterHelper->initDI($containerBuilder, $config);
 
         //        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
         if (!\is_null($definitionsFile)) {
@@ -157,6 +155,10 @@ class Project
         $containerBuilder->useAutowiring(true);
 
         $this->diContainer = $containerBuilder->build();
+
+        $adapterHelper = new AdapterDILoader();
+        $adapterHelper->addDefinitionsToDi($this->diContainer, $config);
+
     }
 
     public function getDIContainer(): ContainerInterface
