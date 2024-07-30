@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Attlaz\Project;
 
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
 use Attlaz\Client;
+use Attlaz\ConnectionPool\ConnectionPool;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\ConfigHelper;
 use Attlaz\Project\App\Environment;
@@ -36,7 +38,7 @@ use Symfony\Component\Console\Application;
 class Project
 {
     private CommandManager $commandManager;
-    private ContainerInterface $diContainer;
+    private ContainerInterface|null $diContainer = null;
     private LoggerInterface $logger;
     private float $startTime;
     private Environment $environment;
@@ -90,7 +92,8 @@ class Project
 
             $start = \microtime(true);
         } catch (\Exception $ex) {
-            throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
+            throw $ex;
+            // throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
         }
         //   echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
@@ -133,21 +136,19 @@ class Project
             StorageManager::class => $storageManager,
             CacheInterface::class => new SimpleCacheAdapter($storageManager->cache),
             Client::class => $client,
+            AdapterConnectionPool::class => \DI\autowire(ConnectionPool::class),
         ];
 
         $containerBuilder->addDefinitions($localDefinitions);
 
+        /** Add adapter definitions */
+        $adapterHelper = new AdapterDILoader();
+        $adapterHelper->addDefinitionsToDi($containerBuilder, $config);
 
-        //        $containerBuilder->addDefinitions(__DIR__ . \DIRECTORY_SEPARATOR . 'di.php');
+        /** Add project definitions */
         if (!\is_null($definitionsFile)) {
             $containerBuilder->addDefinitions($definitionsFile);
         }
-
-        //  $config = $containerBuilder->get(Config::class);
-
-        //        $discovery = new CommandDiscovery($this->projectRootPath);
-        //        //Pre fetch commands
-        //        $discovery->getCommands();
 
         $this->commandManager = new CommandManager();
         $containerBuilder->addDefinitions([CommandManager::class => $this->commandManager]);
@@ -155,10 +156,6 @@ class Project
         $containerBuilder->useAutowiring(true);
 
         $this->diContainer = $containerBuilder->build();
-
-        $adapterHelper = new AdapterDILoader($this->diContainer);
-        $adapterHelper->addDefinitionsToDi($config);
-
     }
 
     public function getDIContainer(): ContainerInterface
@@ -166,7 +163,7 @@ class Project
         return $this->diContainer;
     }
 
-    public function run()
+    public function run(): void
     {
         /** @var Client $attlazClient */
         $attlazClient = $this->diContainer->get(Client::class);
