@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f08657efe9e4beaca7d231e001869c64",
+    "content-hash": "567e007ece3f705a35e48b34977782c8",
     "packages": [
         {
             "name": "attlaz/adapter-base",
@@ -80,21 +80,21 @@
         },
         {
             "name": "attlaz/attlaz-monolog",
-            "version": "2.0.1",
+            "version": "2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/Monolog.git",
-                "reference": "7420e0c0c3eda67b6497da01198ca7881e8a5491"
+                "reference": "71f17642ae4e77efe69662da4e2d9a94c623ef4f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/7420e0c0c3eda67b6497da01198ca7881e8a5491",
-                "reference": "7420e0c0c3eda67b6497da01198ca7881e8a5491",
+                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/71f17642ae4e77efe69662da4e2d9a94c623ef4f",
+                "reference": "71f17642ae4e77efe69662da4e2d9a94c623ef4f",
                 "shasum": ""
             },
             "require": {
-                "attlaz/client": "^1.9.6",
-                "monolog/monolog": "^3.0",
+                "attlaz/client": "^1.11.7",
+                "monolog/monolog": "^3.7",
                 "php": ">=8.1",
                 "psr/log": "^2.0 || ^3.0"
             },
@@ -128,9 +128,9 @@
                 "monolog"
             ],
             "support": {
-                "source": "https://github.com/Attlaz-Platform/Monolog/tree/2.0.1"
+                "source": "https://github.com/Attlaz-Platform/Monolog/tree/2.1.1"
             },
-            "time": "2023-02-06T15:21:53+00:00"
+            "time": "2024-08-02T13:04:30+00:00"
         },
         {
             "name": "attlaz/client",
@@ -3408,16 +3408,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.60.0",
+            "version": "v3.61.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "e595e4e070d17c5d42ed8c4206f630fcc5f401a4"
+                "reference": "94a87189f55814e6cabca2d9a33b06de384a2ab8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/e595e4e070d17c5d42ed8c4206f630fcc5f401a4",
-                "reference": "e595e4e070d17c5d42ed8c4206f630fcc5f401a4",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/94a87189f55814e6cabca2d9a33b06de384a2ab8",
+                "reference": "94a87189f55814e6cabca2d9a33b06de384a2ab8",
                 "shasum": ""
             },
             "require": {
@@ -3499,7 +3499,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.60.0"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.61.1"
             },
             "funding": [
                 {
@@ -3507,7 +3507,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-25T09:26:51+00:00"
+            "time": "2024-07-31T14:33:15+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3747,16 +3747,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.11.8",
+            "version": "1.11.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec"
+                "reference": "e370bcddadaede0c1716338b262346f40d296f82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec",
-                "reference": "6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e370bcddadaede0c1716338b262346f40d296f82",
+                "reference": "e370bcddadaede0c1716338b262346f40d296f82",
                 "shasum": ""
             },
             "require": {
@@ -3801,7 +3801,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-24T07:01:22+00:00"
+            "time": "2024-08-01T16:25:18+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
