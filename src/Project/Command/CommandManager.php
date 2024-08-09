@@ -37,35 +37,6 @@ class CommandManager
         $this->logger = $logger;
     }
 
-
-    private function enableExecutionLogging(string $executionId): void
-    {
-        if ($this->logger instanceof Logger) {
-            $handlers = $this->logger->getHandlers();
-            foreach ($handlers as $handler) {
-                if ($handler instanceof AttlazHandler) {
-                    $this->previousLogStreamId = $handler->getLogStreamId();
-                    $this->previousLogLevel = $handler->getLevel();
-                    $handler->setLogStreamId(new LogStreamId('flow_run:' . $executionId));
-                    $handler->setLevel($this->environment->api_log_level_flow_run);
-                }
-            }
-        }
-    }
-
-    private function disableExecutionLogging(): void
-    {
-        if ($this->previousLogStreamId !== null && $this->logger instanceof Logger) {
-            $handlers = $this->logger->getHandlers();
-            foreach ($handlers as $handler) {
-                if ($handler instanceof AttlazHandler) {
-                    $handler->setLogStreamId($this->previousLogStreamId);
-                    $handler->setLevel($this->previousLogLevel);
-                }
-            }
-        }
-    }
-
     public function runFlow(FlowRunRequest $request): FlowRunResult
     {
         //TODO: make it possible to switch between app/staging app
@@ -81,7 +52,7 @@ class CommandManager
         $dashboardUrl = $this->environment->getAppUrl(null, $urlSegments);
         // Only log this to console
         $this->logger->info('More info: ' . $dashboardUrl, [AttlazHandler::CONTEXT_SKIP => true]);
-        $this->enableExecutionLogging($request->getRunId());
+        $this->enableExecutionLogging($request->getRunId(), $request->verboseLogging);
 
         $context = [];
         if (count($request->getArguments()) > 0) {
@@ -118,6 +89,42 @@ class CommandManager
         return $result;
     }
 
+    /**
+     * Returns all the commands
+     * @return CommandDefinition[]
+     */
+    public function getCommandDefinitions(): array
+    {
+        return $this->discovery->getCommands();
+    }
+
+    private function enableExecutionLogging(string $executionId, bool $verboseLogging): void
+    {
+        if ($this->logger instanceof Logger) {
+            $handlers = $this->logger->getHandlers();
+            foreach ($handlers as $handler) {
+                if ($handler instanceof AttlazHandler) {
+                    $this->previousLogStreamId = $handler->getLogStreamId();
+                    $this->previousLogLevel = $handler->getLevel();
+                    $handler->setLogStreamId(new LogStreamId('flow_run:' . $executionId));
+                    $handler->setLevel($verboseLogging ? Level::Debug : Level::Info);
+                }
+            }
+        }
+    }
+
+    private function disableExecutionLogging(): void
+    {
+        if ($this->previousLogStreamId !== null && $this->logger instanceof Logger) {
+            $handlers = $this->logger->getHandlers();
+            foreach ($handlers as $handler) {
+                if ($handler instanceof AttlazHandler) {
+                    $handler->setLogStreamId($this->previousLogStreamId);
+                    $handler->setLevel($this->previousLogLevel);
+                }
+            }
+        }
+    }
 
     private function getCommandDefinitionByFlow(FlowRunRequest $flowRunRequest): CommandDefinition
     {
@@ -184,14 +191,5 @@ class CommandManager
 
         //TODO: should we do any validation on this?
         return $command;
-    }
-
-    /**
-     * Returns all the commands
-     * @return CommandDefinition[]
-     */
-    public function getCommandDefinitions(): array
-    {
-        return $this->discovery->getCommands();
     }
 }

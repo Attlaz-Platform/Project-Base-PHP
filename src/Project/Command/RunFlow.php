@@ -23,6 +23,7 @@ class RunFlow extends Command
     private const ARG_FLOW_ID = 'flow';
     private const ARG_ARGUMENTS = 'arguments';
     private const ARG_RUN_ID = 'run';
+    private const ARG_VERBOSE = 'verbose';
 
     public function __construct(
         protected AbstractFlowRunHandler $flowRunHandler,
@@ -44,21 +45,15 @@ class RunFlow extends Command
             ->addOption(self::ARG_RUN_ID, null, InputOption::VALUE_REQUIRED, 'Pass the flow run id', null);
     }
 
-    protected function init(InputInterface $input): void
-    {
-        if ($input->getOption('verbose') === true) {
-            // TODO: fix implementation
-            //            $this->streamHandler->setLevel(LogLevel::DEBUG);
-        }
-    }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->init($input);
-
         try {
             $flowRunRequest = $this->getRequestFromInput($input);
+            if ($input->getOption(self::ARG_VERBOSE) === true) {
+                $flowRunRequest->verboseLogging = true;
+            }
 
             return $this->flowRunHandler->execute($flowRunRequest);
         } catch (\Throwable $ex) {

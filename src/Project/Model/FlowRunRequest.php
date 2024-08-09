@@ -6,6 +6,7 @@ namespace Attlaz\Project\Model;
 
 class FlowRunRequest
 {
+    public bool $verboseLogging = false;
     private string $flowId;
     private array $arguments;
     private string|null $flowRunId;
@@ -25,12 +26,6 @@ class FlowRunRequest
 
 
         $this->flowRunId = $flowRunId;
-    }
-
-    private function formatArgumentName(string $input): string
-    {
-        // Convert PascalCase to snake_case
-        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $input));
     }
 
     public function getFlowId(): string
@@ -58,5 +53,11 @@ class FlowRunRequest
     public function getRunId(): string
     {
         return $this->flowRunId;
+    }
+
+    private function formatArgumentName(string $input): string
+    {
+        // Convert PascalCase to snake_case
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $input));
     }
 }
