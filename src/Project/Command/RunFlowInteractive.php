@@ -6,8 +6,6 @@ namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
 use Attlaz\Project\App\Environment;
-use Attlaz\Project\Command\CommandManager;
-use Attlaz\Project\Command\CommandParameterDefinition;
 use Attlaz\Project\FlowRun\CLI;
 use Attlaz\Project\Model\FlowRunRequest;
 use Psr\Log\LoggerInterface;
@@ -40,7 +38,6 @@ class RunFlowInteractive extends RunFlow
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->init($input);
         try {
             $commands = $this->commandManager->getCommandDefinitions();
 

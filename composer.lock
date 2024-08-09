@@ -4,23 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "567e007ece3f705a35e48b34977782c8",
+    "content-hash": "9993ef34a5292d92005913d7ce629d09",
     "packages": [
         {
             "name": "attlaz/adapter-base",
-            "version": "1.9.6",
+            "version": "1.9.11",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/adapter-base-php.git",
-                "reference": "71e4ee27951e54a16a5564dfa16bf3c061fd4b0c"
+                "reference": "f9f6d1119c9856910266c2b627c98294e93de92f"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.9.6-eb09be.tar",
-                "reference": "71e4ee27951e54a16a5564dfa16bf3c061fd4b0c",
-                "shasum": "ce3e674f78ff29ef0f129ab40df6cdd5c088ec1a"
+                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.9.11-fb8396.tar",
+                "reference": "f9f6d1119c9856910266c2b627c98294e93de92f",
+                "shasum": "8273606c52113ea6953712aa9e951656b8359af2"
             },
             "require": {
+                "attlaz/attlaz-monolog": "^2.1.1",
                 "attlaz/client": "^1.11.7",
                 "echron/datatypes": "^1.6.0",
                 "echron/tools": "^1.6.6",
@@ -76,20 +77,20 @@
                 "email": "support@attlaz.com",
                 "docs": "https://docs.attlaz.com/"
             },
-            "time": "2024-07-30T20:04:15+00:00"
+            "time": "2024-08-09T18:39:34+00:00"
         },
         {
             "name": "attlaz/attlaz-monolog",
-            "version": "2.1.1",
+            "version": "2.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/Monolog.git",
-                "reference": "71f17642ae4e77efe69662da4e2d9a94c623ef4f"
+                "reference": "b532da0b8c497bfe984eae984219d7f87586edb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/71f17642ae4e77efe69662da4e2d9a94c623ef4f",
-                "reference": "71f17642ae4e77efe69662da4e2d9a94c623ef4f",
+                "url": "https://api.github.com/repos/Attlaz-Platform/Monolog/zipball/b532da0b8c497bfe984eae984219d7f87586edb3",
+                "reference": "b532da0b8c497bfe984eae984219d7f87586edb3",
                 "shasum": ""
             },
             "require": {
@@ -128,9 +129,9 @@
                 "monolog"
             ],
             "support": {
-                "source": "https://github.com/Attlaz-Platform/Monolog/tree/2.1.1"
+                "source": "https://github.com/Attlaz-Platform/Monolog/tree/2.1.2"
             },
-            "time": "2024-08-02T13:04:30+00:00"
+            "time": "2024-08-09T15:41:01+00:00"
         },
         {
             "name": "attlaz/client",
@@ -800,26 +801,27 @@
         },
         {
             "name": "laravel/serializable-closure",
-            "version": "v1.3.3",
+            "version": "v1.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/serializable-closure.git",
-                "reference": "3dbf8a8e914634c48d389c1234552666b3d43754"
+                "reference": "61b87392d986dc49ad5ef64e75b1ff5fee24ef81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/serializable-closure/zipball/3dbf8a8e914634c48d389c1234552666b3d43754",
-                "reference": "3dbf8a8e914634c48d389c1234552666b3d43754",
+                "url": "https://api.github.com/repos/laravel/serializable-closure/zipball/61b87392d986dc49ad5ef64e75b1ff5fee24ef81",
+                "reference": "61b87392d986dc49ad5ef64e75b1ff5fee24ef81",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.3|^8.0"
             },
             "require-dev": {
-                "nesbot/carbon": "^2.61",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+                "nesbot/carbon": "^2.61|^3.0",
                 "pestphp/pest": "^1.21.3",
                 "phpstan/phpstan": "^1.8.2",
-                "symfony/var-dumper": "^5.4.11"
+                "symfony/var-dumper": "^5.4.11|^6.2.0|^7.0.0"
             },
             "type": "library",
             "extra": {
@@ -856,7 +858,7 @@
                 "issues": "https://github.com/laravel/serializable-closure/issues",
                 "source": "https://github.com/laravel/serializable-closure"
             },
-            "time": "2023-11-08T14:08:06+00:00"
+            "time": "2024-08-02T07:48:17+00:00"
         },
         {
             "name": "league/oauth2-client",
@@ -3408,16 +3410,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.61.1",
+            "version": "v3.62.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "94a87189f55814e6cabca2d9a33b06de384a2ab8"
+                "reference": "627692f794d35c43483f34b01d94740df2a73507"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/94a87189f55814e6cabca2d9a33b06de384a2ab8",
-                "reference": "94a87189f55814e6cabca2d9a33b06de384a2ab8",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/627692f794d35c43483f34b01d94740df2a73507",
+                "reference": "627692f794d35c43483f34b01d94740df2a73507",
                 "shasum": ""
             },
             "require": {
@@ -3499,7 +3501,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.61.1"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.62.0"
             },
             "funding": [
                 {
@@ -3507,7 +3509,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-31T14:33:15+00:00"
+            "time": "2024-08-07T17:03:09+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3747,16 +3749,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.11.9",
+            "version": "1.11.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "e370bcddadaede0c1716338b262346f40d296f82"
+                "reference": "640410b32995914bde3eed26fa89552f9c2c082f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e370bcddadaede0c1716338b262346f40d296f82",
-                "reference": "e370bcddadaede0c1716338b262346f40d296f82",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/640410b32995914bde3eed26fa89552f9c2c082f",
+                "reference": "640410b32995914bde3eed26fa89552f9c2c082f",
                 "shasum": ""
             },
             "require": {
@@ -3801,7 +3803,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-08-01T16:25:18+00:00"
+            "time": "2024-08-08T09:02:50+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
