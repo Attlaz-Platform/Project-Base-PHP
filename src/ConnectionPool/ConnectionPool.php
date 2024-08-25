@@ -67,7 +67,7 @@ class ConnectionPool implements AdapterConnectionPool
                 $this->logger->warning('Adapter connection should be `' . $className . '`, got `' . get_class($adapterConnection) . '` instead');
             }
         }
-
+        $this->logger->info('Use connection `' . $connectionDefinition->getName() . '`');
         return $adapterConnection;
 
     }
@@ -80,6 +80,29 @@ class ConnectionPool implements AdapterConnectionPool
         }
         return $this->patchAdapterConnectionConfigurationValues($connectionDefinition);
 
+    }
+
+    public function getConnectionDefinitionKeys(): array
+    {
+        //TODO: rewrite with yield
+        $result = [];
+        foreach ($this->getConnectionDefinitions() as $connectionDefinition) {
+            $result[] = $connectionDefinition->getKey();
+        }
+        return $result;
+    }
+
+    public function getDefinedConnections(): array
+    {
+        //TODO: rewrite with yield
+        $result = [];
+        foreach ($this->getConnectionDefinitions() as $connectionDefinition) {
+            $result[] = [
+                'key' => $connectionDefinition->getKey(),
+                'type' => $connectionDefinition->getAdapterId(),
+            ];
+        }
+        return $result;
     }
 
     private function patchAdapterConnectionConfigurationValues(AdapterConnection $adapterConnection): AdapterConnectionDefinition
@@ -115,16 +138,6 @@ class ConnectionPool implements AdapterConnectionPool
         return $result;
     }
 
-    public function getConnectionDefinitionKeys(): array
-    {
-        //TODO: rewrite with yield
-        $result = [];
-        foreach ($this->getConnectionDefinitions() as $connectionDefinition) {
-            $result[] = $connectionDefinition->getKey();
-        }
-        return $result;
-    }
-
     /**
      * @return AdapterConnection[]
      */
@@ -139,18 +152,5 @@ class ConnectionPool implements AdapterConnectionPool
     private function loadConnectionDefinitions(): void
     {
         $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
-    }
-
-    public function getDefinedConnections(): array
-    {
-        //TODO: rewrite with yield
-        $result = [];
-        foreach ($this->getConnectionDefinitions() as $connectionDefinition) {
-            $result[] = [
-                'key' => $connectionDefinition->getKey(),
-                'type' => $connectionDefinition->getAdapterId(),
-            ];
-        }
-        return $result;
     }
 }
