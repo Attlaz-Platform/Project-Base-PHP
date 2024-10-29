@@ -81,7 +81,7 @@ class Project
             //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
             // $start = \microtime(true);
             if ($this->environment->isInitialized()) {
-                $discovery = new FlowCommandDiscovery($this->projectRootPath);
+                $discovery = new FlowCommandDiscovery($this->projectRootPath, $this->logger);
                 //Pre fetch commands
                 $discovery->getCommands();
 
