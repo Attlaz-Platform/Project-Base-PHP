@@ -7,13 +7,10 @@ namespace Attlaz\Project\Command;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\Annotation\FlowStepCommand;
 use Echron\Tools\FileSystem;
+use Psr\Log\LoggerInterface;
 
 class FlowCommandDiscovery
 {
-    /**
-     * @var string
-     */
-    private string $directory;
 
 
     /**
@@ -22,11 +19,11 @@ class FlowCommandDiscovery
     private array $commands = [];
     private bool $commandsLoaded = false;
 
-    public function __construct(string $sourcePath)
+    public function __construct(
+        private readonly string          $directory,
+        private readonly LoggerInterface $logger
+    )
     {
-        $this->directory = $sourcePath;
-
-
     }
 
     /**
@@ -107,7 +104,7 @@ class FlowCommandDiscovery
 
 
             return [
-                'flowStepId' => $flowStepCommandInfo->flowStepId
+                'flowStepId' => $flowStepCommandInfo->flowStepId,
             ];
         }
 
@@ -117,57 +114,69 @@ class FlowCommandDiscovery
 
     }
 
-    private function registerCommand(string $className): ?CommandDefinition
+    private function registerCommand(string $className): CommandDefinition|null
     {
+        // TODO: should we ignore classNames that ends with Test?
+
         //        try {
         //TODO: if the className is actually a file, the file is included by calling "class_exists",
         //  putting "autoload" to false doesn't help and make the function returns false
-        if (!class_exists($className, true)) {
+        try {
+
+
+            if (!class_exists($className, true)) {
+                return null;
+            }
+
+            $reflectionClass = new \ReflectionClass($className);
+
+            $flowStepDetails = $this->detectFlowStepDetails($reflectionClass);
+            if (is_null($flowStepDetails)) {
+                return null;
+            }
+
+            //Check if class extends AbstractCommand
+            if (!$reflectionClass->isSubclassOf(AbstractCommand::class)) {
+                $strErrorMessage = 'Unable to register command "' . $className . '": ';
+                $strErrorMessage .= 'must extend "' . AbstractCommand::class . '" class';
+                throw new \Exception($strErrorMessage);
+            }
+            //Check if invoke method exists
+            if (!$reflectionClass->hasMethod(AbstractCommand::INVOKE_METHOD)) {
+                $strErrorMessage = 'Unable to register command "' . $className . '": ';
+                $strErrorMessage .= 'must have "' . AbstractCommand::INVOKE_METHOD . '" method';
+                throw new \Exception($strErrorMessage);
+            }
+            $invokeMethodReflection = $reflectionClass->getMethod(AbstractCommand::INVOKE_METHOD);
+
+            //TODO: add information about return type
+            // $invokeMethodReflection->getReturnType()
+            //TODO: make sure that we don't have duplicate task definitions
+
+            $commandParameters = $this->getCommandParameters($invokeMethodReflection);
+
+            $commandDefinition = new CommandDefinition();
+            $commandDefinition->flowId = $flowStepDetails['flowStepId'];
+            $commandDefinition->className = $className;
+
+            foreach ($commandParameters as $commandParameter) {
+                $commandDefinition->addParameter($commandParameter);
+            }
+
+            return $commandDefinition;
+            //        } catch (AnnotationException $ex) {
+            //            $strErrorMessage = 'Unable to register command "' . $className . '":' . $ex->getMessage();
+            //            throw new \Exception($strErrorMessage);
+            //            //TODO: handle invalid/incomplete annotations,
+            //            // maybe make it possible to validate the project before building it?
+            //        }
+        } catch (\Throwable $ex) {
+            if ($ex->getMessage() !== 'PHPUnit\Framework\TestCase') {
+                $this->logger->error('Unable to register command for class `' . $className . '` ' . $ex->getMessage());
+            }
+
             return null;
         }
-
-        $reflectionClass = new \ReflectionClass($className);
-
-        $flowStepDetails = $this->detectFlowStepDetails($reflectionClass);
-        if (is_null($flowStepDetails)) {
-            return null;
-        }
-
-        //Check if class extends AbstractCommand
-        if (!$reflectionClass->isSubclassOf(AbstractCommand::class)) {
-            $strErrorMessage = 'Unable to register command "' . $className . '": ';
-            $strErrorMessage .= 'must extend "' . AbstractCommand::class . '" class';
-            throw new \Exception($strErrorMessage);
-        }
-        //Check if invoke method exists
-        if (!$reflectionClass->hasMethod(AbstractCommand::INVOKE_METHOD)) {
-            $strErrorMessage = 'Unable to register command "' . $className . '": ';
-            $strErrorMessage .= 'must have "' . AbstractCommand::INVOKE_METHOD . '" method';
-            throw new \Exception($strErrorMessage);
-        }
-        $invokeMethodReflection = $reflectionClass->getMethod(AbstractCommand::INVOKE_METHOD);
-
-        //TODO: add information about return type
-        // $invokeMethodReflection->getReturnType()
-        //TODO: make sure that we don't have duplicate task definitions
-
-        $commandParameters = $this->getCommandParameters($invokeMethodReflection);
-
-        $commandDefinition = new CommandDefinition();
-        $commandDefinition->flowId = $flowStepDetails['flowStepId'];
-        $commandDefinition->className = $className;
-
-        foreach ($commandParameters as $commandParameter) {
-            $commandDefinition->addParameter($commandParameter);
-        }
-
-        return $commandDefinition;
-        //        } catch (AnnotationException $ex) {
-        //            $strErrorMessage = 'Unable to register command "' . $className . '":' . $ex->getMessage();
-        //            throw new \Exception($strErrorMessage);
-        //            //TODO: handle invalid/incomplete annotations,
-        //            // maybe make it possible to validate the project before building it?
-        //        }
     }
 
     private function getCommandParameters(\ReflectionMethod $invokeMethodReflection): array
