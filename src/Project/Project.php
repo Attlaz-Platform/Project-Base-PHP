@@ -25,6 +25,7 @@ use Attlaz\Project\DI\AdapterDILoader;
 use Attlaz\Project\DI\InternalFactory;
 use Attlaz\Project\FlowRun\CLI;
 use Attlaz\Project\FlowRun\FPM;
+use Attlaz\Project\Helper\Profiler;
 use Attlaz\Project\Storage\SimpleCacheAdapter;
 use Attlaz\Project\Storage\StorageManager;
 use DI\ContainerBuilder;
@@ -42,10 +43,14 @@ class Project
     private LoggerInterface $logger;
     private float $startTime;
     private Environment $environment;
+    private Profiler $profiler;
 
 
     public function __construct(private readonly string $projectRootPath, Environment $environment = null)
     {
+        $this->profiler = new Profiler();
+
+        $this->profiler->start('Project');
         $this->startTime = \microtime(true);
         if (\is_null($environment)) {
             $environment = new Environment($projectRootPath);
@@ -53,33 +58,32 @@ class Project
         $this->environment = $environment;
 
         try {
+            $this->profiler->start('Init environment');
             $this->environment->init();
+            $this->profiler->finish('Init environment');
 
             $client = InternalFactory::getClient($this->environment);
+
+            $this->profiler->start('Get logger');
             $this->logger = InternalFactory::getLogger($this->environment, $client);
-            // echo PHP_EOL . 'Finish environment ' . Time::readableSeconds(\microtime(true) - $this->startTime) .
-            //   \PHP_EOL;
+            $this->profiler->finish('Get logger');
 
-            //            $start = \microtime(true);
+            $this->profiler->start('Init DI');
             $this->initDI($environment->definitionsFile);
-
-            //   echo PHP_EOL . 'Init DI: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-
-            $start = \microtime(true);
             $container = $this->getDIContainer();
-            //            $this->logger = $container->get(LoggerInterface::class);
+            $this->profiler->finish('Init DI');
 
-            //  echo PHP_EOL . 'Get logger: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            //            $start = \microtime(true);
+
+            $this->profiler->start('Load Config');
             /** @var Config $config */
             $config = $container->get(Config::class);
 
             if ($this->environment->isInitialized()) {
                 $config->loadConfig();
             }
+            $this->profiler->finish('Load Config');
 
-            //  echo PHP_EOL . 'Get config: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-            // $start = \microtime(true);
+            $this->profiler->start('Command discovery');
             if ($this->environment->isInitialized()) {
                 $discovery = new FlowCommandDiscovery($this->projectRootPath, $this->logger);
                 //Pre fetch commands
@@ -87,10 +91,8 @@ class Project
 
                 $this->commandManager->initialize($discovery, $this->diContainer, $this->environment, $this->logger);
             }
+            $this->profiler->finish('Command discovery');
 
-            // echo PHP_EOL . 'Command discovery: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
-
-            $start = \microtime(true);
         } catch (\Exception $ex) {
             throw $ex;
             // throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
@@ -99,8 +101,83 @@ class Project
 
         // TODO: only show this in debug (local) mode
 
-        $this->logger->debug('Constructor Total time: ' . Time::readableSeconds(\microtime(true) - $this->startTime));
+        $this->profiler->finish('Project');
 
+//        echo implode(PHP_EOL, $this->profiler->debug());
+//        die('--');
+
+    }
+
+    public function getDIContainer(): ContainerInterface
+    {
+        return $this->diContainer;
+    }
+
+    public function run(): void
+    {
+        /** @var Client $attlazClient */
+        $attlazClient = $this->diContainer->get(Client::class);
+        $environment = $this->environment;
+        if (PHP_SAPI === 'cli') {
+            /** @var Config $config */
+            $config = $this->diContainer->get(Config::class);
+
+            $commandManager = $this->commandManager;
+
+            $cliApplication = new Application('Attlaz CLI');
+            $cliApplication->setAutoExit(false);
+
+            $flowRunCliHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
+
+            $cliApplication->add(new SystemStatus($environment));
+
+
+            if ($this->environment->isInitialized()) {
+                //                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
+
+                //List tasks
+                $cliApplication->add(new ListFlows($commandManager));
+                //Execute task
+                $cmd = new RunFlow($flowRunCliHandler, $attlazClient, $environment, $this->logger);
+                $cliApplication->add($cmd);
+                //Execute task interactive
+                $cmd = new RunFlowInteractive(
+                    $flowRunCliHandler,
+                    $attlazClient,
+                    $commandManager,
+                    $environment,
+                    $this->logger
+                );
+                $cliApplication->add($cmd);
+                //Config list
+                $cliApplication->add(new ConfigList($config, $environment, $attlazClient, $this->logger));
+                //Clean cache
+                /** @var StorageManager $storageManager */
+                $storageManager = $this->diContainer->get(StorageManager::class);
+                $clearCacheCommand = new CacheClean($config, $storageManager, $this->logger);
+                $cliApplication->add($clearCacheCommand);
+                //Request deploy
+                $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
+                //Run tests
+                $cliApplication->add(new RunTests($this->logger));
+            } else {
+                $cliApplication->add(new SystemSetup($attlazClient, $environment, $this->logger));
+            }
+            $output = $cliApplication->run();
+
+            // TODO: only show this in debug (local) mode
+            $this->logger->debug('Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime, true));
+
+            if ($output === 0) {
+                exit(0);
+            }
+
+//TODO: change exit code based on exception type
+            exit(1);
+        }
+
+        $fpm = new FPM($this->commandManager, $attlazClient, $environment, $this->logger);
+        $fpm->run();
     }
 
     private function initDI(string $definitionsFile = null)
@@ -156,77 +233,6 @@ class Project
         $containerBuilder->useAutowiring(true);
 
         $this->diContainer = $containerBuilder->build();
-    }
-
-    public function getDIContainer(): ContainerInterface
-    {
-        return $this->diContainer;
-    }
-
-    public function run(): void
-    {
-        /** @var Client $attlazClient */
-        $attlazClient = $this->diContainer->get(Client::class);
-        $environment = $this->environment;
-        if (PHP_SAPI === 'cli') {
-            /** @var Config $config */
-            $config = $this->diContainer->get(Config::class);
-
-            $commandManager = $this->commandManager;
-
-            $cliApplication = new Application();
-            $cliApplication->setAutoExit(false);
-
-            $flowRunCliHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
-
-            $cliApplication->add(new SystemStatus($environment));
-
-            if ($this->environment->isInitialized()) {
-                //                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
-
-                //List tasks
-                $cliApplication->add(new ListFlows($commandManager));
-                //Execute task
-                $cmd = new RunFlow($flowRunCliHandler, $attlazClient, $environment, $this->logger);
-                $cliApplication->add($cmd);
-                //Execute task interactive
-                $cmd = new RunFlowInteractive(
-                    $flowRunCliHandler,
-                    $attlazClient,
-                    $commandManager,
-                    $environment,
-                    $this->logger
-                );
-                $cliApplication->add($cmd);
-                //Config list
-                $cliApplication->add(new ConfigList($config, $environment, $attlazClient, $this->logger));
-                //Clean cache
-                /** @var StorageManager $storageManager */
-                $storageManager = $this->diContainer->get(StorageManager::class);
-                $clearCacheCommand = new CacheClean($config, $storageManager, $this->logger);
-                $cliApplication->add($clearCacheCommand);
-                //Request deploy
-                $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
-                //Run tests
-                $cliApplication->add(new RunTests($this->logger));
-            } else {
-                $cliApplication->add(new SystemSetup($attlazClient, $environment, $this->logger));
-            }
-            $output = $cliApplication->run();
-
-            // TODO: only show this in debug (local) mode
-            $this->logger->debug('Run time: ' . Time::readableSeconds(\microtime(true) - $this->startTime, true));
-
-            if ($output === 0) {
-                exit(0);
-            }
-
-//TODO: change exit code based on exception type
-            exit(1);
-        }
-
-        $fpm = new FPM($this->commandManager, $attlazClient, $environment, $this->logger);
-        $fpm->run();
     }
 
 //    protected function executeTaskExecutionRequest(FlowRunRequest $taskExecutionRequest): int
