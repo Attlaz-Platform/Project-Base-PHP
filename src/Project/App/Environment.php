@@ -17,51 +17,38 @@ class Environment
 {
     public const MODE_PRODUCTION = 'production';
     public const MODE_DEVELOPMENT = 'development';
-
-    private string $projectRootPath;
-
     public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
     private const CACHE_LOCATION = 'var/cache';
     private const DI_FILE_LOCATION = '/App/etc/di.php';
     private const CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
     public const COMMANDS_LOCATION = '/App/Command';
-
-    /**
-     * Config values
-     */
-    public bool $compileDi = false;
-    public bool $cacheConfig = false;
-
-    private ProjectModel|null $project = null;
-    private ProjectEnvironment|null $projectEnvironment = null;
-
-    public string|null $definitionsFile = null;
-
-    public string $api_endpoint = 'https://api.attlaz.com';
-
-    public string|null $api_client_id = null;
-    public string|null $api_client_secret = null;
-    public string|null $api_client_token = null;
-
-    public string $sys_memory_limit = '2G';
-    public string $sys_timezone = 'Europe/Brussels';
-
-    public bool $cli_log_verbose = true;
-    public Level $cli_log_level = Level::Debug;
-    public bool $cli_log_stacktrace = true;
-
-    public Level $api_log_level_flow_run = Level::Info;
-
-    private bool $isInitialized = false;
-
     public const ENV_PROJECT_ENVIRONMENT = 'project_environment';
     public const ENV_MODE = 'mode';
     public const ENV_API_ENDPOINT = 'api_endpoint';
     public const ENV_API_CLIENT_ID = 'api_client_id';
     public const ENV_API_CLIENT_SECRET = 'api_client_secret';
     public const ENV_API_TOKEN = 'api_token';
-
     public const ENV_SYS_MEMORY_LIMIT = 'sys_memory_limit';
+    /**
+     * Config values
+     */
+    public bool $compileDi = false;
+    public bool $cacheConfig = false;
+    public string|null $definitionsFile = null;
+    public string $api_endpoint = 'https://api.attlaz.com/beta';
+    public string|null $api_client_id = null;
+    public string|null $api_client_secret = null;
+    public string|null $api_client_token = null;
+    public string $sys_memory_limit = '2G';
+    public string $sys_timezone = 'Europe/Brussels';
+    public bool $cli_log_verbose = true;
+    public Level $cli_log_level = Level::Debug;
+    public bool $cli_log_stacktrace = true;
+    public Level $api_log_level_flow_run = Level::Info;
+    private string $projectRootPath;
+    private ProjectModel|null $project = null;
+    private ProjectEnvironment|null $projectEnvironment = null;
+    private bool $isInitialized = false;
 
     public function __construct(string $projectRootPath)
     {
@@ -79,10 +66,16 @@ class Environment
         $this->checkIfInitialized();
 
         if ($this->isInitialized) {
-            $this->api_endpoint = $this->getEnvValue(self::ENV_API_ENDPOINT);
-            $this->api_client_id = $this->getEnvValue(self::ENV_API_CLIENT_ID);
-            $this->api_client_secret = $this->getEnvValue(self::ENV_API_CLIENT_SECRET);
-            $this->api_client_token = $this->getEnvValue(self::ENV_API_TOKEN);
+            $this->api_endpoint = $this->getEnvValue(self::ENV_API_ENDPOINT, $this->api_endpoint);
+
+            $this->api_client_token = $this->getEnvValue(self::ENV_API_TOKEN, null);
+
+
+            if ($this->api_client_token === null) {
+                $this->api_client_id = $this->getEnvValue(self::ENV_API_CLIENT_ID, null);
+                $this->api_client_secret = $this->getEnvValue(self::ENV_API_CLIENT_SECRET, null);
+            }
+
 
             $this->sys_memory_limit = $this->getEnvValue(self::ENV_SYS_MEMORY_LIMIT, $this->sys_memory_limit);
         }
@@ -97,72 +90,16 @@ class Environment
         }
     }
 
-    private function checkIfInitialized(): void
+    public static function getCommandDirectoryPath(string $projectRootPath): string
     {
-        $requiredEnvValues = [
-            self::ENV_API_ENDPOINT,
-//            self::ENV_API_CLIENT_ID,
-//            self::ENV_API_CLIENT_SECRET,
-        ];
-        foreach ($requiredEnvValues as $requiredEnvValue) {
-            $value = $this->getEnvValue($requiredEnvValue, '');
-            if ($value === '') {
-                $this->isInitialized = false;
-
-                return;
-            }
-        }
-        $this->isInitialized = true;
-    }
-
-    private function loadEnvSettingsFromFile(): void
-    {
-        try {
-
-            $dotenv = Dotenv::createMutable($this->projectRootPath, '.env');
-            $dotenv->load();
-
-            $this->isInitialized = true;
-        } catch (InvalidPathException $ex) {
-
-            $this->isInitialized = false;
-        }
+        $commandDirectoryPath = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::COMMANDS_LOCATION);
+        return realpath($commandDirectoryPath);
     }
 
     public function getEnvFilePath(): string
     {
         return $this->projectRootPath . \DIRECTORY_SEPARATOR . '.env';
     }
-
-    private function getEnvValue(string $key, string|null $fallback = null): string|null
-    {
-        $value = null;
-
-        if (\array_key_exists($key, $_SERVER)) {
-            $value = $_SERVER[$key];
-        }
-
-        if ($value === null) {
-//            if ($fallback === null) {
-//                throw new \Exception('Environment variable "' . $key . '" not defined');
-//            } else {
-            return $fallback;
-//            }
-        }
-
-        if (!\is_string($value)) {
-            $value = (string)$value;
-        }
-
-        return $value;
-    }
-
-//    private function getNumEnvValue(string $key): int
-//    {
-//        $value = $this->getEnvValue($key);
-//
-//        return (int)$value;
-//    }
 
     public function getCacheName(): string
     {
@@ -178,25 +115,16 @@ class Environment
         return $this->projectRootPath;
     }
 
-    private function getDIFileLocation(string $projectRootPath): string|null
-    {
-        $diFileLocation = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::DI_FILE_LOCATION);
-        $x = realpath($diFileLocation);
-        if ($x === false) {
-            return null;
-        }
-        return $x;
-    }
+//    private function getNumEnvValue(string $key): int
+//    {
+//        $value = $this->getEnvValue($key);
+//
+//        return (int)$value;
+//    }
 
     public function getConfigFilePath(): string
     {
         return FileSystem::joinPath($this->projectRootPath, self::SOURCE_LOCATION, self::CONFIG_FILE_LOCATION);
-    }
-
-    public static function getCommandDirectoryPath(string $projectRootPath): string
-    {
-        $commandDirectoryPath = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::COMMANDS_LOCATION);
-        return realpath($commandDirectoryPath);
     }
 
     public function getFileCachePath(): string
@@ -225,10 +153,11 @@ class Environment
     {
         if ($this->isInitialized) {
             $client = InternalFactory::getClient($this);
+            $client->setDebug(1);
 
             $projectEnvironmentId = $this->getEnvValue(self::ENV_PROJECT_ENVIRONMENT);
-            $this->projectEnvironment = $client->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($projectEnvironmentId);
 
+            $this->projectEnvironment = $client->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($projectEnvironmentId);
             $this->project = $client->getProjectEndpoint()->getProjectById($this->projectEnvironment->projectId);
         }
     }
@@ -238,6 +167,11 @@ class Environment
         return $this->isInitialized;
     }
 
+    public function getDashboardUrl(): string
+    {
+        return 'https://app.attlaz.com';
+    }
+
     /**
      * @param ProjectEnvironment|null $environment
      * @param string[] $segments
@@ -245,24 +179,88 @@ class Environment
      */
     public function getAppUrl(ProjectEnvironment $environment = null, array $segments = []): string
     {
-        $workspaceId = $this->getProject()->workspaceId;
-        $projectKey = $this->getProject()->key;
 
-        if (\is_null($environment)) {
-            $environment = $this->getProjectEnvironment();
-        }
-        $environmentKey = $environment->key;
 
         $urlSegments = [
             'https://app.attlaz.com',
-            $workspaceId,
-            $projectKey,
-            $environmentKey,
-
         ];
+        if ($this->isInitialized) {
+            $urlSegments[] = $this->getProject()->workspaceId;
+            $urlSegments[] = $this->getProject()->key;
 
+            if (\is_null($environment)) {
+                $environment = $this->getProjectEnvironment();
+            }
+            $urlSegments[] = $environment->key;
+        }
         $urlSegments = \array_merge($urlSegments, $segments);
 
         return \implode('/', $urlSegments);
+    }
+
+    private function checkIfInitialized(): void
+    {
+        $requiredEnvValues = [
+            self::ENV_PROJECT_ENVIRONMENT,
+            //  self::ENV_API_ENDPOINT,
+//            self::ENV_API_CLIENT_ID,
+//            self::ENV_API_CLIENT_SECRET,
+        ];
+        foreach ($requiredEnvValues as $requiredEnvValue) {
+            $value = $this->getEnvValue($requiredEnvValue, '');
+            if ($value === '') {
+                $this->isInitialized = false;
+
+                return;
+            }
+        }
+        $this->isInitialized = true;
+    }
+
+    private function loadEnvSettingsFromFile(): void
+    {
+        try {
+
+            $dotenv = Dotenv::createMutable($this->projectRootPath, '.env');
+            $dotenv->load();
+
+            $this->isInitialized = true;
+        } catch (InvalidPathException $ex) {
+
+            $this->isInitialized = false;
+        }
+    }
+
+    private function getEnvValue(string $key, string|null $fallback = null): string|null
+    {
+        $value = null;
+
+        if (\array_key_exists($key, $_SERVER)) {
+            $value = $_SERVER[$key];
+        }
+
+        if ($value === null) {
+//            if ($fallback === null) {
+//                throw new \Exception('Environment variable "' . $key . '" not defined');
+//            } else {
+            return $fallback;
+//            }
+        }
+
+        if (!\is_string($value)) {
+            $value = (string)$value;
+        }
+
+        return $value;
+    }
+
+    private function getDIFileLocation(string $projectRootPath): string|null
+    {
+        $diFileLocation = FileSystem::joinPath($projectRootPath, self::SOURCE_LOCATION, self::DI_FILE_LOCATION);
+        $x = realpath($diFileLocation);
+        if ($x === false) {
+            return null;
+        }
+        return $x;
     }
 }
