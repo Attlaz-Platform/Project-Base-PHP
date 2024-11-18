@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\FlowRun;
 
 use Attlaz\Client;
+use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Command\CommandManager;
 use Attlaz\Project\Model\FlowRunRequest;
@@ -35,7 +36,7 @@ class AbstractFlowRunHandler
 
     public function execute(FlowRunRequest $flowRunRequest): int
     {
-        if ($this->environment->getProjectEnvironment()->isLocal) {
+        if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
             $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Running');
         }
 
@@ -44,14 +45,14 @@ class AbstractFlowRunHandler
         $this->sendResponse($flowRunResult);
 
         if ($flowRunResult->getSuccess()) {
-            if ($this->environment->getProjectEnvironment()->isLocal) {
+            if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
                 $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Complete');
             }
 
             return 0;
         }
 
-        if ($this->environment->getProjectEnvironment()->isLocal) {
+        if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
             $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Failed');
         }
 

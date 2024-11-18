@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
+use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\FlowRun\AbstractFlowRunHandler;
 use Attlaz\Project\Model\FlowRunRequest;
@@ -74,7 +75,7 @@ class RunFlow extends Command
         $flowRunId = $this->getFlowRunIdFromInput($input);
 
         if (\is_null($flowRunId)) {
-            if ($this->environment->getProjectEnvironment()->isLocal) {
+            if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
                 //TODO: only when local and no execution is given
                 $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
                 $flowRunId = $this->client->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);

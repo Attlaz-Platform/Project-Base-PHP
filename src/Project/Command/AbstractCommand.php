@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\Client as AttlazClient;
+use Attlaz\ConnectionPool\ConnectionPool;
+use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
-use Attlaz\ConnectionPool\ConnectionPool;
 use Attlaz\Project\Helper\OutputHelper;
 use Attlaz\Project\Helper\Profiler;
 use Attlaz\Project\Model\FlowRunRequest;
@@ -24,7 +25,6 @@ use Psr\Log\LoggerInterface;
 abstract class AbstractCommand
 {
     public const INVOKE_METHOD = 'execute';
-    private AttlazClient $attlazClient;
     protected LoggerInterface $logger;
     protected Environment $environment;
     protected Config $config;
@@ -33,6 +33,7 @@ abstract class AbstractCommand
     protected OutputHelper $outputHelper;
     protected ConnectionPool $connectionPool;
     protected Profiler $profiler;
+    private AttlazClient $attlazClient;
 
     public function __construct(CommandContext $context)
     {
@@ -106,7 +107,7 @@ abstract class AbstractCommand
 
         if (\is_null($projectEnvironmentId) || $projectEnvironmentId === $projectEnvironment->id) {
             $projectEnvironmentId = $projectEnvironment->id;
-            $executeLocal = $projectEnvironment->isLocal;
+            $executeLocal = $projectEnvironment->type === ProjectEnvironment::TYPE_LOCAL;
         }
 
         if ($executeLocal) {
