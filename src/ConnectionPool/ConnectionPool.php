@@ -71,7 +71,7 @@ class ConnectionPool implements AdapterConnectionPool
         try {
             $this->client->getConnectionEndpoint()->createConnectionEvent($connectionDefinition->getId(), 'used');
         } catch (\Throwable $ex) {
-            $this->logger->warning('Unable to mark connection as used',['error'=> $ex]);
+            $this->logger->warning('Unable to mark connection as used', ['error' => $ex]);
         }
 
         $this->logger->info('Use connection `' . $connectionDefinition->getName() . '`');
