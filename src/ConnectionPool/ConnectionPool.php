@@ -67,6 +67,13 @@ class ConnectionPool implements AdapterConnectionPool
                 $this->logger->warning('Adapter connection should be `' . $className . '`, got `' . get_class($adapterConnection) . '` instead');
             }
         }
+
+        try {
+            $this->client->getConnectionEndpoint()->createConnectionEvent($connectionDefinition->getId(), 'used');
+        } catch (\Throwable $ex) {
+            $this->logger->warning('Unable to mark connection as used',['error'=> $ex]);
+        }
+
         $this->logger->info('Use connection `' . $connectionDefinition->getName() . '`');
         return $adapterConnection;
 
