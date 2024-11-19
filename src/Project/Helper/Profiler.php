@@ -9,9 +9,6 @@ use Psr\Log\LoggerInterface;
 
 class Profiler
 {
-    /**
-     * @var LoggerInterface
-     */
     private LoggerInterface|null $logger = null;
 
     private array $profiles = [];
@@ -41,7 +38,7 @@ class Profiler
         }
         $fullKey = $this->currentProfile === null ? $key : $this->currentProfile['path'] . '::' . $key;
 
-        if (isset($this->profiles[$fullKey])) {
+        if (isset($this->profiles[$fullKey]) && $this->logger !== null) {
             $this->logger->warning('Unable to start profile `' . $fullKey . '`: already started');
         }
         $profile = [
@@ -72,8 +69,8 @@ class Profiler
 
         if (!isset($this->profiles[$fullKey])) {
 
-            echo 'Unable to find ' . $fullKey . PHP_EOL;
-            var_dump(array_keys($this->profiles));
+//            echo 'Unable to find ' . $fullKey . PHP_EOL;
+//            var_dump(array_keys($this->profiles));
             //$this->logger->warning('Unable to end profile `' . $key . '`: not found (make sure it is started)');
             return;
         }
@@ -94,7 +91,7 @@ class Profiler
 
     public function getProfile(string $key): array
     {
-        if (!isset($this->profiles[$key])) {
+        if (!isset($this->profiles[$key]) && $this->logger !== null) {
             $this->logger->warning('Unable to get profile `' . $key . '`: not found (make sure it is started)');
         }
         return $this->profiles[$key];
