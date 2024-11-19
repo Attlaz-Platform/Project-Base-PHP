@@ -59,6 +59,9 @@ class Profiler
     {
         $end = microtime(true);
 
+        if ($this->currentProfile === null) {
+            return;
+        }
         // Shouldn't this always be the case?
         if ($key === $this->currentProfile['key']) {
             $fullKey = $this->currentProfile['path'] . '::' . $key;
@@ -89,10 +92,11 @@ class Profiler
         $this->currentProfile = $currentProfileParent;
     }
 
-    public function getProfile(string $key): array
+    public function getProfile(string $key): array|null
     {
         if (!isset($this->profiles[$key]) && $this->logger !== null) {
             $this->logger->warning('Unable to get profile `' . $key . '`: not found (make sure it is started)');
+            return null;
         }
         return $this->profiles[$key];
     }

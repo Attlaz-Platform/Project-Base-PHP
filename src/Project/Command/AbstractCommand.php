@@ -46,6 +46,7 @@ abstract class AbstractCommand
         $this->connectionPool = $context->getConnectionPool();
         $this->profiler = $context->getProfiler();
 
+
         $this->attlazClient = $this->dependencyManager->get(AttlazClient::class);
     }
 
@@ -73,7 +74,7 @@ abstract class AbstractCommand
         $this->profiler->endProfile($key);
     }
 
-    public function getProfile(string $key): array
+    public function getProfile(string $key): array|null
     {
         return $this->profiler->getProfile($key);
     }
