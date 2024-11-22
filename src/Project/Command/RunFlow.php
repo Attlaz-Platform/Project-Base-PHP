@@ -103,6 +103,13 @@ class RunFlow extends Command
         }
 
         $arguments = $flowRun['arguments'];
+        if (is_array($arguments)) {
+            return $arguments;
+        }
+        if (is_null($arguments)) {
+            return [];
+        }
+        // TODO: json_decode is no longer needed,
         return json_decode($arguments, true);
     }
 
