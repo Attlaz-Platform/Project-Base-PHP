@@ -15,7 +15,7 @@ class ConnectionDefinition implements Definition, SelfResolvingDefinition
     private string $name = '';
 
 
-    public function __construct(private readonly string $connectionIdentifier)
+    public function __construct(private readonly string $connectionIdentifier, private readonly string $connectionClass = AdapterConnectionInstance::class)
     {
 
     }
@@ -40,7 +40,7 @@ class ConnectionDefinition implements Definition, SelfResolvingDefinition
         /** @var ConnectionPool $connectionPool */
         $connectionPool = $container->get(ConnectionPool::class);
 
-        return $connectionPool->getConnection($this->connectionIdentifier, AdapterConnectionInstance::class);
+        return $connectionPool->getConnection($this->connectionIdentifier, $this->connectionClass);
 
     }
 
