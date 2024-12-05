@@ -12,6 +12,7 @@ use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Client;
 use Attlaz\ConnectionPool\Model\Error\ConnectionNotFoundError;
 use Attlaz\Model\AdapterConnection;
+use Attlaz\Model\AdapterConnectionConfigurationValue;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use DI\Container;
@@ -69,6 +70,7 @@ class ConnectionPool implements AdapterConnectionPool
         }
 
         try {
+            // TODO: add data to event (which flow, flow-run, etc)
             $this->client->getConnectionEndpoint()->createConnectionEvent($connectionDefinition->getId(), 'used');
         } catch (\Throwable $ex) {
             $this->logger->warning('Unable to mark connection as used', ['error' => $ex]);
@@ -128,21 +130,43 @@ class ConnectionPool implements AdapterConnectionPool
         $configValues = $this->client->getConnectionEndpoint()->getConnectionConfiguration($adapterConnection->getId());
 
         foreach ($configurations as $configuration) {
-            $value = null;
-            foreach ($configValues as $configValue) {
-                if ($configValue->getAdapterConfigurationId() === $configuration->getId()) {
-                    $value = $configValue->getValue();
-                }
-            }
-            if ($value !== null) {
-                $value = $this->config->patchConfigValue($value);
+            $value = $this->getValue($configValues, $configuration->getId());
 
-                $result->setConfiguration($configuration->getKey(), $value);
+            if ($value !== null) {
+                if (is_string($value)) {
+                    $value = $this->config->patchConfigValue($value);
+                    $result->setConfiguration($configuration->getKey(), $value);
+                } else {
+                    if (str_starts_with($configuration->getType(), 'oauth:')) {
+                        // Parse oauth information
+                        $value = $value['access_token'];
+                        $result->setConfiguration($configuration->getKey(), $value);
+                    } else {
+                        throw new \Exception('Invalid configuration');
+                    }
+                }
+
+
             }
 
         }
 
         return $result;
+    }
+
+    /**
+     * @param AdapterConnectionConfigurationValue[] $configValues
+     * @param $configurationId
+     * @return null
+     */
+    private function getValue(array $configValues, string $configurationId)
+    {
+        foreach ($configValues as $configValue) {
+            if ($configValue->getAdapterConfigurationId() === $configurationId) {
+                return $configValue->getValue();
+            }
+        }
+        return null;
     }
 
     /**
