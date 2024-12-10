@@ -18,7 +18,7 @@ class RunTests extends Command
 
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('test:run')
             ->setDescription('Run tests')
@@ -26,7 +26,7 @@ class RunTests extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         return 1;
     }

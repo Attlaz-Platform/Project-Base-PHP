@@ -109,7 +109,7 @@ class CommandParameterDefinition
         return $this->required;
     }
 
-    public function getDefault()
+    public function getDefault(): mixed
     {
         return $this->default;
     }

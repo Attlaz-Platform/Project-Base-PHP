@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
-use Attlaz\Project\Command\CommandDefinition;
-use Attlaz\Project\Command\CommandManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableCell;
@@ -19,14 +17,14 @@ class ListFlows extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('flow:list')
             ->setDescription('List flows.')
             ->setHelp('This command allows you to list available flows');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('<info>Available commands:</info>');
         $commands = $this->commandManager->getCommandDefinitions();

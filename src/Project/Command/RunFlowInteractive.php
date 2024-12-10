@@ -28,7 +28,7 @@ class RunFlowInteractive extends RunFlow
         parent::__construct($flowRunHandler, $client, $environment, $logger);
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('flow:run:interactive')
             ->setDescription('Run flow interactively.')
@@ -36,7 +36,7 @@ class RunFlowInteractive extends RunFlow
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $commands = $this->commandManager->getCommandDefinitions();

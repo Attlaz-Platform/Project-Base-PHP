@@ -10,7 +10,7 @@ class CommandDefinition
     public string $className;
     private array $parameters = [];
 
-    public function addParameter(CommandParameterDefinition $parameterDefinition)
+    public function addParameter(CommandParameterDefinition $parameterDefinition): void
     {
         $this->parameters[] = $parameterDefinition;
     }

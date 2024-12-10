@@ -24,7 +24,7 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractCommand
 {
-    public const INVOKE_METHOD = 'execute';
+    public const string INVOKE_METHOD = 'execute';
     protected LoggerInterface $logger;
     protected Environment $environment;
     protected Config $config;

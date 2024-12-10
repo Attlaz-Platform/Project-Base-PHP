@@ -34,7 +34,7 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
         string             $key,
         ContainerInterface $container,
         string|null        $datatype = null
-    )
+    ): mixed
     {
         /** @var Config $config */
         $config = $container->get(Config::class);

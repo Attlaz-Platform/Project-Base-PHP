@@ -24,11 +24,12 @@ class ConfigList extends Command
         protected readonly Environment     $environment,
         protected readonly Client          $attlazClient,
         protected readonly LoggerInterface $logger
-    ) {
+    )
+    {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('config:list')
             ->setDescription('List configuration')
@@ -56,7 +57,7 @@ class ConfigList extends Command
 //    }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $environments = $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironments($this->environment->getProject()->id);

@@ -83,7 +83,7 @@ class StorageEngine
         return $this->attlazClient->getStorageEndpoint()->getPoolKeys($this->environment->getProjectEnvironment()->id, $this->storageType);
     }
 
-    public function clearPool(string $pool)
+    public function clearPool(string $pool): bool
     {
         return $this->attlazClient->getStorageEndpoint()->clearPool($this->environment->getProjectEnvironment()->id, $this->storageType, $pool);
     }

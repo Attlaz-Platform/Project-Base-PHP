@@ -24,7 +24,7 @@ class RequestDeploy extends Command
 
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('deploy:request')
             ->setAliases([
@@ -38,7 +38,7 @@ class RequestDeploy extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             //TODO: get environment by id or key

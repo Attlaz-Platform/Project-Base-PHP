@@ -159,7 +159,7 @@ class ConnectionPool implements AdapterConnectionPool
      * @param $configurationId
      * @return null
      */
-    private function getValue(array $configValues, string $configurationId)
+    private function getValue(array $configValues, string $configurationId): mixed
     {
         foreach ($configValues as $configValue) {
             if ($configValue->getAdapterConfigurationId() === $configurationId) {

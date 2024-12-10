@@ -30,7 +30,7 @@ class SystemSetup extends Command
         $this->logger = $logger;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('system:setup')
             ->setDescription('Setup the system')
@@ -38,7 +38,7 @@ class SystemSetup extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $values = [];

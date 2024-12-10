@@ -36,7 +36,7 @@ class RunFlow extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('flow:run')
             ->setDescription('Run flow.')
@@ -48,7 +48,7 @@ class RunFlow extends Command
 
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $flowRunRequest = $this->getRequestFromInput($input);

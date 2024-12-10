@@ -17,7 +17,7 @@ class SystemStatus extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('project:status')
             ->setDescription('Get the status')
@@ -25,7 +25,7 @@ class SystemStatus extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $io->title('Project status');

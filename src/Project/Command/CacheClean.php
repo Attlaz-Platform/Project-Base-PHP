@@ -24,7 +24,7 @@ class CacheClean extends Command
 
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('cache:clean')
             ->setAliases([
@@ -36,7 +36,7 @@ class CacheClean extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $cache = $this->storageManager->cache;

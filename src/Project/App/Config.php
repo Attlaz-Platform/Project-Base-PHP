@@ -17,7 +17,7 @@ class Config implements LoggerAwareInterface, ConfigProvider
 {
     use LoggerAwareTrait;
 
-    private const CONFIG_CACHE_PREFIX_KEY = 'config_';
+    private const string CONFIG_CACHE_PREFIX_KEY = 'config_';
     private StorageManager $storageManager;
     private Client $client;
     private Environment $environment;

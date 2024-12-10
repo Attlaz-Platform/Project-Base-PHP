@@ -180,7 +180,7 @@ class Project
         $fpm->run();
     }
 
-    private function initDI(string|null $definitionsFile = null)
+    private function initDI(string|null $definitionsFile = null): void
     {
         if (!\is_null($definitionsFile) && !\file_exists($definitionsFile) && !\is_readable($definitionsFile)) {
             $strErrorMessage = 'Unable to add definitions, ';
