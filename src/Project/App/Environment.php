@@ -177,7 +177,7 @@ class Environment
      * @param string[] $segments
      * @return string
      */
-    public function getAppUrl(ProjectEnvironment $environment = null, array $segments = []): string
+    public function getAppUrl(ProjectEnvironment|null $environment = null, array $segments = []): string
     {
 
 

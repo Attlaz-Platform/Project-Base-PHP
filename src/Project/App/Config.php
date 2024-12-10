@@ -17,15 +17,14 @@ class Config implements LoggerAwareInterface, ConfigProvider
 {
     use LoggerAwareTrait;
 
+    private const CONFIG_CACHE_PREFIX_KEY = 'config_';
     private StorageManager $storageManager;
     private Client $client;
     private Environment $environment;
     private ConfigHelper $configHelper;
 
-    private array $configuration = [];
-
     //private const CONFIG_CACHE_POOL = 'config';
-    private const CONFIG_CACHE_PREFIX_KEY = 'config_';
+    private array $configuration = [];
 
     public function __construct(
         StorageManager $storageManager,
@@ -40,7 +39,7 @@ class Config implements LoggerAwareInterface, ConfigProvider
         $this->configHelper = $configHelper;
     }
 
-    public function loadConfig(ProjectEnvironment $projectEnvironment = null): void
+    public function loadConfig(ProjectEnvironment|null $projectEnvironment = null): void
     {
         if ($this->environment->isInitialized()) {
             if (\is_null($projectEnvironment)) {
@@ -49,6 +48,61 @@ class Config implements LoggerAwareInterface, ConfigProvider
 
             $this->configuration = $this->parseConfig($projectEnvironment);
         }
+    }
+
+    public function patchConfigValue(string $value): string
+    {
+        return $this->configHelper->patchValue($value, $this->getConfigVariables());
+    }
+
+    public function has(string $key): bool
+    {
+        return isset($this->configuration[$key]);
+    }
+
+    public function get(string $key, string|null $datatype = null): mixed
+    {
+        $configValue = $this->getConfig($key);
+        if (\is_null($configValue)) {
+            throw new \Exception('Unable to resolve config value for "' . $key . '"');
+        }
+        $value = $configValue->value;
+        if (!\is_null($datatype)) {
+            switch ($datatype) {
+                case 'string':
+                    break;
+                case 'int':
+                case 'integer':
+                    $value = (int)$value;
+                    break;
+                default:
+                    throw new \Exception('Unable to cast config value to "' . $datatype . '": unknown type');
+            }
+        }
+
+        return $value;
+    }
+
+    public function getConfig(string $key): ?ProjectConfig
+    {
+        if (isset($this->configuration[$key])) {
+            return $this->configuration[$key];
+        }
+
+        return null;
+    }
+
+    /**
+     * @return ProjectConfig[]
+     */
+    public function getConfigValues(ProjectEnvironment|null $projectEnvironment = null): array
+    {
+        if (\is_null($projectEnvironment)) {
+            $projectEnvironment = $this->environment->getProjectEnvironment();
+        }
+        $result = $this->parseConfig($projectEnvironment);
+
+        return \array_values($result);
     }
 
     private function parseConfig(ProjectEnvironment $projectEnvironment): array
@@ -121,11 +175,6 @@ class Config implements LoggerAwareInterface, ConfigProvider
         return $configVariables;
     }
 
-    public function patchConfigValue(string $value): string
-    {
-        return $this->configHelper->patchValue($value, $this->getConfigVariables());
-    }
-
     /**
      * @param ProjectEnvironment $projectEnvironment
      * @return ProjectConfig[]
@@ -145,56 +194,6 @@ class Config implements LoggerAwareInterface, ConfigProvider
         }
 
         return $result;
-    }
-
-    public function has(string $key): bool
-    {
-        return isset($this->configuration[$key]);
-    }
-
-    public function get(string $key, string $datatype = null): mixed
-    {
-        $configValue = $this->getConfig($key);
-        if (\is_null($configValue)) {
-            throw new \Exception('Unable to resolve config value for "' . $key . '"');
-        }
-        $value = $configValue->value;
-        if (!\is_null($datatype)) {
-            switch ($datatype) {
-                case 'string':
-                    break;
-                case 'int':
-                case 'integer':
-                    $value = (int)$value;
-                    break;
-                default:
-                    throw new \Exception('Unable to cast config value to "' . $datatype . '": unknown type');
-            }
-        }
-
-        return $value;
-    }
-
-    public function getConfig(string $key): ?ProjectConfig
-    {
-        if (isset($this->configuration[$key])) {
-            return $this->configuration[$key];
-        }
-
-        return null;
-    }
-
-    /**
-     * @return ProjectConfig[]
-     */
-    public function getConfigValues(ProjectEnvironment $projectEnvironment = null): array
-    {
-        if (\is_null($projectEnvironment)) {
-            $projectEnvironment = $this->environment->getProjectEnvironment();
-        }
-        $result = $this->parseConfig($projectEnvironment);
-
-        return \array_values($result);
     }
 
     //    private function formatProjectEnvironmentIdentifier($forceEnvironmentId = null): ProjectEnvironment

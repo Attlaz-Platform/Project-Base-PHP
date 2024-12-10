@@ -20,10 +20,26 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
     private string $key;
     private string|null $datatype;
 
-    public function __construct(string $key, string $datatype = null)
+    public function __construct(string $key, string|null $datatype = null)
     {
         $this->key = $key;
         $this->datatype = $datatype;
+    }
+
+    /**
+     * Resolve a string expression.
+     */
+    public static function resolveExpression(
+        string             $entryName,
+        string             $key,
+        ContainerInterface $container,
+        string|null        $datatype = null
+    )
+    {
+        /** @var Config $config */
+        $config = $container->get(Config::class);
+
+        return $config->get($key, $datatype);
     }
 
     public function getName(): string
@@ -62,21 +78,5 @@ class ConfigDefinition implements Definition, SelfResolvingDefinition
     public function __toString(): string
     {
         return 'Config: ' . $this->key;
-    }
-
-    /**
-     * Resolve a string expression.
-     */
-    public static function resolveExpression(
-        string             $entryName,
-        string             $key,
-        ContainerInterface $container,
-        string             $datatype = null
-    )
-    {
-        /** @var Config $config */
-        $config = $container->get(Config::class);
-
-        return $config->get($key, $datatype);
     }
 }

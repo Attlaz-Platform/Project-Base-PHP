@@ -11,7 +11,7 @@ class FlowRunRequest
     private array $arguments;
     private string|null $flowRunId;
 
-    public function __construct(string $flowId, array $arguments = [], string $flowRunId = null)
+    public function __construct(string $flowId, array $arguments = [], string|null $flowRunId = null)
     {
         if (empty($flowId)) {
             throw new \InvalidArgumentException('Flow id cannot be empty');

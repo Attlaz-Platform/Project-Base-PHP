@@ -46,7 +46,7 @@ class Project
     private Profiler $profiler;
 
 
-    public function __construct(private readonly string $projectRootPath, Environment $environment = null)
+    public function __construct(private readonly string $projectRootPath, Environment|null $environment = null)
     {
         $this->profiler = new Profiler();
 
@@ -180,7 +180,7 @@ class Project
         $fpm->run();
     }
 
-    private function initDI(string $definitionsFile = null)
+    private function initDI(string|null $definitionsFile = null)
     {
         if (!\is_null($definitionsFile) && !\file_exists($definitionsFile) && !\is_readable($definitionsFile)) {
             $strErrorMessage = 'Unable to add definitions, ';

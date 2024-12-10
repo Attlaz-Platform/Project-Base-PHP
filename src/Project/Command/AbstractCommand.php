@@ -96,9 +96,9 @@ abstract class AbstractCommand
 //    }
 
     final protected function requestFlowRun(
-        string $flowId,
-        array  $arguments = [],
-        string $projectEnvironmentId = null
+        string      $flowId,
+        array       $arguments = [],
+        string|null $projectEnvironmentId = null
     ): FlowRunResult
     {
         $executeLocal = false;
@@ -120,9 +120,9 @@ abstract class AbstractCommand
     }
 
     private function executeLocal(
-        string $flowId,
-        array  $arguments = [],
-        string $projectEnvironmentId = null
+        string      $flowId,
+        array       $arguments = [],
+        string|null $projectEnvironmentId = null
     ): FlowRunResult
     {
         $executionId = $this->attlazClient->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
