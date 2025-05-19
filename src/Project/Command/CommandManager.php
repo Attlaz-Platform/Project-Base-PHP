@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
+use Attlaz\Model\FlowRun;
 use Attlaz\Model\Log\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
@@ -40,8 +41,8 @@ class CommandManager
     public function runFlow(FlowRunRequest $request): FlowRunResult
     {
         //TODO: make it possible to switch between app/staging app
-        $flowKey = $request->getFlowId();
-        $flowRunId = $request->getRunId();
+        $flowKey = $request->getFlowRun()->flowId;
+        $flowRunId = $request->getFlowRun()->id;
 
         $urlSegments = [
             'flows',
@@ -52,7 +53,7 @@ class CommandManager
         $dashboardUrl = $this->environment->getAppUrl(null, $urlSegments);
         // Only log this to console
         $this->logger->info('More info: ' . $dashboardUrl, [AttlazHandler::CONTEXT_SKIP => true]);
-        $this->enableExecutionLogging($request->getRunId(), $request->verboseLogging);
+        $this->enableExecutionLogging($request->getFlowRun(), $request->verboseLogging);
 
         $context = [];
         if (count($request->getArguments()) > 0) {
@@ -74,14 +75,14 @@ class CommandManager
                 AbstractCommand::INVOKE_METHOD,
             ], $parameterValues);
 
-            $result = new FlowRunResult($request->getFlowId(), $result, true);
+            $result = new FlowRunResult($request->getFlowRun()->flowId, $result, true);
 
             $this->logger->info('Execution complete', $context);
 
         } catch (\Throwable $ex) {
             $context['error'] = $ex;
             $this->logger->error('Execution failed (' . $ex->getMessage() . ')', $context);
-            $result = new FlowRunResult($request->getFlowId(), $ex->getMessage(), false);
+            $result = new FlowRunResult($request->getFlowRun()->flowId, $ex->getMessage(), false);
         }
 
         $this->disableExecutionLogging();
@@ -98,7 +99,7 @@ class CommandManager
         return $this->discovery->getCommands();
     }
 
-    private function enableExecutionLogging(string $executionId, bool $verboseLogging): void
+    private function enableExecutionLogging(FlowRun $flowRun, bool $verboseLogging): void
     {
         if ($this->logger instanceof Logger) {
             $handlers = $this->logger->getHandlers();
@@ -106,7 +107,7 @@ class CommandManager
                 if ($handler instanceof AttlazHandler) {
                     $this->previousLogStreamId = $handler->getLogStreamId();
                     $this->previousLogLevel = $handler->getLevel();
-                    $handler->setLogStreamId(new LogStreamId('flow_run:' . $executionId));
+                    $handler->setLogStreamId($flowRun->logStreamId);
                     $handler->setLevel($verboseLogging ? Level::Debug : Level::Info);
                 }
             }
@@ -131,11 +132,11 @@ class CommandManager
         $commands = $this->discovery->getCommands();
 
         foreach ($commands as $command) {
-            if ($command->flowId === $flowRunRequest->getFlowId()) {
+            if ($command->flowId === $flowRunRequest->getFlowRun()->flowId) {
                 return $command;
             }
         }
-        throw new \Exception('No command found for flow "' . $flowRunRequest->getFlowId() . '"');
+        throw new \Exception('No command found for flow "' . $flowRunRequest->getFlowRun()->flowId . '"');
     }
 
     private function getMethodArguments(FlowRunRequest $request, CommandDefinition $commandDefinition): array

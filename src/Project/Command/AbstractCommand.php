@@ -24,7 +24,7 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractCommand
 {
-    public const string INVOKE_METHOD = 'execute';
+    public const  INVOKE_METHOD = 'execute';
     protected LoggerInterface $logger;
     protected Environment $environment;
     protected Config $config;
@@ -125,9 +125,9 @@ abstract class AbstractCommand
         string|null $projectEnvironmentId = null
     ): FlowRunResult
     {
-        $executionId = $this->attlazClient->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
+        $flowRun = $this->attlazClient->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
 
-        $request = new FlowRunRequest($flowId, $arguments, $executionId);
+        $request = new FlowRunRequest($flowRun, $arguments);
         /** @var CommandManager $commandManager */
         $commandManager = $this->dependencyManager->get(CommandManager::class);
 

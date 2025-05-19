@@ -74,20 +74,25 @@ class RunFlow extends Command
 
         $flowRunId = $this->getFlowRunIdFromInput($input);
 
+        $flowRun = null;
         if (\is_null($flowRunId)) {
             if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
                 //TODO: only when local and no execution is given
                 $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
-                $flowRunId = $this->client->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
+                $flowRun = $this->client->getFlowEndpoint()->createFlowRun($flowId, $projectEnvironmentId);
             } else {
                 throw new \Exception('Execution must be defined or environment should be local');
             }
-        } elseif ($this->areArgumentsInStorage($arguments)) {
-            $arguments = $this->getArgumentsFromStorage($flowRunId);
+        } else {
+            $flowRun = $this->client->getFlowEndpoint()->getFlowRun($flowRunId);
+            $arguments = $flowRun->arguments;
+            //  $arguments = $this->getArgumentsFromStorage($flowRunId);
 
         }
-
-        return new FlowRunRequest($flowId, $arguments, $flowRunId);
+        if ($flowRun === null) {
+            // throw error
+        }
+        return new FlowRunRequest($flowRun, $arguments);
     }
 
     /**

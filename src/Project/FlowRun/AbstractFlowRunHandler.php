@@ -37,7 +37,7 @@ class AbstractFlowRunHandler
     public function execute(FlowRunRequest $flowRunRequest): int
     {
         if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
-            $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Running');
+            $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getFlowRun()->id, 'Running');
         }
 
         $flowRunResult = $this->commandManager->runFlow($flowRunRequest);
@@ -46,14 +46,14 @@ class AbstractFlowRunHandler
 
         if ($flowRunResult->getSuccess()) {
             if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
-                $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Complete');
+                $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getFlowRun()->id, 'Complete');
             }
 
             return 0;
         }
 
         if ($this->environment->getProjectEnvironment()->type === ProjectEnvironment::TYPE_LOCAL) {
-            $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getRunId(), 'Failed');
+            $this->client->getFlowEndpoint()->updateFlowRun($flowRunRequest->getFlowRun()->id, 'Failed');
         }
 
         //TODO: change exit code based on exception type

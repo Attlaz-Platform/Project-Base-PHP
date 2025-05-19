@@ -4,33 +4,26 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
+use Attlaz\Model\FlowRun;
+
 class FlowRunRequest
 {
     public bool $verboseLogging = false;
-    private string $flowId;
     private array $arguments;
     private string|null $flowRunId;
 
-    public function __construct(string $flowId, array $arguments = [], string|null $flowRunId = null)
+    public function __construct(private readonly FlowRun $flowRun, array $arguments = [])
     {
-        if (empty($flowId)) {
-            throw new \InvalidArgumentException('Flow id cannot be empty');
-        }
-
-        $this->flowId = $flowId;
         $this->arguments = [];
         foreach ($arguments as $key => $value) {
             $key = $this->formatArgumentName($key);
             $this->arguments[$key] = $value;
         }
-
-
-        $this->flowRunId = $flowRunId;
     }
 
-    public function getFlowId(): string
+    public function getFlowRun(): FlowRun
     {
-        return $this->flowId;
+        return $this->flowRun;
     }
 
     public function getArguments(): array
@@ -49,12 +42,7 @@ class FlowRunRequest
         $name = $this->formatArgumentName($name);
         return $this->arguments[$name];
     }
-
-    public function getRunId(): string
-    {
-        return $this->flowRunId;
-    }
-
+    
     private function formatArgumentName(string $input): string
     {
         // Convert PascalCase to snake_case
