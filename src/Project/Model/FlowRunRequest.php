@@ -10,7 +10,7 @@ class FlowRunRequest
 {
     public bool $verboseLogging = false;
     private array $arguments;
-    private string|null $flowRunId;
+    public string|null $flowRunId;
 
     public function __construct(private readonly FlowRun $flowRun, array $arguments = [])
     {
@@ -42,7 +42,7 @@ class FlowRunRequest
         $name = $this->formatArgumentName($name);
         return $this->arguments[$name];
     }
-    
+
     private function formatArgumentName(string $input): string
     {
         // Convert PascalCase to snake_case

@@ -95,7 +95,7 @@ class RunFlow extends Command
     /**
      * @param string $flowRunId
      * @return array
-     * @throws JsonException
+     * @throws \JsonException
      */
     private function getArgumentsFromStorage(string $flowRunId): array
     {
@@ -112,7 +112,7 @@ class RunFlow extends Command
             return [];
         }
         // TODO: json_decode is no longer needed,
-        return json_decode($arguments, true);
+        return json_decode($arguments, true, 512, JSON_THROW_ON_ERROR);
     }
 
     private function areArgumentsInStorage(array $inputArguments): bool

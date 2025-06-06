@@ -31,6 +31,8 @@ class FPM extends AbstractFlowRunHandler
 
         $flowRunId = $values['flowRunId'];
 
-        return new FlowRunRequest($flowId, $arguments, $flowRunId);
+        $request = new FlowRunRequest($flowId, $arguments);
+        $request->flowRunId = $flowRunId;
+        return $request;
     }
 }

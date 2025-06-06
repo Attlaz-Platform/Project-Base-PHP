@@ -93,7 +93,7 @@ class RunFlowInteractive extends RunFlow
                 $parameterValues[$parameter->getName()] = $parameterValue;
             }
 
-            $flowRunRequest = new FlowRunRequest($flowId, $parameterValues, 'soe');
+            $flowRunRequest = new FlowRunRequest($flowId, $parameterValues);
 
             return $this->flowRunHandler->execute($flowRunRequest);
         } catch (\Throwable $ex) {

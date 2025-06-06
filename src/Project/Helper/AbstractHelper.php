@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Helper;
 
-use Attlaz\Project\App\Config;
 use Attlaz\ConnectionPool\ConnectionPool;
+use Attlaz\Project\App\Config;
 use Attlaz\Project\Storage\StorageManager;
 use DI\Container;
 use Psr\Log\LoggerInterface;
 
 class AbstractHelper
 {
-    protected LoggerInterface $logger;
-    protected Config $config;
-    protected StorageManager $storageManager;
-    protected Container $dependencyManager;
-    protected OutputHelper $outputHelper;
-    protected ConnectionPool $connectionPool;
-    protected Profiler $profiler;
+    protected readonly LoggerInterface $logger;
+    protected readonly Config $config;
+    protected readonly StorageManager $storageManager;
+    protected readonly Container $dependencyManager;
+    protected readonly OutputHelper $outputHelper;
+    protected readonly ConnectionPool $connectionPool;
+    protected readonly Profiler $profiler;
 
     public function __construct(HelperContext $context)
     {
