@@ -12,7 +12,6 @@ use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Model\FlowRunResult;
 use Attlaz\Project\Serialization\SerializeFlowRunResult;
 use Psr\Log\LoggerInterface;
-use function Safe\fwrite;
 
 class AbstractFlowRunHandler
 {

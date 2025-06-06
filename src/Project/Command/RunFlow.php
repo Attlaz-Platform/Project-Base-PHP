@@ -10,14 +10,11 @@ use Attlaz\Project\App\Environment;
 use Attlaz\Project\FlowRun\AbstractFlowRunHandler;
 use Attlaz\Project\Model\FlowRunRequest;
 use Psr\Log\LoggerInterface;
-use Safe\Exceptions\JsonException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use function Safe\base64_decode;
-use function Safe\json_decode;
 
 class RunFlow extends Command
 {
