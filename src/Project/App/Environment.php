@@ -240,11 +240,7 @@ class Environment
         }
 
         if ($value === null) {
-//            if ($fallback === null) {
-//                throw new \Exception('Environment variable "' . $key . '" not defined');
-//            } else {
             return $fallback;
-//            }
         }
 
         if (!\is_string($value)) {
