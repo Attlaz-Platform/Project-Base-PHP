@@ -56,7 +56,7 @@ class CommandManager
         $this->enableExecutionLogging($request->getFlowRun(), $request->verboseLogging);
 
         $context = [];
-        if (count($request->getArguments()) > 0) {
+        if (\count($request->getArguments()) > 0) {
             $context['arguments'] = $request->getArguments();
         }
         $this->logger->info('Execution started', $context);
@@ -70,7 +70,7 @@ class CommandManager
 
             $commandInstance->init();
 
-            $result = call_user_func_array([
+            $result = \call_user_func_array([
                 $commandInstance,
                 AbstractCommand::INVOKE_METHOD,
             ], $parameterValues);
@@ -83,6 +83,13 @@ class CommandManager
             $context['error'] = $ex;
             $this->logger->error('Execution failed (' . $ex->getMessage() . ')', $context);
             $result = new FlowRunResult($request->getFlowRun()->flowId, $ex->getMessage(), false);
+        } finally {
+            // Clean up all connections opened during this flow run
+            if (isset($commandInstance)) {
+                $commandInstance->getConnectionPool()->disconnectAll();
+            }
+
+
         }
 
         $this->disableExecutionLogging();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Model;
 
-use Attlaz\ConnectionPool\ConnectionPool;
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Helper\OutputHelper;
@@ -16,14 +16,14 @@ use Psr\Log\LoggerInterface;
 class Context
 {
     public function __construct(
-        protected LoggerInterface $logger,
-        protected Environment     $environment,
-        protected Config          $config,
-        protected StorageManager  $storageManager,
-        protected Container       $dependencyManager,
-        protected OutputHelper    $outputHelper,
-        protected ConnectionPool  $connectionPool,
-        protected Profiler        $profiler
+        protected LoggerInterface       $logger,
+        protected Environment           $environment,
+        protected Config                $config,
+        protected StorageManager        $storageManager,
+        protected Container             $dependencyManager,
+        protected OutputHelper          $outputHelper,
+        protected AdapterConnectionPool $connectionPool,
+        protected Profiler              $profiler
     )
     {
     }
@@ -58,7 +58,7 @@ class Context
         return $this->outputHelper;
     }
 
-    public function getConnectionPool(): ConnectionPool
+    public function getConnectionPool(): AdapterConnectionPool
     {
         return $this->connectionPool;
     }

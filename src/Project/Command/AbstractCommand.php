@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
 use Attlaz\Client as AttlazClient;
-use Attlaz\ConnectionPool\ConnectionPool;
 use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
@@ -31,7 +31,7 @@ abstract class AbstractCommand
     protected StorageManager $storageManager;
     protected DIContainer $dependencyManager;
     protected OutputHelper $outputHelper;
-    protected ConnectionPool $connectionPool;
+    protected AdapterConnectionPool $connectionPool;
     protected Profiler $profiler;
     private AttlazClient $attlazClient;
 
@@ -94,6 +94,11 @@ abstract class AbstractCommand
 //
 //        return $taskResult;
 //    }
+
+    public function getConnectionPool(): AdapterConnectionPool
+    {
+        return $this->connectionPool;
+    }
 
     final protected function requestFlowRun(
         string      $flowId,

@@ -23,6 +23,10 @@ class ConnectionPool implements AdapterConnectionPool
     /** @var AdapterConnection[]|null */
     private array|null $connectionDefinitions = null;
 
+    /** @var AdapterConnectionInstance[] */
+    private array $activeConnections = [];
+
+
     public function __construct(
         private readonly Config          $config,
         private readonly Environment     $environment,
@@ -77,6 +81,8 @@ class ConnectionPool implements AdapterConnectionPool
         }
 
         $this->logger->info('Use connection `' . $connectionDefinition->getName() . '`');
+
+        $this->activeConnections[] = $adapterConnection;
         return $adapterConnection;
 
     }
@@ -183,5 +189,18 @@ class ConnectionPool implements AdapterConnectionPool
     private function loadConnectionDefinitions(): void
     {
         $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
+    }
+
+    public function disconnectAll(): void
+    {
+        foreach ($this->activeConnections as $connection) {
+            try {
+                $connection->disconnect();
+            } catch (\Throwable) {
+                // Log but don't fail, we're cleaning up
+                $this->logger->error('Failed to disconnect connection', ['connection' => $connection]);
+            }
+        }
+        $this->activeConnections = [];
     }
 }
