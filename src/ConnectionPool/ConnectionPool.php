@@ -43,6 +43,11 @@ class ConnectionPool implements AdapterConnectionPool
      */
     public function getConnection(string $connectionId, string $className): AdapterConnectionInstance|null
     {
+        // Return existing connection if already loaded
+        if (isset($this->activeConnections[$connectionId])) {
+            return $this->activeConnections[$connectionId];
+        }
+
         $connectionDefinition = $this->getConnectionDefinition($connectionId);
         if ($connectionDefinition === null) {
             throw new ConnectionNotFoundError('No connection definition found for `' . $connectionId . '`');
@@ -68,7 +73,7 @@ class ConnectionPool implements AdapterConnectionPool
         $adapterConnection = $adapterFactory->createAdapterConnection($connectionDefinition);
 
         if ($adapterConnection !== null) {
-            if (!is_a($adapterConnection, $className)) {
+            if (!\is_a($adapterConnection, $className)) {
                 $this->logger->warning('Adapter connection should be `' . $className . '`, got `' . get_class($adapterConnection) . '` instead');
             }
         }
@@ -80,9 +85,9 @@ class ConnectionPool implements AdapterConnectionPool
             $this->logger->warning('Unable to mark connection as used', ['error' => $ex]);
         }
 
-        $this->logger->info('Use connection `' . $connectionDefinition->getName() . '`');
+        $this->logger->info('Load connection `' . $connectionDefinition->getName() . '`');
 
-        $this->activeConnections[] = $adapterConnection;
+        $this->activeConnections[$connectionId] = $adapterConnection;
         return $adapterConnection;
 
     }
@@ -120,6 +125,19 @@ class ConnectionPool implements AdapterConnectionPool
         return $result;
     }
 
+    public function disconnectAll(): void
+    {
+        foreach ($this->activeConnections as $connection) {
+            try {
+                $connection->disconnect();
+            } catch (\Throwable) {
+                // Log but don't fail, we're cleaning up
+                $this->logger->error('Failed to disconnect connection', ['connection' => $connection]);
+            }
+        }
+        // $this->activeConnections = [];
+    }
+
     private function patchAdapterConnectionConfigurationValues(AdapterConnection $adapterConnection): AdapterConnectionDefinition
     {
 
@@ -139,12 +157,13 @@ class ConnectionPool implements AdapterConnectionPool
             $value = $this->getValue($configValues, $configuration->getId());
 
             if ($value !== null) {
-                if (is_string($value)) {
+                if (\is_string($value)) {
                     $value = $this->config->patchConfigValue($value);
                     $result->setConfiguration($configuration->getKey(), $value);
                 } else {
                     if (str_starts_with($configuration->getType(), 'oauth:')) {
                         // Parse oauth information
+                        // TODO: this is outdated!!! A separate call is needed to get the access_token
                         $value = $value['access_token'];
                         $result->setConfiguration($configuration->getKey(), $value);
                     } else {
@@ -162,7 +181,7 @@ class ConnectionPool implements AdapterConnectionPool
 
     /**
      * @param AdapterConnectionConfigurationValue[] $configValues
-     * @param $configurationId
+     * @param string $configurationId
      * @return null
      */
     private function getValue(array $configValues, string $configurationId): mixed
@@ -189,18 +208,5 @@ class ConnectionPool implements AdapterConnectionPool
     private function loadConnectionDefinitions(): void
     {
         $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
-    }
-
-    public function disconnectAll(): void
-    {
-        foreach ($this->activeConnections as $connection) {
-            try {
-                $connection->disconnect();
-            } catch (\Throwable) {
-                // Log but don't fail, we're cleaning up
-                $this->logger->error('Failed to disconnect connection', ['connection' => $connection]);
-            }
-        }
-        $this->activeConnections = [];
     }
 }
