@@ -172,6 +172,7 @@ class CommandManager
         } else {
             $parameterValue = $request->getArgument($parameterName);
             if ($parameter->hasType()) {
+                $parameterValue = CommandParameterDefinition::coerce($parameterValue, $parameter);
                 $this->validateParameterValueType($parameterValue, $parameter);
             }
         }
