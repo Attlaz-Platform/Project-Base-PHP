@@ -11,8 +11,10 @@ use Attlaz\Adapter\Base\Model\Connection\AdapterConnectionPool;
 use Attlaz\Adapter\Base\Model\Connection\AdapterRegistrar;
 use Attlaz\Client;
 use Attlaz\ConnectionPool\Model\Error\ConnectionNotFoundError;
+use Attlaz\Helper\LoadAllHelper;
 use Attlaz\Model\AdapterConnection;
 use Attlaz\Model\AdapterConnectionConfigurationValue;
+use Attlaz\Model\CursorPagination;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
 use DI\Container;
@@ -149,9 +151,15 @@ class ConnectionPool implements AdapterConnectionPool
         ];
         $result = new AdapterConnectionDefinition($rawData);
 
-        $configurations = $this->client->getConnectionEndpoint()->getAdapterConfiguration($adapterConnection->getAdapterId());
+        $configurations = LoadAllHelper::loadAll(
+            fn(CursorPagination $pagination) => $this->client->getConnectionEndpoint()->getAdapterConfiguration($adapterConnection->getAdapterId(), $pagination),
+            static fn($configuration): string => $configuration->getId(),
+        );
 
-        $configValues = $this->client->getConnectionEndpoint()->getConnectionConfiguration($adapterConnection->getId());
+        $configValues = LoadAllHelper::loadAll(
+            fn(CursorPagination $pagination) => $this->client->getConnectionEndpoint()->getConnectionConfiguration($adapterConnection->getId(), $pagination),
+            static fn($configValue): string => $configValue->getId(),
+        );
 
         foreach ($configurations as $configuration) {
             $value = $this->getValue($configValues, $configuration->getId());
@@ -207,6 +215,9 @@ class ConnectionPool implements AdapterConnectionPool
 
     private function loadConnectionDefinitions(): void
     {
-        $this->connectionDefinitions = $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id);
+        $this->connectionDefinitions = LoadAllHelper::loadAll(
+            fn(CursorPagination $pagination) => $this->client->getConnectionEndpoint()->getConnections($this->environment->getProject()->id, $pagination),
+            static fn($connection): string => $connection->getId(),
+        );
     }
 }
