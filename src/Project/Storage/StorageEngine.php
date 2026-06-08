@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Attlaz\Project\Storage;
 
 use Attlaz\Client;
+use Attlaz\Model\CursorPagination;
 use Attlaz\Model\StorageItem;
 use Attlaz\Project\App\Environment;
 
@@ -21,17 +22,17 @@ class StorageEngine
         $this->storageType = $storageType;
     }
 
-    public function getItem(string $key, string|null $pool = null): StorageItem|null
+    public function getItem(string $key, string|null $bucket = null): StorageItem|null
     {
-        return $this->attlazClient->getStorageEndpoint()->getItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $pool);
+        return $this->attlazClient->getStorageEndpoint()->getItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $bucket);
     }
 
-    public function hasItem(string $key, string|null $pool = null): bool
+    public function hasItem(string $key, string|null $bucket = null): bool
     {
-        return $this->attlazClient->getStorageEndpoint()->hasItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $pool);
+        return $this->attlazClient->getStorageEndpoint()->hasItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $bucket);
     }
 
-    public function setItem(string $key, mixed $value, int|null $expirationSeconds = null, string|null $pool = null): bool
+    public function setItem(string $key, mixed $value, int|null $expirationSeconds = null, string|null $bucket = null): bool
     {
         // TODO: expiration seconds is required for cache
         // TODO: how to handle overrides?
@@ -51,39 +52,81 @@ class StorageEngine
             $item->expiration = $date;
         }
 
-        return $this->attlazClient->getStorageEndpoint()->setItem($this->environment->getProjectEnvironment()->id, $this->storageType, $item, $pool);
+        return $this->attlazClient->getStorageEndpoint()->setItem($this->environment->getProjectEnvironment()->id, $this->storageType, $item, $bucket);
+    }
+
+    /**
+     * Return every item key in the (optional) pool.
+     *
+     * The client only exposes the paginated items-information listing
+     * (getBucketItemsInformation); this walks every page using the record id as the
+     * cursor and projects each record to its key, so the whole pool is returned
+     * regardless of size (the previous single-call version silently returned only
+     * the first page).
+     *
+     * @return string[]
+     * @throws \Exception
+     */
+    public function getItemKeys(string|null $bucket = null): array
+    {
+        $endpoint = $this->attlazClient->getStorageEndpoint();
+        $projectEnvironmentId = $this->environment->getProjectEnvironment()->id;
+
+        $pagination = new CursorPagination();
+        $pagination->limit = 1000;
+
+        $keys = [];
+        do {
+            $page = $endpoint->getBucketItemsInformation($projectEnvironmentId, $this->storageType, $bucket, $pagination);
+
+            $lastId = null;
+            foreach ($page->getData() as $information) {
+                $keys[] = $information->key;
+                // The record id drives the cursor for the next page.
+                if ($information->id !== null) {
+                    $lastId = $information->id;
+                }
+            }
+            $pagination->startingAfter = $lastId;
+            // Stop when there are no more pages, or we can't determine the next cursor.
+        } while ($page->hasMore && $lastId !== null);
+
+        return $keys;
+    }
+
+    public function deleteItem(string $key, string|null $bucket = null): bool
+    {
+        return $this->attlazClient->getStorageEndpoint()->deleteItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $bucket);
+    }
+
+    public function deleteItems(array $keys, string|null $bucket = null): array
+    {
+        return $this->attlazClient->getStorageEndpoint()->deleteItems($this->environment->getProjectEnvironment()->id, $this->storageType, $keys, $bucket);
     }
 
     /**
      * @return string[]
      * @throws \Exception
      */
-    public function getItemKeys(string|null $pool = null): array
+    public function getBucketKeys(): array
     {
-        return $this->attlazClient->getStorageEndpoint()->getItemKeys($this->environment->getProjectEnvironment()->id, $this->storageType, $pool);
+        return $this->attlazClient->getStorageEndpoint()->getBucketKeys($this->environment->getProjectEnvironment()->id, $this->storageType);
     }
 
-    public function deleteItem(string $key, string|null $pool = null): bool
+    public function clearBucket(string $bucket): bool
     {
-        return $this->attlazClient->getStorageEndpoint()->deleteItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $pool);
+        return $this->attlazClient->getStorageEndpoint()->clearBucket($this->environment->getProjectEnvironment()->id, $this->storageType, $bucket);
     }
 
-    public function deleteItems(array $keys, string|null $pool = null): array
-    {
-        return $this->attlazClient->getStorageEndpoint()->deleteItems($this->environment->getProjectEnvironment()->id, $this->storageType, $keys, $pool);
-    }
-
-    /**
-     * @return string[]
-     * @throws \Exception
-     */
+    /** @deprecated Renamed to getBucketKeys(). */
     public function getPoolKeys(): array
     {
-        return $this->attlazClient->getStorageEndpoint()->getPoolKeys($this->environment->getProjectEnvironment()->id, $this->storageType);
+        return $this->getBucketKeys();
     }
 
-    public function clearPool(string $pool): bool
+    /** @deprecated Renamed to clearBucket(). */
+    public function clearPool(string $bucket): bool
     {
-        return $this->attlazClient->getStorageEndpoint()->clearPool($this->environment->getProjectEnvironment()->id, $this->storageType, $pool);
+        return $this->clearBucket($bucket);
     }
 }

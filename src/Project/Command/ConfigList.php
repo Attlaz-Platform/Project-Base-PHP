@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
+use Attlaz\Helper\LoadAllHelper;
+use Attlaz\Model\CursorPagination;
 use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\App\Config;
 use Attlaz\Project\App\Environment;
@@ -60,7 +62,7 @@ class ConfigList extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $environments = $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironments($this->environment->getProject()->id);
+            $environments = LoadAllHelper::loadAll(fn(CursorPagination $pagination) => $this->attlazClient->getProjectEnvironmentEndpoint()->getProjectEnvironments($this->environment->getProject()->id, $pagination));
 
             $totalConfigValues = [];
             foreach ($environments as $environment) {

@@ -6,6 +6,8 @@ namespace Attlaz\Project\App;
 
 use Attlaz\Adapter\Base\Model\ConfigProvider;
 use Attlaz\Client;
+use Attlaz\Helper\LoadAllHelper;
+use Attlaz\Model\CursorPagination;
 use Attlaz\Model\Exception\RequestException;
 use Attlaz\Model\ProjectEnvironment;
 use Attlaz\Project\Model\Config as ProjectConfig;
@@ -183,7 +185,7 @@ class Config implements LoggerAwareInterface, ConfigProvider
     private function fetchApiConfigValues(ProjectEnvironment $projectEnvironment): array
     {
 
-        $configValues = $this->client->getConfigEndpoint()->getConfigByProject($projectEnvironment->id);
+        $configValues = LoadAllHelper::loadAll(fn(CursorPagination $pagination) => $this->client->getConfigEndpoint()->getConfigByProject($projectEnvironment->id, $pagination));
 
         $result = [];
 

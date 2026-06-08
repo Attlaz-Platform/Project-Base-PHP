@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
+use Attlaz\Helper\LoadAllHelper;
+use Attlaz\Model\CursorPagination;
 use Attlaz\Project\App\Environment;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -58,7 +60,7 @@ class RequestDeploy extends Command
             if (\is_null($selectedEnvironment)) {
                 $options = [];
                 $projectId = $this->environment->getProject()->id;
-                $environments = $this->client->getProjectEnvironmentEndpoint()->getProjectEnvironments($projectId);
+                $environments = LoadAllHelper::loadAll(fn(CursorPagination $pagination) => $this->client->getProjectEnvironmentEndpoint()->getProjectEnvironments($projectId, $pagination));
                 foreach ($environments as $environment) {
                     $options[] = $environment->key;
                 }

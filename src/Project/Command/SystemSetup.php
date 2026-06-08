@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Attlaz\Project\Command;
 
 use Attlaz\Client;
+use Attlaz\Helper\LoadAllHelper;
+use Attlaz\Model\CursorPagination;
 use Attlaz\Project\App\Environment;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -103,7 +105,7 @@ class SystemSetup extends Command
             /**
              * Project
              */
-            $projects = $client->getProjectEndpoint()->getProjects();
+            $projects = LoadAllHelper::loadAll(fn(CursorPagination $pagination) => $client->getProjectEndpoint()->getProjects($pagination));
             $arrProjectOptions = [];
             foreach ($projects as $project) {
                 $arrProjectOptions[$project->id] = $project->name;
@@ -132,7 +134,7 @@ class SystemSetup extends Command
             /**
              * Project environment
              */
-            $projectEnvironments = $client->getProjectEnvironmentEndpoint()->getProjectEnvironments($projectId);
+            $projectEnvironments = LoadAllHelper::loadAll(fn(CursorPagination $pagination) => $client->getProjectEnvironmentEndpoint()->getProjectEnvironments($projectId, $pagination));
             $arrProjectEnvironmentOptions = [];
             foreach ($projectEnvironments as $projectEnvironment) {
                 $arrProjectEnvironmentOptions[$projectEnvironment->id] = $projectEnvironment->name;

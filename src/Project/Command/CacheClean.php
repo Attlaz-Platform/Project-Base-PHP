@@ -41,11 +41,11 @@ class CacheClean extends Command
         try {
             $cache = $this->storageManager->cache;
 
-            $cachePoolKeys = $cache->getPoolKeys();
-            foreach ($cachePoolKeys as $cachePoolKey) {
-                $output->write('Clean cache <comment>' . $cachePoolKey . '</comment>: ');
+            $cacheBucketKeys = $cache->getBucketKeys();
+            foreach ($cacheBucketKeys as $cacheBucketKey) {
+                $output->write('Clean cache <comment>' . $cacheBucketKey . '</comment>: ');
 
-                $cleared = $cache->clearPool($cachePoolKey);
+                $cleared = $cache->clearBucket($cacheBucketKey);
                 if ($cleared) {
                     $output->writeln('<info>Done</info>');
                 } else {

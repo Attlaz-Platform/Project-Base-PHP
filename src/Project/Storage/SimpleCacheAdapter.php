@@ -36,7 +36,7 @@ class SimpleCacheAdapter implements CacheInterface
 
     public function clear(): bool
     {
-        return $this->storageEngine->clearPool('default');
+        return $this->storageEngine->clearBucket('default');
     }
 
     public function getMultiple(iterable $keys, mixed $default = null): iterable
