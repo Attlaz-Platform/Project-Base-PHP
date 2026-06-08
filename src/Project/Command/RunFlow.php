@@ -94,7 +94,7 @@ class RunFlow extends Command
 
     /**
      * @param string $flowRunId
-     * @return array
+     * @return array<string, mixed>
      * @throws \JsonException
      */
     private function getArgumentsFromStorage(string $flowRunId): array
@@ -134,6 +134,9 @@ class RunFlow extends Command
         return null;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getArguments(InputInterface $input): array
     {
         $arguments = $input->getOption(self::ARG_ARGUMENTS);

@@ -7,12 +7,17 @@ namespace Attlaz\Project\Helper;
 use Echron\Tools\Time;
 use Psr\Log\LoggerInterface;
 
+/**
+ * @phpstan-type Profile array{path: string, key: string, label: string, start: float, end: float|null, elapse: float|null, 'elapse readable': string|null}
+ */
 class Profiler
 {
     private LoggerInterface|null $logger = null;
 
+    /** @var array<string, Profile> profiles keyed by `path::key` */
     private array $profiles = [];
 
+    /** @var Profile|null */
     private array|null $currentProfile = null;
 
 
@@ -48,7 +53,7 @@ class Profiler
             'label' => $label,
             'start' => microtime(true),
             'end' => null,
-            'ellapse' => null,
+            'elapse' => null,
             'elapse readable' => null,
         ];
         $this->profiles[$profile['path'] . '::' . $key] = $profile;
@@ -92,6 +97,9 @@ class Profiler
         $this->currentProfile = $currentProfileParent;
     }
 
+    /**
+     * @return Profile|null
+     */
     public function getProfile(string $key): array|null
     {
         if (!isset($this->profiles[$key]) && $this->logger !== null) {
@@ -101,11 +109,17 @@ class Profiler
         return $this->profiles[$key];
     }
 
+    /**
+     * @return array<string, Profile>
+     */
     public function getProfiles(): array
     {
         return $this->profiles;
     }
 
+    /**
+     * @return string[]
+     */
     public function debug(): array
     {
         $profiles = $this->profiles;

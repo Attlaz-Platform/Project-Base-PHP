@@ -107,6 +107,9 @@ class Config implements LoggerAwareInterface, ConfigProvider
         return \array_values($result);
     }
 
+    /**
+     * @return array<string, ProjectConfig> config values keyed by config key
+     */
     private function parseConfig(ProjectEnvironment $projectEnvironment): array
     {
         $configCacheKey = self::CONFIG_CACHE_PREFIX_KEY . $projectEnvironment->id;
@@ -169,6 +172,9 @@ class Config implements LoggerAwareInterface, ConfigProvider
         return $result;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getConfigVariables(): array
     {
         $configVariables = [

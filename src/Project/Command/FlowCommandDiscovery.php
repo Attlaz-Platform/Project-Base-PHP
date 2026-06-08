@@ -90,6 +90,9 @@ class FlowCommandDiscovery
     }
 
 
+    /**
+     * @return array{flowStepId: string}|null
+     */
     private function detectFlowStepDetails(\ReflectionClass $reflectionClass): array|null
     {
 
@@ -179,6 +182,9 @@ class FlowCommandDiscovery
         }
     }
 
+    /**
+     * @return array<string, CommandParameterDefinition> parameter definitions keyed by parameter name
+     */
     private function getCommandParameters(\ReflectionMethod $invokeMethodReflection): array
     {
         $parameters = [];

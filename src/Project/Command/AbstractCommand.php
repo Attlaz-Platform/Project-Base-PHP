@@ -74,6 +74,9 @@ abstract class AbstractCommand
         $this->profiler->endProfile($key);
     }
 
+    /**
+     * @return array<string, mixed>|null the profile record (path/key/label/timing), or null if not found
+     */
     public function getProfile(string $key): array|null
     {
         return $this->profiler->getProfile($key);

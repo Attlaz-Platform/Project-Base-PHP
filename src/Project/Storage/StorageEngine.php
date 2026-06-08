@@ -99,6 +99,10 @@ class StorageEngine
         return $this->attlazClient->getStorageEndpoint()->deleteItem($this->environment->getProjectEnvironment()->id, $this->storageType, $key, $bucket);
     }
 
+    /**
+     * @param string[] $keys
+     * @return array<string, bool> map of item key => deleted
+     */
     public function deleteItems(array $keys, string|null $bucket = null): array
     {
         return $this->attlazClient->getStorageEndpoint()->deleteItems($this->environment->getProjectEnvironment()->id, $this->storageType, $keys, $bucket);
@@ -118,7 +122,10 @@ class StorageEngine
         return $this->attlazClient->getStorageEndpoint()->clearBucket($this->environment->getProjectEnvironment()->id, $this->storageType, $bucket);
     }
 
-    /** @deprecated Renamed to getBucketKeys(). */
+    /**
+     * @return string[]
+     * @deprecated Renamed to getBucketKeys().
+     */
     public function getPoolKeys(): array
     {
         return $this->getBucketKeys();

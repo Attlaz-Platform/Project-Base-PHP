@@ -146,6 +146,9 @@ class CommandManager
         throw new \Exception('No command found for flow "' . $flowRunRequest->getFlowRun()->flowId . '"');
     }
 
+    /**
+     * @return list<mixed> positional argument values for the command method
+     */
     private function getMethodArguments(FlowRunRequest $request, CommandDefinition $commandDefinition): array
     {
         $parameterValues = [];

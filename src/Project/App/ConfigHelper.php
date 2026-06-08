@@ -59,6 +59,10 @@ class ConfigHelper
         return $result;
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, mixed> flattened to single-level keys joined with `_`
+     */
     private function flatten(array $values): array
     {
         //TODO: this can better!
@@ -83,6 +87,11 @@ class ConfigHelper
         return $result;
     }
 
+    /**
+     * @param array<string, \Attlaz\Project\Model\Config> $config
+     * @param array<string, string> $variables
+     * @return array<string, \Attlaz\Project\Model\Config>
+     */
     public function patchConfigVariables(array $config, array $variables): array
     {
         /**
@@ -101,6 +110,9 @@ class ConfigHelper
         return $config;
     }
 
+    /**
+     * @param array<string, string> $variables
+     */
     public function patchValue(string $value, array $variables): string
     {
         // TODO: use regex to replace config variables

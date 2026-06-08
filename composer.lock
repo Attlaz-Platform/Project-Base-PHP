@@ -137,16 +137,16 @@
         },
         {
             "name": "attlaz/client",
-            "version": "1.20.0",
+            "version": "1.20.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/PHP-Client.git",
-                "reference": "46541c8761178c998f28151384bb3b8298d04868"
+                "reference": "4ea0e3daaccbfcd69cc3439b6f92ba5455aac90f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/46541c8761178c998f28151384bb3b8298d04868",
-                "reference": "46541c8761178c998f28151384bb3b8298d04868",
+                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/4ea0e3daaccbfcd69cc3439b6f92ba5455aac90f",
+                "reference": "4ea0e3daaccbfcd69cc3439b6f92ba5455aac90f",
                 "shasum": ""
             },
             "require": {
@@ -179,9 +179,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Attlaz-Platform/PHP-Client/issues",
-                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.20.0"
+                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.20.1"
             },
-            "time": "2026-06-08T12:07:17+00:00"
+            "time": "2026-06-08T19:09:39+00:00"
         },
         {
             "name": "doctrine/dbal",

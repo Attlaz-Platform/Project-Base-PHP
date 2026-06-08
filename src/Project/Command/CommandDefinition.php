@@ -8,6 +8,7 @@ class CommandDefinition
 {
     public string $flowId;
     public string $className;
+    /** @var CommandParameterDefinition[] */
     private array $parameters = [];
 
     public function addParameter(CommandParameterDefinition $parameterDefinition): void
