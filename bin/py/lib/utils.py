@@ -1,5 +1,7 @@
 import json
 import os
+import re
+import subprocess
 import sys
 
 
@@ -8,25 +10,14 @@ def get_docker_image():
     with open(composer_path, 'r') as f:
         data = json.load(f)
     php_version = data['require']['php']
-    match php_version:
-        case '7.2' | '^7.2' | '>=7.2':
-            return 'attlaz/php:7.2'
-        case '7.4' | '^7.4' | '>=7.4':
-            return 'attlaz/php:7.4'
-        case '8.0' | '^8.0' | '>=8.0':
-            return 'attlaz/php:8.0'
-        case '8.1' | '^8.1' | '>=8.1':
-            return 'attlaz/php:8.1'
-        case '8.2' | '^8.2' | '>=8.2':
-            return 'attlaz/php:8.2'
-        case '8.3' | '^8.3' | '>=8.3':
-            return 'attlaz/php:8.3'
-        case '8.4' | '^8.4' | '>=8.4':
-                    return 'attlaz/php:8.4'
-        case _:
-            print(f'Unable to detect PHP version based on composer.json. (found version constraint `{php_version}`) using PHP 8.1')
-            # Show error that we cannot define PHP version based on composer file
-            return 'attlaz/php:8.1'
+    # Use the first major.minor from the constraint (any format: "8.4", "^8.4", ">=8.4",
+    # "^8.4.0", "^v8.4", "8.4.*", ">=8.4 <9", ...). We don't verify the image exists here:
+    # docker run pulls it on demand, and docker_run() reports a clear error if it doesn't exist.
+    match = re.search(r'(\d+)\.(\d+)', php_version)
+    if not match:
+        sys.exit(f"Unable to detect a PHP version from the composer.json constraint '{php_version}'.")
+
+    return f'attlaz/php:{match.group(1)}.{match.group(2)}'
 
 
 def get_arguments():
@@ -51,4 +42,14 @@ def docker_run(command):
     else:
         docker_command = f"docker run --rm -it --init -v {project_dir}:/var/attlaz -w /var/attlaz {image} {command}"
     print(f'{docker_command}')
-    os.system(docker_command)
+    # Let docker pull the image on demand. A docker-level failure (image doesn't exist, pull
+    # denied, bad invocation) exits 125 -- distinct from the wrapped command's own exit code --
+    # so we can surface a clear hint without inspecting the image on every invocation.
+    result = subprocess.run(docker_command, shell=True)
+    if result.returncode == 125:
+        print(
+            f"\nUnable to run '{image}'. Docker reported an error (exit 125): the image may not "
+            f"exist for the PHP version required in composer.json, or could not be pulled.",
+            file=sys.stderr,
+        )
+    sys.exit(result.returncode)

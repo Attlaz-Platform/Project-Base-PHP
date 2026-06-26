@@ -1,18 +1,31 @@
 #!/usr/bin/env php
 <?php
-if (PHP_SAPI !== 'cli') {
-    echo 'bin/console must be run as a CLI application';
-    exit(1);
+declare(strict_types=1);
+
+$projectRoot = dirname(__DIR__);
+
+/*
+ * Developer entry point. If the host PHP is older than this project requires (composer.json
+ * "require.php"), re-run the command inside the matching attlaz/php Docker image; otherwise boot
+ * the app directly. The Attlaz worker and the in-container run use bin/console.php, which skips
+ * these checks and never touches Docker.
+ *
+ * Written in widely-compatible PHP so it parses on whatever host PHP exists before delegating.
+ */
+$composer = json_decode((string)@file_get_contents($projectRoot . '/composer.json'), true);
+$constraint = is_array($composer) ? ($composer['require']['php'] ?? '') : '';
+if (is_string($constraint) && preg_match('/(\d+)\.(\d+)/', $constraint, $m)
+    && PHP_VERSION_ID < ((int)$m[1]) * 10000 + ((int)$m[2]) * 100) {
+    $image = 'attlaz/php:' . $m[1] . '.' . $m[2];
+    $tty = stream_isatty(STDIN) ? '-it' : '-i';
+    $args = implode(' ', array_map('escapeshellarg', array_slice($argv, 1)));
+    passthru(
+        'docker run --rm ' . $tty . ' --init -v ' . escapeshellarg($projectRoot . ':/var/attlaz')
+        . ' -w /var/attlaz ' . escapeshellarg($image) . ' php bin/console.php ' . $args,
+        $exitCode
+    );
+    exit($exitCode);
 }
 
-try {
-    require __DIR__ . '/../vendor/autoload.php';
-} catch (\Error $e) {
-    echo 'Autoload error: ' . $e->getMessage();
-    exit(1);
-}
-
-use Attlaz\Project;
-
-$project = new Project\Project(dirname(__DIR__));
-$project->run();
+require $projectRoot . '/vendor/autoload.php';
+(new \Attlaz\Project\Project($projectRoot))->run();
