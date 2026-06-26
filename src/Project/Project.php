@@ -93,9 +93,11 @@ class Project
             }
             $this->profiler->finish('Command discovery');
 
-        } catch (\Exception $ex) {
-            throw $ex;
-            // throw new \Exception('Unable to start project: ' . $ex->getMessage(), 0, $ex);
+        } catch (\Throwable $ex) {
+            // Catch \Throwable (not just \Exception) so bootstrap Errors (e.g. a TypeError from a
+            // misconfigured project) are surfaced with context instead of a raw fatal. The original
+            // is preserved as the previous exception for debugging.
+            throw new \RuntimeException('Unable to start project: ' . $ex->getMessage(), 0, $ex);
         }
         //   echo PHP_EOL . 'Init cli: ' . Time::readableSeconds(\microtime(true) - $start) . \PHP_EOL;
 
@@ -129,17 +131,17 @@ class Project
 
             $flowRunCliHandler = new CLI($this->commandManager, $attlazClient, $environment, $this->logger);
 
-            $cliApplication->add(new SystemStatus($environment));
+            $cliApplication->addCommand(new SystemStatus($environment));
 
 
             if ($this->environment->isInitialized()) {
                 //                $cliStreamHandler = $this->diContainer->get('attlaz_streamhandler');
 
                 //List tasks
-                $cliApplication->add(new ListFlows($commandManager));
+                $cliApplication->addCommand(new ListFlows($commandManager));
                 //Execute task
                 $cmd = new RunFlow($flowRunCliHandler, $attlazClient, $environment, $this->logger);
-                $cliApplication->add($cmd);
+                $cliApplication->addCommand($cmd);
                 //Execute task interactive
                 $cmd = new RunFlowInteractive(
                     $flowRunCliHandler,
@@ -148,20 +150,20 @@ class Project
                     $environment,
                     $this->logger
                 );
-                $cliApplication->add($cmd);
+                $cliApplication->addCommand($cmd);
                 //Config list
-                $cliApplication->add(new ConfigList($config, $environment, $attlazClient, $this->logger));
+                $cliApplication->addCommand(new ConfigList($config, $environment, $attlazClient, $this->logger));
                 //Clean cache
                 /** @var StorageManager $storageManager */
                 $storageManager = $this->diContainer->get(StorageManager::class);
                 $clearCacheCommand = new CacheClean($config, $storageManager, $this->logger);
-                $cliApplication->add($clearCacheCommand);
+                $cliApplication->addCommand($clearCacheCommand);
                 //Request deploy
-                $cliApplication->add(new RequestDeploy($environment, $attlazClient, $this->logger));
+                $cliApplication->addCommand(new RequestDeploy($environment, $attlazClient, $this->logger));
                 //Run tests
-                $cliApplication->add(new RunTests($this->logger));
+                $cliApplication->addCommand(new RunTests($this->logger));
             } else {
-                $cliApplication->add(new SystemSetup($attlazClient, $environment, $this->logger));
+                $cliApplication->addCommand(new SystemSetup($attlazClient, $environment, $this->logger));
             }
             $output = $cliApplication->run();
 
