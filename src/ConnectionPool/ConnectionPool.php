@@ -197,7 +197,7 @@ class ConnectionPool implements AdapterConnectionPool
     /**
      * @param AdapterConnectionConfigurationValue[] $configValues
      * @param string $configurationId
-     * @return null
+     * @return mixed
      */
     private function getValue(array $configValues, string $configurationId): mixed
     {

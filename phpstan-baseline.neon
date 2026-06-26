@@ -1,26 +1,37 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Negated boolean expression is always true\\.$#"
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
 			count: 1
-			path: src/App/Environment.php
+			path: src/Project/App/Environment.php
 
 		-
-			message: "#^Call to function is_null\\(\\) with Attlaz\\\\Model\\\\ProjectEnvironment will always evaluate to false\\.$#"
+			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
 			count: 1
-			path: src/Cli/Command/RequestDeploy.php
+			path: src/Project/Command/RunFlow.php
 
 		-
-			message: "#^Parameter \\#2 \\$format of class Bramus\\\\Monolog\\\\Formatter\\\\ColoredLineFormatter constructor expects null, string given\\.$#"
+			message: '#^Method Attlaz\\Project\\Command\\RunFlow\:\:areArgumentsInStorage\(\) is unused\.$#'
+			identifier: method.unused
 			count: 1
-			path: src/DI/InternalFactory.php
+			path: src/Project/Command/RunFlow.php
 
 		-
-			message: "#^Class Attlaz\\\\Project\\\\Logger\\\\Logger extends @final class Monolog\\\\Logger\\.$#"
+			message: '#^Method Attlaz\\Project\\Command\\RunFlow\:\:getArgumentsFromStorage\(\) is unused\.$#'
+			identifier: method.unused
 			count: 1
-			path: src/Logger/Logger.php
+			path: src/Project/Command/RunFlow.php
 
 		-
-			message: "#^Argument of an invalid type Attlaz\\\\Model\\\\Config supplied for foreach, only iterables are supported\\.$#"
+			message: '#^Property Attlaz\\Project\\Helper\\AbstractHelper\:\:\$connectionPool \(Attlaz\\ConnectionPool\\ConnectionPool\) does not accept Attlaz\\Adapter\\Base\\Model\\Connection\\AdapterConnectionPool\.$#'
+			identifier: assign.propertyType
 			count: 1
-			path: src/Model/Config.php
+			path: src/Project/Helper/AbstractHelper.php
+
+		-
+			message: '#^Class Attlaz\\Project\\Logger\\Logger extends @final class Monolog\\Logger\.$#'
+			identifier: class.extendsFinalByPhpDoc
+			count: 1
+			path: src/Project/Logger/Logger.php

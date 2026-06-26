@@ -15,20 +15,20 @@ use Monolog\Level;
 
 class Environment
 {
-    public const MODE_PRODUCTION = 'production';
-    public const MODE_DEVELOPMENT = 'development';
-    public const SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
-    private const CACHE_LOCATION = 'var/cache';
-    private const DI_FILE_LOCATION = '/App/etc/di.php';
-    private const CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
-    public const COMMANDS_LOCATION = '/App/Command';
-    public const ENV_PROJECT_ENVIRONMENT = 'project_environment';
-    public const ENV_MODE = 'mode';
-    public const ENV_API_ENDPOINT = 'api_endpoint';
-    public const ENV_API_CLIENT_ID = 'api_client_id';
-    public const ENV_API_CLIENT_SECRET = 'api_client_secret';
-    public const ENV_API_TOKEN = 'api_token';
-    public const ENV_SYS_MEMORY_LIMIT = 'sys_memory_limit';
+    public const string MODE_PRODUCTION = 'production';
+    public const string MODE_DEVELOPMENT = 'development';
+    public const string SOURCE_LOCATION = \DIRECTORY_SEPARATOR . 'src';
+    private const string CACHE_LOCATION = 'var/cache';
+    private const string DI_FILE_LOCATION = '/App/etc/di.php';
+    private const string CONFIG_FILE_LOCATION = '/App/etc/config.yaml';
+    public const string COMMANDS_LOCATION = '/App/Command';
+    public const string ENV_PROJECT_ENVIRONMENT = 'project_environment';
+    public const string ENV_MODE = 'mode';
+    public const string ENV_API_ENDPOINT = 'api_endpoint';
+    public const string ENV_API_CLIENT_ID = 'api_client_id';
+    public const string ENV_API_CLIENT_SECRET = 'api_client_secret';
+    public const string ENV_API_TOKEN = 'api_token';
+    public const string ENV_SYS_MEMORY_LIMIT = 'sys_memory_limit';
     /**
      * Config values
      */

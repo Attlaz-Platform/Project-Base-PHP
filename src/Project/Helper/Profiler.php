@@ -21,9 +21,9 @@ class Profiler
     private array|null $currentProfile = null;
 
 
-    public function __construct()
+    public function __construct(LoggerInterface|null $logger = null)
     {
-
+        $this->logger = $logger;
     }
 
     public function start(string $key, string $label = ''): void
@@ -72,7 +72,7 @@ class Profiler
             $fullKey = $this->currentProfile['path'] . '::' . $key;
         } else {
             echo 'Wrong' . PHP_EOL;
-            $fullKey = $this->currentProfile === null ? $key : $this->currentProfile['path'] . '::' . $key;
+            $fullKey = $this->currentProfile['path'] . '::' . $key;
         }
 
         if (!isset($this->profiles[$fullKey])) {

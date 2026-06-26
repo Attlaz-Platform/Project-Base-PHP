@@ -5,21 +5,21 @@
   "type": "project",
   "homepage": "https://attlaz.com",
   "require": {
-    "php": ">=8.2",
+    "php": "^8.4",
     "echron/tools": "^1.8.1",
     "echron/datatypes": "^2.1.0|^1.6.0|dev-develop",
     "php-di/php-di": "^7.0.11",
     "psr/simple-cache": "^1 || ^2 || ^3",
     "attlaz/client": "^1.20.0",
     "attlaz/attlaz-monolog": "^2.2.1",
-    "attlaz/adapter-base": "^1.18.1|dev-develop",
+    "attlaz/adapter-base": "^1.20.0|dev-develop",
     "vlucas/phpdotenv": "^5.6.3",
-    "symfony/console": "^v7.4.13",
-    "symfony/yaml": "^v7.4.13",
+    "symfony/console": "^v8.1.0",
+    "symfony/yaml": "^v8.1.0",
     "ext-json": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^11.5.0",
+    "phpunit/phpunit": "^13.2.1",
     "bramus/monolog-colored-line-formatter": "^3.1",
     "phpstan/phpstan": "^2.2.2",
     "friendsofphp/php-cs-fixer": "^v3.95.4"

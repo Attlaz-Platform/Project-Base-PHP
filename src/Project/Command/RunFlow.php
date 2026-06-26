@@ -158,8 +158,8 @@ class RunFlow extends Command
             }
 
             try {
-                $arguments = json_decode($arguments, true);
-            } catch (\Exception $ex) {
+                $arguments = json_decode($arguments, true, 512, \JSON_THROW_ON_ERROR);
+            } catch (\JsonException $ex) {
                 throw new \RuntimeException('Unable to decode arguments');
             }
 

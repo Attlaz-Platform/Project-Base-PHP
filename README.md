@@ -25,5 +25,5 @@ docker run --rm -it -v %cd%:/var/attlaz -w /var/attlaz hq.attlaz.com:2498/attlaz
 # Update packages
 
 ```bash
-docker run -it -v ${PWD}:/app -w /app --rm attlaz/php:8.2 composer update
+docker run -it -v ${PWD}:/app -w /app --rm attlaz/php:8.4 composer update
 ```

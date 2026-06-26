@@ -58,12 +58,7 @@ class RunFlowInteractive extends RunFlow
 
             $output->writeln('You have just selected: ' . $flowId);
 
-            $selectedCommand = null;
-            foreach ($commands as $command) {
-                if ($flowId === $command->flowId) {
-                    $selectedCommand = $command;
-                }
-            }
+            $selectedCommand = array_find($commands, fn($command) => $flowId === $command->flowId);
             /**
              * Request parameters
              */

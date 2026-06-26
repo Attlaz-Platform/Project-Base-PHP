@@ -11,7 +11,7 @@ class Config extends \Attlaz\Model\Config
     public static function fromBase(\Attlaz\Model\Config $input): self
     {
         $result = new self();
-        foreach ($input as $key => $value) {
+        foreach (get_object_vars($input) as $key => $value) {
             $result->$key = $value;
         }
 

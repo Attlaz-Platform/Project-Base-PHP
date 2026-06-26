@@ -22,7 +22,7 @@ class CommandManager
     private Environment $environment;
     private LoggerInterface $logger;
     private LogStreamId|null $previousLogStreamId = null;
-    private int|null|Level $previousLogLevel = null;
+    private Level|null $previousLogLevel = null;
 
     public function initialize(
         FlowCommandDiscovery $discovery,
