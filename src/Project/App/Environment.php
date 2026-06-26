@@ -156,8 +156,15 @@ class Environment
             $client->setDebug(1);
 
             $projectEnvironmentId = $this->getEnvValue(self::ENV_PROJECT_ENVIRONMENT);
+            if (!\is_string($projectEnvironmentId) || $projectEnvironmentId === '') {
+                throw new \RuntimeException('Project is not configured: the "' . self::ENV_PROJECT_ENVIRONMENT . '" value is missing or empty. Set it in your project .env file.');
+            }
 
             $this->projectEnvironment = $client->getProjectEnvironmentEndpoint()->getProjectEnvironmentById($projectEnvironmentId);
+            if ($this->projectEnvironment === null) {
+                throw new \RuntimeException('Project environment "' . $projectEnvironmentId . '" was not found. Check the "' . self::ENV_PROJECT_ENVIRONMENT . '" value in your .env and your API credentials.');
+            }
+
             $this->project = $client->getProjectEndpoint()->getProjectById($this->projectEnvironment->projectId);
         }
     }
