@@ -31,6 +31,7 @@ class ConfigList extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setName('config:list')
@@ -59,6 +60,7 @@ class ConfigList extends Command
 //    }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {

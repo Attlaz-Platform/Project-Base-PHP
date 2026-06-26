@@ -17,6 +17,7 @@ class ListFlows extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setName('flow:list')
@@ -24,6 +25,7 @@ class ListFlows extends Command
             ->setHelp('This command allows you to list available flows');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('<info>Available commands:</info>');

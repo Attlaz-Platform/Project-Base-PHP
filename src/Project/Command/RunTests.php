@@ -18,6 +18,7 @@ class RunTests extends Command
 
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setName('test:run')
@@ -26,6 +27,7 @@ class RunTests extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         return 1;

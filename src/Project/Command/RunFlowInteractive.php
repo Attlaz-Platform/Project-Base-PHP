@@ -28,6 +28,7 @@ class RunFlowInteractive extends RunFlow
         parent::__construct($flowRunHandler, $client, $environment, $logger);
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setName('flow:run:interactive')
@@ -36,6 +37,7 @@ class RunFlowInteractive extends RunFlow
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {

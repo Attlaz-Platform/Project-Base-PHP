@@ -33,6 +33,7 @@ class RunFlow extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setName('flow:run')
@@ -45,6 +46,7 @@ class RunFlow extends Command
 
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {

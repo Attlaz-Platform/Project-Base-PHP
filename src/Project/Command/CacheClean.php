@@ -24,6 +24,7 @@ class CacheClean extends Command
 
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setName('cache:clean')
@@ -36,6 +37,7 @@ class CacheClean extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {

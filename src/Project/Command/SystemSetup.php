@@ -31,6 +31,7 @@ class SystemSetup extends Command
         $this->logger = $logger;
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setName('system:setup')
@@ -39,6 +40,7 @@ class SystemSetup extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
