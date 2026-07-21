@@ -36,10 +36,6 @@
     }
   },
   "repositories": [
-    {
-      "type": "composer",
-      "url": "https://repo.attlaz.com"
-    }
   ],
   "scripts": {
     "test": "vendor/bin/phpunit",
