@@ -5,3 +5,7 @@ vendor
 config.yml
 auth.json
 docker-compose.yml
+
+# Test and tooling caches
+.phpunit.result.cache
+__pycache__/
