@@ -191,7 +191,7 @@ class Config implements LoggerAwareInterface, ConfigProvider
     private function fetchApiConfigValues(ProjectEnvironment $projectEnvironment): array
     {
 
-        $configValues = LoadAllHelper::loadAll(fn(CursorPagination $pagination) => $this->client->getConfigEndpoint()->getConfigByProject($projectEnvironment->id, $pagination));
+        $configValues = LoadAllHelper::loadAll(fn(CursorPagination $pagination) => $this->client->getConfigEndpoint()->getByProjectEnvironment($projectEnvironment->id, $pagination));
 
         $result = [];
 

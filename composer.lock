@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "403e0d56478449137442325740c72884",
+    "content-hash": "d3dbcb1cea07e8df9f7735fc087b1a05",
     "packages": [
         {
             "name": "attlaz/adapter-base",
@@ -129,16 +129,16 @@
         },
         {
             "name": "attlaz/client",
-            "version": "1.21.0",
+            "version": "1.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Attlaz-Platform/PHP-Client.git",
-                "reference": "4b9585e8221a7e574b7178979959506c0c972abd"
+                "reference": "9579546c78cbfbdb4169f7ce799df30feff25879"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/4b9585e8221a7e574b7178979959506c0c972abd",
-                "reference": "4b9585e8221a7e574b7178979959506c0c972abd",
+                "url": "https://api.github.com/repos/Attlaz-Platform/PHP-Client/zipball/9579546c78cbfbdb4169f7ce799df30feff25879",
+                "reference": "9579546c78cbfbdb4169f7ce799df30feff25879",
                 "shasum": ""
             },
             "require": {
@@ -172,9 +172,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Attlaz-Platform/PHP-Client/issues",
-                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.21.0"
+                "source": "https://github.com/Attlaz-Platform/PHP-Client/tree/1.22.0"
             },
-            "time": "2026-08-05T21:04:23+00:00"
+            "time": "2026-08-05T22:41:54+00:00"
         },
         {
             "name": "doctrine/dbal",
