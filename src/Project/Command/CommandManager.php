@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\Command;
 
+use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
 use Attlaz\AttlazMonolog\Handler\AttlazHandler;
+use Attlaz\Client;
 use Attlaz\Model\FlowRun;
-use Attlaz\Model\Log\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Attlaz\Project\Model\FlowRunRequest;
 use Attlaz\Project\Model\FlowRunResult;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -21,8 +23,7 @@ class CommandManager
     private ContainerInterface $diContainer;
     private Environment $environment;
     private LoggerInterface $logger;
-    private LogStreamId|null $previousLogStreamId = null;
-    private Level|null $previousLogLevel = null;
+    private AttlazHandler|null $flowRunLogHandler = null;
 
     public function initialize(
         FlowCommandDiscovery $discovery,
@@ -53,7 +54,7 @@ class CommandManager
         $dashboardUrl = $this->environment->getAppUrl(null, $urlSegments);
         // Only log this to console
         $this->logger->info('More info: ' . $dashboardUrl, [AttlazHandler::CONTEXT_SKIP => true]);
-        $this->enableExecutionLogging($request->getFlowRun(), $request->verboseLogging);
+        $this->enableFlowRunLogging($request->getFlowRun(), $request->verboseLogging);
 
         $context = [];
         if (\count($request->getArguments()) > 0) {
@@ -92,7 +93,7 @@ class CommandManager
 
         }
 
-        $this->disableExecutionLogging();
+        $this->disableFlowRunLogging();
         $this->logger->info('More info: ' . $dashboardUrl, [AttlazHandler::CONTEXT_SKIP => true]);
         return $result;
     }
@@ -106,32 +107,44 @@ class CommandManager
         return $this->discovery->getCommands();
     }
 
-    private function enableExecutionLogging(FlowRun $flowRun, bool $verboseLogging): void
+    /**
+     * Send this run's log to the API, on the run's own log stream.
+     *
+     * The handler is attached here rather than at start-up because the stream id only exists once
+     * there is a run. Before, a handler was created at start-up addressed to `environment:<id>` and
+     * retargeted here; that identifier form was retired in May 2025 and the API discards it.
+     */
+    private function enableFlowRunLogging(FlowRun $flowRun, bool $verboseLogging): void
     {
-        if ($this->logger instanceof Logger) {
-            $handlers = $this->logger->getHandlers();
-            foreach ($handlers as $handler) {
-                if ($handler instanceof AttlazHandler) {
-                    $this->previousLogStreamId = $handler->getLogStreamId();
-                    $this->previousLogLevel = $handler->getLevel();
-                    $handler->setLogStreamId($flowRun->logStreamId);
-                    $handler->setLevel($verboseLogging ? Level::Debug : Level::Info);
-                }
-            }
+        if (!$this->logger instanceof Logger) {
+            return;
         }
+
+        $handler = new AttlazHandler(
+            $this->diContainer->get(Client::class),
+            $flowRun->logStreamId,
+            $verboseLogging ? Level::Debug : Level::Info,
+        );
+        $handler->setFormatter(new AttlazFormatter());
+
+        $this->flowRunLogHandler = $handler;
+        $this->logger->pushHandler($handler);
     }
 
-    private function disableExecutionLogging(): void
+    private function disableFlowRunLogging(): void
     {
-        if ($this->previousLogStreamId !== null && $this->logger instanceof Logger) {
-            $handlers = $this->logger->getHandlers();
-            foreach ($handlers as $handler) {
-                if ($handler instanceof AttlazHandler) {
-                    $handler->setLogStreamId($this->previousLogStreamId);
-                    $handler->setLevel($this->previousLogLevel);
-                }
-            }
+        if ($this->flowRunLogHandler === null || !$this->logger instanceof Logger) {
+            return;
         }
+
+        // Filter by identity rather than popHandler(), so a handler pushed by the flow itself while
+        // it ran is not removed instead of this one.
+        $remaining = \array_filter(
+            $this->logger->getHandlers(),
+            fn(HandlerInterface $handler): bool => $handler !== $this->flowRunLogHandler,
+        );
+        $this->logger->setHandlers(\array_values($remaining));
+        $this->flowRunLogHandler = null;
     }
 
     private function getCommandDefinitionByFlow(FlowRunRequest $flowRunRequest): CommandDefinition

@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Attlaz\Project\DI;
 
-use Attlaz\AttlazMonolog\Formatter\AttlazFormatter;
-use Attlaz\AttlazMonolog\Handler\AttlazHandler;
 use Attlaz\Client;
-use Attlaz\Model\Log\LogStreamId;
 use Attlaz\Project\App\Environment;
 use Attlaz\Project\Logger\Logger;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
@@ -78,15 +75,11 @@ class InternalFactory
         }
 
         /**
-         * Log to API
+         * Logging to the API is attached per flow run, by CommandManager, using that run's log
+         * stream. There is no handler here because there is no stream to send to outside a run: this
+         * used to attach one addressed to `environment:<id>`, an identifier form retired in May 2025,
+         * and the API has discarded those writes since September 2025 without storing them.
          */
-        if ($environment->isInitialized()) {
-            $logStreamId = new LogStreamId('environment:' . $environment->getProjectEnvironment()->id);
-            $apiLogHandler = new AttlazHandler($client, $logStreamId, Level::Info);
-            $formatter = new AttlazFormatter();
-            $apiLogHandler->setFormatter($formatter);
-            $logger->pushHandler($apiLogHandler);
-        }
         /**
          * Log fatal errors
          */
